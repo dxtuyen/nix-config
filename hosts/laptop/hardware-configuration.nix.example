@@ -1,0 +1,4 @@
+# Do not use this example as hardware configuration.
+# After installing NixOS, copy the generated file here:
+# cp /etc/nixos/hardware-configuration.nix ~/nix-config/hosts/laptop/
+# git add hosts/laptop/hardware-configuration.nix
