@@ -1,0 +1,14 @@
+name: Nix checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v20
+      - run: nix fmt -- --check
+      - run: nix flake check --no-build

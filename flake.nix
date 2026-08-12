@@ -9,11 +9,28 @@
     };
   };
 
-  outputs = inputs@{ nixpkgs, ... }: {
-    nixosConfigurations.laptop = nixpkgs.lib.nixosSystem {
+  outputs =
+    inputs@{ nixpkgs, ... }:
+    let
       system = "x86_64-linux";
-      specialArgs = { inherit inputs; userName = "doxuantuyen"; };
-      modules = [ ./hosts/laptop ];
+      pkgs = nixpkgs.legacyPackages.${system};
+    in
+    {
+      formatter.${system} = pkgs.writeShellApplication {
+        name = "nixfmt";
+        text = ''
+          ${pkgs.findutils}/bin/find . -type f -name '*.nix' -print0 \
+            | ${pkgs.findutils}/bin/xargs --no-run-if-empty -0 ${pkgs.nixfmt}/bin/nixfmt "$@"
+        '';
+      };
+
+      nixosConfigurations.laptop = nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = {
+          inherit inputs;
+          userName = "doxuantuyen";
+        };
+        modules = [ ./hosts/laptop ];
+      };
     };
-  };
 }

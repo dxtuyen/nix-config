@@ -1,10 +1,18 @@
-{ inputs, pkgs, userName, ... }:
+{
+  inputs,
+  pkgs,
+  userName,
+  ...
+}:
 
 {
   imports = [ inputs.home-manager.nixosModules.home-manager ];
 
   nix = {
-    settings.experimental-features = [ "nix-command" "flakes" ];
+    settings.experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
     gc = {
       automatic = true;
       dates = "weekly";
@@ -16,7 +24,11 @@
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  networking.networkmanager.enable = true;
+  networking = {
+    networkmanager.enable = true;
+    firewall.enable = true;
+  };
+  programs.nh.enable = true;
 
   time.timeZone = "Asia/Ho_Chi_Minh";
   services.timesyncd.enable = true;
@@ -26,16 +38,24 @@
   users.users.${userName} = {
     isNormalUser = true;
     description = "Doxuan Tuyen";
-    extraGroups = [ "wheel" "networkmanager" ];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+    ];
   };
 
   environment.systemPackages = with pkgs; [
-    git curl wget unzip zip
+    git
+    curl
+    wget
+    unzip
+    zip
     neovim
   ];
 
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
+    backupFileExtension = "backup";
   };
 }

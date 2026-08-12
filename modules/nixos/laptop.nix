@@ -26,14 +26,27 @@ let
       [ "$configured" -eq 1 ] || echo "Battery does not expose charge thresholds."
     '';
   };
-in {
+in
+{
+  services.fwupd.enable = true;
+
   services.keyd = {
     enable = true;
     keyboards.default = {
       ids = [ "*" ];
       settings = {
-        main = { capslock = "overload(control, esc)"; tab = "overload(nav, tab)"; };
-        nav = { h = "left"; j = "down"; k = "up"; l = "right"; b = "pageup"; f = "pagedown"; };
+        main = {
+          capslock = "overload(control, esc)";
+          tab = "overload(nav, tab)";
+        };
+        nav = {
+          h = "left";
+          j = "down";
+          k = "up";
+          l = "right";
+          b = "pageup";
+          f = "pagedown";
+        };
       };
     };
   };
@@ -41,6 +54,9 @@ in {
   systemd.services.battery-threshold = {
     description = "Set battery charge threshold to 80-85 percent";
     wantedBy = [ "multi-user.target" ];
-    serviceConfig = { Type = "oneshot"; ExecStart = "${batteryThreshold}/bin/set-battery-threshold"; };
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${batteryThreshold}/bin/set-battery-threshold";
+    };
   };
 }
