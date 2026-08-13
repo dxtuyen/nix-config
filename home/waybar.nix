@@ -114,13 +114,17 @@
         format = " {:%H:%M}";
         "format-alt" = "{:%Y-%m-%d}";
       };
-      tray.spacing = 10;
+      tray = {
+        spacing = 10;
+        "icon-size" = 16;
+      };
     };
     style = ''
       * { font-family: "JetBrains Mono", "Font Awesome 6 Free", monospace; font-size: 13px; border: none; border-radius: 0; }
       window#waybar { background: rgba(10, 14, 23, .92); color: #4af626; border-top: 1px solid rgba(74,246,38,.22); }
       #workspaces button { padding: 0 7px; color: #718079; font-size: 15px; }
       #workspaces button.focused, #workspaces button.active { color: #4af626; font-weight: bold; border-bottom: 2px solid #4af626; }
+      #workspaces button.urgent { color: #ff5555; background-color: rgba(255, 85, 85, 0.25); font-weight: bold; border-bottom: 2px solid #ff5555; }
       #clock { color: #4af626; font-weight: bold; }
       #window { margin: 0 5px; color: #a8d9a0; }
       #scratchpad { margin: 0 5px; padding-left: 10px; color: #a8d9a0; border-left: 1px solid rgba(74,246,38,.22); }

@@ -96,3 +96,22 @@ sudo nixos-rebuild switch --flake .#laptop
 - `hosts/laptop/default.nix`
 - `home/default.nix`
 - `modules/nixos/*.nix`
+- `wallpapers/nixos.jpg` — ảnh nền màn hình
+
+---
+
+## Ảnh nền & `result` — Giải thích
+
+### Ảnh nền
+- File ảnh nền đặt tại `wallpapers/nixos.jpg`
+- Cấu hình dùng ảnh trong `home/sway.nix`:
+  ```nix
+  output * bg ${./../wallpapers/nixos.jpg} fill
+  ```
+- Đổi ảnh nền = thay file trong `wallpapers/`, không cần sửa cấu hình.
+
+### Symlink `result`
+- `result` là **symlink tạm** do `nix build` tạo ra — trỏ đến cấu hình vừa build trong `/nix/store`
+- **Không phải file của dự án**, không cần commit, có thể xóa an toàn
+- Đã thêm vào `.gitignore` nên không xuất hiện trong Git nữa
+- Nếu thấy nó xuất hiện, nguyên nhân là một lệnh `nix build` vừa chạy trong thư mục này.
