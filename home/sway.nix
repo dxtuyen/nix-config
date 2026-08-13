@@ -15,7 +15,7 @@
       set $term alacritty
       set $menu rofi -show combi -combi-modes drun#run -modes combi
 
-      output * bg #0a0e17 solid_color
+      output * bg ${./../wallpapers/nixos.jpg} fill
       exec nm-applet --indicator
       exec blueman-applet
       exec /run/current-system/sw/libexec/polkit-gnome-authentication-agent-1

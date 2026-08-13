@@ -1,0 +1,10 @@
+# Nix build artifacts
+result
+result-*
+
+# Editor
+.vscode/
+*.swp
+
+# Temp
+*.tmp

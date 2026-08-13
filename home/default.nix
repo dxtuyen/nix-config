@@ -9,6 +9,7 @@
 
   imports = [
     ./packages.nix
+    ./gtk.nix
     ./sway.nix
     ./waybar.nix
     ./mako.nix
