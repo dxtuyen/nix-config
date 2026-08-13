@@ -78,4 +78,8 @@ in
     font-awesome
   ];
 
+  environment.systemPackages = with pkgs; [
+    obsidian
+  ];
+
 }
