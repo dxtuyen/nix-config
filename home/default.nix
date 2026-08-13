@@ -14,14 +14,14 @@
   };
 
   imports = [
-    ./packages.nix   # Các gói cài qua home.packages
-    ./gtk.nix        # Cấu hình GTK
-    ./sway.nix       # Cấu hình Sway (window manager)
-    ./waybar.nix     # Thanh trạng thái Waybar
-    ./mako.nix       # Trình thông báo Mako
-    ./fcitx5.nix     # Bộ gõ tiếng Việt Fcitx5
-    ./scripts.nix    # Các script thủ công trong ~/.local/bin
-    ./remnote.nix    # Tích hợp RemNote AppImage (appimage-run + desktop entry + update-remnote)
+    ./packages.nix # Các gói cài qua home.packages
+    ./gtk.nix # Cấu hình GTK
+    ./sway.nix # Cấu hình Sway (window manager)
+    ./waybar.nix # Thanh trạng thái Waybar
+    ./mako.nix # Trình thông báo Mako
+    ./fcitx5.nix # Bộ gõ tiếng Việt Fcitx5
+    ./scripts.nix # Các script thủ công trong ~/.local/bin
+    ./remnote.nix # Tích hợp RemNote AppImage (appimage-run + desktop entry + update-remnote)
   ];
 
   # Quản lý profile home-manager (cho phép lệnh home-manager switch)
