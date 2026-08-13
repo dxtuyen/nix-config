@@ -100,6 +100,65 @@ sudo nixos-rebuild switch --flake .#laptop
 
 ---
 
+## RemNote (AppImage) — Hướng dẫn chi tiết
+
+RemNote được cài dưới dạng **AppImage** (file "ngoài Nix") để **không làm chậm rebuild** — Nix chỉ quản lý phần khung (công cụ chạy + desktop entry + script), còn file AppImage nằm ở `~/Apps/RemNote/` và được cập nhật thủ công.
+
+### Cấu trúc
+- **Module**: `home/remnote.nix` (đã import trong `home/default.nix`)
+- **Vị trí AppImage**: `~/Apps/RemNote/RemNote.AppImage`
+- **Script cập nhật**: `~/.local/bin/update-remnote`
+- **Desktop entry**: `remnote` — Rofi/WOFI tự quét thấy
+
+### Lần đầu / Sang máy mới
+1. **Áp dụng config** (chỉ cài khung, không tải AppImage):
+   ```bash
+   sudo nixos-rebuild switch --flake .#laptop
+   ```
+2. **Cài RemNote**:
+   ```bash
+   update-remnote
+   ```
+   Script tự xử lý:
+   - Có file `RemNote-*.AppImage` trong `~/Downloads/` → dùng file đó
+   - Không có → tự tải từ URL về `~/Apps/RemNote/RemNote.AppImage`
+3. **Mở app**: tìm "RemNote" trong Rofi/WOFI.
+
+### Cập nhật RemNote hàng ngày
+Chỉ cần gõ:
+```bash
+update-remnote
+```
+Script xử lý theo thứ tự:
+1. **Có file mới trong `~/Downloads/`** → `mv` (cắt thẳng) file mới nhất vào `~/Apps/RemNote/RemNote.AppImage` (file trong Downloads tự biến mất)
+2. **Không có file** → tự tải từ URL
+3. **So checksum** với bản hiện tại:
+   - Giống nhau → xóa file mới, báo "RemNote đã là phiên bản mới nhất"
+   - Khác nhau → giữ bản mới, `chmod +x`, báo "Đã cập nhật RemNote"
+4. **Mất mạng / link hỏng** → báo lỗi + hướng dẫn tải tay, **không phá** bản đang chạy
+
+### Khi link download bị đổi (RemNote đổi URL)
+1. Tải tay file `RemNote-*.AppImage` về `~/Downloads/`
+2. Gõ `update-remnote` → script tự dùng file đó, **không cần sửa config**
+
+### Cập nhật config Nix
+Chạy `sudo nixos-rebuild switch --flake .#laptop` — **không ảnh hưởng** AppImage đã cài (nằm ngoài Nix store).
+
+### Tóm tắt
+| Tình huống | Thao tác |
+|---|---|
+| Máy mới | `nixos-rebuild switch` → `update-remnote` |
+| Cập nhật RemNote | `update-remnote` (tự tìm trong Downloads hoặc tự tải) |
+| Link đổi/hỏng | tải tay về `~/Downloads/` → `update-remnote` |
+| Cập nhật config Nix | `nixos-rebuild switch` (không ảnh hưởng AppImage) |
+
+### Điểm mấu chốt
+- **Không làm chậm rebuild**: không tải file lớn trong build/activation
+- **Bền vững**: ưu tiên file tải tay; link đổi chỉ cần tải tay, không sửa config
+- **Không file rác**: dùng `mv` + xóa file trùng checksum
+
+---
+
 ## Ảnh nền & `result` — Giải thích
 
 ### Ảnh nền

@@ -5,6 +5,7 @@
     username = userName;
     homeDirectory = "/home/${userName}";
     stateVersion = "26.05";
+    sessionPath = [ "$HOME/.local/bin" ];
   };
 
   imports = [
@@ -15,7 +16,15 @@
     ./mako.nix
     ./fcitx5.nix
     ./scripts.nix
+    ./remnote.nix
   ];
 
   programs.home-manager.enable = true;
+
+  programs.bash = {
+    enable = true;
+    initExtra = ''
+      export PATH="$HOME/.local/bin:$PATH"
+    '';
+  };
 }
