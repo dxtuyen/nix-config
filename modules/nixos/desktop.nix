@@ -22,8 +22,7 @@ in
   services.greetd = {
     enable = true;
     settings.default_session = {
-      # Tự động đăng nhập user doxuantuyen, không cần nhập tên/mật khẩu
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd sway --autologin doxuantuyen";
+      command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd sway";
       user = "greeter";
     };
   };
