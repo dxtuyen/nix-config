@@ -61,13 +61,15 @@ in
     wantedBy = [ "sway-session.target" ];
     partOf = [ "sway-session.target" ];
     serviceConfig = {
-      ExecStart = "${fcitxPackage}/bin/fcitx5 --replace";
+      Type = "simple";
+      ExecStart = "${fcitxPackage}/bin/fcitx5";
       Environment = [
         # Fcitx ignores addon metadata exposed as buildEnv symlinks.
         "FCITX_ADDON_DIRS=${fcitxAddonDirs}:${fcitxPackage}/lib/fcitx5"
         "FCITX_DATA_DIRS=${fcitxDataDirs}:${fcitxPackage}/share/fcitx5"
       ];
-      Restart = "on-failure";
+      Restart = "always";
+      RestartSec = "2";
     };
   };
 
