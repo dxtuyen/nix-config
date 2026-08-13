@@ -23,5 +23,6 @@
     google-chrome
     zathura
     calibre
+    ticktick
   ];
 }
