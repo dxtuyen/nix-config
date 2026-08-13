@@ -1,0 +1,117 @@
+{ pkgs, ... }:
+
+{
+  home.file = {
+    ".local/bin/lock-screen" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        swayidle -w timeout 10 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' &
+        watcher=$!
+        swaylock -c 0a0e17
+        kill "$watcher" 2>/dev/null || true
+        swaymsg "output * power on"
+      '';
+    };
+    ".local/bin/refresh-session" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        pkill wlsunset 2>/dev/null || true
+        wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8 &
+        swaymsg reload
+      '';
+    };
+    ".local/bin/quick-lang" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        mode="''${1:-vi-en}"
+        text="$(wl-paste -p 2>/dev/null || wl-paste 2>/dev/null || true)"
+        [ -n "''${text//[[:space:]]/}" ] || { notify-send -a quick-lang -t 7000 "Quick Lang" "Không có văn bản nào được chọn hoặc copy."; exit 1; }
+        case "$mode" in
+          vi-en) result="$(trans -b vi:en "$text")"; printf %s "$result" | wl-copy; notify-send -a quick-lang -t 7000 "VI → EN" "$result" ;;
+          en-vi) result="$(trans -b en:vi "$text")"; printf %s "$result" | wl-copy; notify-send -a quick-lang -t 7000 "EN → VI" "$result" ;;
+          polish) printf '%s' "Rewrite and improve this English text. Return only the improved version:\n\n$text" | wl-copy; notify-send -a quick-lang -t 7000 "English Polish" "Prompt đã được copy." ;;
+        esac
+      '';
+    };
+    ".local/bin/media-notify" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        set -eu
+
+        # Sway runs one process per key press. Serialize them so every request
+        # updates the same notification instead of racing to create a new one.
+        if [ "''${MEDIA_NOTIFY_LOCKED:-}" != 1 ]; then
+          exec env MEDIA_NOTIFY_LOCKED=1 ${pkgs.util-linux}/bin/flock \
+            "''${XDG_RUNTIME_DIR:?}/media-notify.lock" "$0" "$@"
+        fi
+
+        # A replacement ID must be one assigned by mako, rather than a fixed
+        # arbitrary number. Keep the most recently assigned ID for each kind
+        # of notification so rapid key presses update the visible popup.
+        notify_replace() {
+          name="$1"
+          shift
+          id_file="''${XDG_RUNTIME_DIR:?}/media-notify-''${name}.id"
+          replace_id=""
+
+          if [ -r "$id_file" ]; then
+            read -r replace_id < "$id_file" || true
+            case "$replace_id" in
+              *[!0-9]*|"") replace_id="" ;;
+            esac
+          fi
+
+          if [ -n "$replace_id" ]; then
+            notification_id="$(notify-send -p -r "$replace_id" "$@")"
+          else
+            notification_id="$(notify-send -p "$@")"
+          fi
+
+          case "$notification_id" in
+            *[!0-9]*|"") ;;
+            *) printf '%s\n' "$notification_id" > "$id_file" ;;
+          esac
+        }
+
+        notify_volume() {
+          status="$(wpctl get-volume @DEFAULT_AUDIO_SINK@)"
+          volume="$(printf '%s\n' "$status" | awk '{ printf "%d", ($2 * 100) + 0.5 }')"
+          case "$status" in
+            *MUTED*) notify_replace volume -a volume -t 2000 "Volume" "Muted" ;;
+            *) notify_replace volume -a volume -t 2000 "Volume" "''${volume}%" ;;
+          esac
+        }
+
+        notify_microphone() {
+          status="$(wpctl get-volume @DEFAULT_AUDIO_SOURCE@)"
+          case "$status" in
+            *MUTED*) notify_replace microphone -a volume -t 2000 "Microphone" "Muted" ;;
+            *) notify_replace microphone -a volume -t 2000 "Microphone" "On" ;;
+          esac
+        }
+
+        case "''${1:?missing action}" in
+          volume-up) wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+; notify_volume ;;
+          volume-down) wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-; notify_volume ;;
+          volume-mute) wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle; notify_volume ;;
+          mic-mute)
+            wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
+            notify_microphone
+            ;;
+          brightness-up)
+            brightnessctl set +10%
+            notify_replace brightness -a brightness -t 2000 "Brightness" "$(brightnessctl -m | cut -d, -f4)"
+            ;;
+          brightness-down)
+            brightnessctl set 10%-
+            notify_replace brightness -a brightness -t 2000 "Brightness" "$(brightnessctl -m | cut -d, -f4)"
+            ;;
+        esac
+      '';
+    };
+  };
+}
