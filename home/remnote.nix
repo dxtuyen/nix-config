@@ -29,7 +29,10 @@
     exec = "appimage-run ${config.home.homeDirectory}/Apps/RemNote/RemNote.AppImage";
     terminal = false;
     type = "Application";
-    categories = [ "Office" "Utility" ];
+    categories = [
+      "Office"
+      "Utility"
+    ];
   };
 
   # Tạo script ~/.local/bin/update-remnote (thêm vào PATH ở home/default.nix)
