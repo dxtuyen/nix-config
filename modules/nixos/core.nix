@@ -51,6 +51,7 @@
     unzip
     zip
     neovim
+    htop
   ];
 
   home-manager = {
