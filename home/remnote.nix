@@ -6,10 +6,11 @@
 # build để tránh làm chậm rebuild. Nix chỉ quản lý phần khung:
 #   - appimage-run  : công cụ chạy AppImage (cài như gói)
 #   - desktop entry : để Rofi/WOFI quét thấy "RemNote"
-#   - update-remnote: script tự cập nhật AppImage
+#   - update-remnote: script cập nhật AppImage từ file tải tay trong ~/Downloads
 #
 # Cách dùng:
-#   - Cài/cập nhật: gõ `update-remnote`
+#   - Tải RemNote-*.AppImage về ~/Downloads (tự tải từ trang chủ RemNote)
+#   - Gõ `update-remnote` để cài/cập nhật
 #   - Mở app: tìm "RemNote" trong Rofi/WOFI
 
 {
@@ -43,88 +44,36 @@
       set -euo pipefail
 
       # --- Cấu hình ---
-      downloads="''${HOME}/Downloads"                  # nơi bạn tải AppImage thủ công (nếu có)
+      downloads="''${HOME}/Downloads"                  # nơi bạn tải AppImage thủ công
       apps_dir="''${HOME}/Apps/RemNote"                # thư mục chứa bản cài
       target="''${apps_dir}/RemNote.AppImage"          # file AppImage chính
-      url="https://backend.remnote.com/desktop/linux"  # URL tải bản mới (nếu đổi, sửa ở đây)
 
       mkdir -p "$apps_dir"
 
-      # Hàm cài một file AppImage (từ ~/Downloads hoặc vừa tải về) vào vị trí chính
-      install_file() {
-        local src="$1"
-        # Nếu đã có bản cài, so hash hai file:
-        #   giống nhau -> bản mới trùng bản cũ -> xóa file mới, không làm gì
-        if [ -f "$target" ]; then
-          local hashes
-          hashes="$(sha256sum "$src" "$target" | awk '{print $1}' | sort -u | wc -l)"
-          if [ "$hashes" -eq 1 ]; then
-            rm -f "$src"
-            echo "RemNote đã là phiên bản mới nhất, không cần cập nhật."
-            exit 0
-          fi
-        fi
-        # Khác nhau -> đè file cũ bằng file mới + cấp quyền thực thi
-        mv -f "$src" "$target"
-        chmod +x "$target"
-        echo "Đã cập nhật RemNote: $target"
-      }
-
-      # --- Bước 1: Ưu tiên dùng file bạn tự tải trong ~/Downloads ---
-      # Tìm file RemNote-*.AppImage mới nhất (theo thời gian sửa), nếu có thì dùng luôn
+      # Tìm file RemNote-*.AppImage mới nhất trong ~/Downloads (theo thời gian sửa)
       latest="$(find "$downloads" -maxdepth 1 -name 'RemNote-*.AppImage' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n1 | cut -d' ' -f2- || true)"
-      if [ -n "$latest" ]; then
-        install_file "$latest"
-        exit 0
+      if [ -z "$latest" ]; then
+        echo "Không tìm thấy file RemNote-*.AppImage trong ''${downloads}." >&2
+        echo "Hãy tải RemNote về ''${downloads} rồi chạy lại lệnh này." >&2
+        exit 1
       fi
 
-      # --- Bước 2: So nội dung thật với bản đang cài (tải 1MB đầu, ~rất nhanh) ---
-      # Dùng HTTP Range: server chỉ gửi 1MB đầu file. So hash 1MB này với 1MB đầu
-      # của bản đang cài -> nếu giống nhau là cùng phiên bản (không cần tải cả file).
-      # Lưu ý: Nếu chưa có bản cài (target không tồn tại) -> bỏ qua so sánh, tải luôn.
-      remote_head=""
+      # Nếu đã có bản cài, so hash hai file:
+      #   giống nhau -> bản mới trùng bản cũ -> xóa file mới, không làm gì
       if [ -f "$target" ]; then
-        local_head="$(head -c 1048576 "$target" | sha256sum | awk '{print $1}')"
-        echo "Kiểm tra phiên bản RemNote mới nhất từ ''${url} ..."
-        remote_head="$(curl -fsL --retry 2 --max-time 20 -r 0-1048575 "$url" 2>/dev/null | sha256sum | awk '{print $1}')" || true
-        if [ -n "$remote_head" ] && [ "$remote_head" = "$local_head" ]; then
+        local hashes
+        hashes="$(sha256sum "$latest" "$target" | awk '{print $1}' | sort -u | wc -l)"
+        if [ "$hashes" -eq 1 ]; then
+          rm -f "$latest"
           echo "RemNote đã là phiên bản mới nhất, không cần cập nhật."
           exit 0
         fi
       fi
 
-      # --- Bước 3: Tải bản mới (hoặc báo tải tay khi không có mạng) ---
-      # remote_head rỗng khi: có mạng nhưng chưa có bản cài (tải luôn),
-      # hoặc không lấy được 1MB (mất mạng / link hỏng -> báo tải tay).
-      if [ -z "$remote_head" ] && [ -f "$target" ]; then
-        echo "Không có mạng, không kiểm tra được phiên bản mới." >&2
-        echo "Hãy tải tay file RemNote-*.AppImage về ''${downloads} rồi chạy lại lệnh này." >&2
-        exit 1
-      fi
-
-      # Tải vào file tạm (không ghi đè trực tiếp bản đang dùng, đề phòng tải lỗi giữa chừng)
-      tmp="''${apps_dir}/.RemNote.AppImage.download"
-      echo "Có phiên bản mới, đang tải đầy đủ từ ''${url} ..."
-      if ! curl -fL --retry 2 -o "$tmp" "$url"; then
-        rm -f "$tmp"
-        echo "Lỗi: Tải thất bại." >&2
-        echo "Nếu link tải đã đổi, hãy tải tay file RemNote-*.AppImage về ''${downloads} rồi chạy lại lệnh này." >&2
-        exit 1
-      fi
-      # Kiểm tra file tải về hợp lệ trước khi cài (tránh ghi đè bản đang chạy bằng file hỏng)
-      if [ ! -s "$tmp" ] || [ "$(stat -c%s "$tmp")" -lt 10485760 ]; then
-        rm -f "$tmp"
-        echo "Lỗi: File tải về không hợp lệ (rỗng hoặc quá nhỏ)." >&2
-        exit 1
-      fi
-      magic="$(head -c 3 "$tmp" | od -An -tx1 | tr -d ' \n')"
-      if [ "$magic" != "410901" ] && [ "$magic" != "410902" ]; then
-        rm -f "$tmp"
-        echo "Lỗi: File tải về không phải AppImage hợp lệ." >&2
-        exit 1
-      fi
-      # Cài file vừa tải về
-      install_file "$tmp"
+      # Khác nhau -> đè file cũ bằng file mới + cấp quyền thực thi
+      mv -f "$latest" "$target"
+      chmod +x "$target"
+      echo "Đã cập nhật RemNote: $target"
     '';
   };
 }
