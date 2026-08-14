@@ -2,6 +2,12 @@
 
 {
   home.packages = with pkgs; [
+    # Fonts
+    noto-fonts
+    jetbrains-mono
+    font-awesome
+
+    # Apps
     adwaita-icon-theme
     alacritty
     rofi
