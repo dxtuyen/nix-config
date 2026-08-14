@@ -131,7 +131,7 @@
       };
     };
     style = ''
-      * { font-family: "JetBrains Mono", "Font Awesome 6 Free", monospace; font-size: 13px; border: none; border-radius: 0; }
+      * { font-size: 13px; border: none; border-radius: 0; }
       @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
       window#waybar { background: rgba(10, 14, 23, .92); color: #4af626; border-top: 1px solid rgba(74,246,38,.22); }
       #workspaces button { padding: 0 7px; color: #718079; font-size: 15px; }
