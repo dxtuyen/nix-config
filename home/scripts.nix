@@ -8,7 +8,7 @@
         #! /usr/bin/env bash
         swayidle -w timeout 10 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' &
         watcher=$!
-        swaylock -c 0a0e17
+        swaylock -i ${./../wallpapers/nixos.jpg}
         kill "$watcher" 2>/dev/null || true
         swaymsg "output * power on"
       '';
@@ -34,6 +34,34 @@
           en-vi) result="$(trans -b en:vi "$text")"; printf %s "$result" | wl-copy; notify-send -a quick-lang -t 7000 "EN → VI" "$result" ;;
           polish) printf '%s' "Rewrite and improve this English text. Return only the improved version:\n\n$text" | wl-copy; notify-send -a quick-lang -t 7000 "English Polish" "Prompt đã được copy." ;;
         esac
+      '';
+    };
+    ".local/bin/toggle-wlsunset" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        if pgrep -x wlsunset >/dev/null; then
+          pkill wlsunset
+          notify-send -a wlsunset -t 2000 "Bảo vệ mắt" "Đã tắt"
+        else
+          wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8 &
+          notify-send -a wlsunset -t 2000 "Bảo vệ mắt" "Đã bật"
+        fi
+      '';
+    };
+    ".local/bin/cycle-power-profile" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        current="$(powerprofilesctl get)"
+        case "$current" in
+          power-saver) next="balanced" ;;
+          balanced) next="performance" ;;
+          performance) next="power-saver" ;;
+          *) next="balanced" ;;
+        esac
+        powerprofilesctl set "$next"
+        notify-send -a power-profiles -t 2000 "Power Profile" "$next"
       '';
     };
     ".local/bin/media-notify" = {

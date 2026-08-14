@@ -1,4 +1,4 @@
-{ ... }:
+{ config, ... }:
 
 {
   programs.waybar = {
@@ -16,8 +16,8 @@
       "modules-center" = [ "sway/window" ];
       "modules-right" = [
         "idle_inhibitor"
-        "pulseaudio"
         "network"
+        "pulseaudio"
         "power-profiles-daemon"
         "cpu"
         "memory"
