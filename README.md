@@ -122,15 +122,37 @@ nix-config/
 
 ## RemNote (AppImage)
 
-RemNote được cài dưới dạng AppImage (file "ngoài Nix") để **không làm chậm rebuild**.
+RemNote được cài dưới dạng AppImage (file "ngoài Nix") để **không làm chậm rebuild**. Bạn **tự tải file** từ trang chủ RemNote, script chỉ lo phần cài đặt.
+
+**Cách cài/cập nhật:**
+1. **Tải file** `RemNote-*.AppImage` từ trang chủ RemNote về `~/Downloads/`.
+2. **Chạy lệnh**:
+   ```bash
+   update-remnote
+   ```
+   - Script tự tìm file mới nhất trong `~/Downloads/`, so sánh hash với bản đang cài.
+   - **Giống nhau** → báo "đã là phiên bản mới nhất".
+   - **Khác nhau** → cài bản mới.
+   - **Không có file** → báo:
+     ```
+     Không tìm thấy file RemNote-*.AppImage trong ~/Downloads.
+     Hãy tải RemNote về ~/Downloads rồi chạy lại lệnh này.
+     ```
+
+**Cài thủ công (không dùng script):**
+```bash
+mkdir -p ~/Apps/RemNote
+cp ~/Downloads/RemNote-*.AppImage ~/Apps/RemNote/RemNote.AppImage
+chmod +x ~/Apps/RemNote/RemNote.AppImage
+```
 
 **Tóm tắt nhanh:**
 | Tình huống | Thao tác |
 |---|---|
-| Máy mới | `nixos-rebuild switch` → `update-remnote` |
-| Cập nhật RemNote | `update-remnote` (tự tìm trong Downloads hoặc tự tải) |
-| Đã mới nhất | báo ngay, **không tải 206MB** (chỉ tải 1MB để kiểm tra) |
-| Link đổi/hỏng | tải tay về `~/Downloads/` → `update-remnote` |
+| Máy mới | `nixos-rebuild switch` → tải file về `~/Downloads/` → `update-remnote` |
+| Cập nhật RemNote | tải file mới về `~/Downloads/` → `update-remnote` |
+| Đã mới nhất | báo ngay, không cần làm gì |
+| Cài thủ công | `cp` + `chmod +x` (xem ở trên) |
 
 📖 **Xem hướng dẫn chi tiết tại [docs/REMNODE.md](docs/REMNODE.md)**
 
