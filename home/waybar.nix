@@ -78,9 +78,17 @@
       };
       cpu = {
         format = " {usage}%";
+        states = {
+          warning = 70;
+          critical = 90;
+        };
       };
       memory = {
         format = " {}%";
+        states = {
+          warning = 70;
+          critical = 90;
+        };
       };
       temperature = {
         "warning-threshold" = 65;
@@ -124,6 +132,7 @@
     };
     style = ''
       * { font-family: "JetBrains Mono", "Font Awesome 6 Free", monospace; font-size: 13px; border: none; border-radius: 0; }
+      @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
       window#waybar { background: rgba(10, 14, 23, .92); color: #4af626; border-top: 1px solid rgba(74,246,38,.22); }
       #workspaces button { padding: 0 7px; color: #718079; font-size: 15px; }
       #workspaces button.focused, #workspaces button.active { color: #4af626; font-weight: bold; border-bottom: 2px solid #4af626; }
@@ -132,10 +141,11 @@
       #window { margin: 0 5px; color: #a8d9a0; }
       #scratchpad { margin: 0 5px; padding-left: 10px; color: #a8d9a0; border-left: 1px solid rgba(74,246,38,.22); }
       #idle_inhibitor, #pulseaudio, #network, #power-profiles-daemon, #cpu, #memory, #temperature, #backlight, #battery, #tray { padding: 0 10px; color: #a8d9a0; border-left: 1px solid rgba(74,246,38,.22); }
-      #battery.warning, #temperature.warning { color: #f5b84b; }
-      #battery.critical, #temperature.critical { color: #ff5555; }
-      #battery.charging { color: #00aaff; background-color: rgba(0, 102, 204, 0.35); font-weight: bold; }
-      #battery.plugged { color: #00aaff; }
+      #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: #f5b84b; }
+      #battery.critical { color: #ff5555; }
+      #temperature.critical, #cpu.critical, #memory.critical { color: #ff5555; animation: blink 1s linear infinite; }
+      #battery.charging { color: #4af626; font-weight: bold; }
+      #battery.plugged { color: #4af626; }
       #network.disconnected, #pulseaudio.muted { color: #718079; }
     '';
   };
