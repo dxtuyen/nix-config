@@ -58,10 +58,15 @@
         exit 1
       fi
 
+      # Kiểm tra file hợp lệ trước khi cài (không phải thư mục, không rỗng)
+      if [ ! -f "$latest" ] || [ ! -s "$latest" ]; then
+        echo "Lỗi: File '$latest' không hợp lệ (không phải file hoặc rỗng)." >&2
+        exit 1
+      fi
+
       # Nếu đã có bản cài, so hash hai file:
       #   giống nhau -> bản mới trùng bản cũ -> xóa file mới, không làm gì
       if [ -f "$target" ]; then
-        local hashes
         hashes="$(sha256sum "$latest" "$target" | awk '{print $1}' | sort -u | wc -l)"
         if [ "$hashes" -eq 1 ]; then
           rm -f "$latest"
