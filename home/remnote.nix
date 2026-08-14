@@ -86,7 +86,7 @@
       if [ -f "$target" ]; then
         local_head="$(head -c 1048576 "$target" | sha256sum | awk '{print $1}')"
         echo "Kiểm tra phiên bản RemNote mới nhất từ ''${url} ..."
-        remote_head="$(curl -fsL --retry 2 --max-time 20 -r 0-1048575 "$url" 2>/dev/null | sha256sum | awk '{print $1}')"
+        remote_head="$(curl -fsL --retry 2 --max-time 20 -r 0-1048575 "$url" 2>/dev/null | sha256sum | awk '{print $1}')" || true
         if [ -n "$remote_head" ] && [ "$remote_head" = "$local_head" ]; then
           echo "RemNote đã là phiên bản mới nhất, không cần cập nhật."
           exit 0
@@ -109,6 +109,18 @@
         rm -f "$tmp"
         echo "Lỗi: Tải thất bại." >&2
         echo "Nếu link tải đã đổi, hãy tải tay file RemNote-*.AppImage về ''${downloads} rồi chạy lại lệnh này." >&2
+        exit 1
+      fi
+      # Kiểm tra file tải về hợp lệ trước khi cài (tránh ghi đè bản đang chạy bằng file hỏng)
+      if [ ! -s "$tmp" ] || [ "$(stat -c%s "$tmp")" -lt 10485760 ]; then
+        rm -f "$tmp"
+        echo "Lỗi: File tải về không hợp lệ (rỗng hoặc quá nhỏ)." >&2
+        exit 1
+      fi
+      magic="$(head -c 3 "$tmp" | od -An -tx1 | tr -d ' \n')"
+      if [ "$magic" != "410901" ] && [ "$magic" != "410902" ]; then
+        rm -f "$tmp"
+        echo "Lỗi: File tải về không phải AppImage hợp lệ." >&2
         exit 1
       fi
       # Cài file vừa tải về
