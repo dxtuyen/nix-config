@@ -42,6 +42,7 @@
       bindsym $mod+Shift+p exec systemctl suspend
       bindsym $mod+Control+p exec ~/.local/bin/cycle-power-profile
       bindsym $mod+Escape exec systemctl poweroff
+      bindsym $mod+Shift+n exec ~/.local/bin/toggle-wlsunset
       bindsym $mod+End exec systemctl poweroff
 
       bindsym $mod+$left focus left
