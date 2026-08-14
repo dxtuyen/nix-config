@@ -9,6 +9,8 @@
       "app-name=quick-lang".default-timeout = 7000;
       "app-name=volume".default-timeout = 2000;
       "app-name=brightness".default-timeout = 2000;
+      "app-name=wlsunset".default-timeout = 2000;
+      "app-name=power-profiles".default-timeout = 2000;
     };
   };
 }

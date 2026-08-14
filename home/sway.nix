@@ -33,12 +33,14 @@
       seat * hide_cursor 7000
 
       bindsym $mod+Return exec $term
-      bindsym $mod+q kill
+      bindsym $mod+Shift+q kill
       bindsym $mod+d exec $menu
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
-      bindsym $mod+Shift+o exec ~/.local/bin/lock-screen
-      bindsym $mod+Shift+p exec sh -c '~/.local/bin/lock-screen & sleep 1; systemctl suspend'
+      bindsym $mod+Escape exec ~/.local/bin/lock-screen
+      bindsym $mod+Shift+Escape exec sh -c '~/.local/bin/lock-screen & sleep 1; systemctl suspend'
+      bindsym $mod+Shift+p exec ~/.local/bin/cycle-power-profile
+      bindsym $mod+Shift+n exec ~/.local/bin/toggle-wlsunset
       bindsym $mod+End exec systemctl poweroff
 
       bindsym $mod+$left focus left
@@ -114,7 +116,7 @@
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
-      exec swayidle -w timeout 300 '~/.local/bin/lock-screen' before-sleep 'swaylock -f -c 0a0e17' lock 'swaylock -f -c 0a0e17' unlock 'pkill -xu "$USER" -SIGUSR1 swaylock'
+      exec swayidle -w timeout 300 '~/.local/bin/lock-screen' before-sleep 'swaylock -f -i ${./../wallpapers/nixos.jpg}' lock 'swaylock -f -i ${./../wallpapers/nixos.jpg}' unlock 'pkill -xu "$USER" -SIGUSR1 swaylock'
     '';
   };
 }
