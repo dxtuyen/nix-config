@@ -73,10 +73,19 @@ in
     };
   };
 
-  fonts.packages = with pkgs; [
-    jetbrains-mono
-    font-awesome
-  ];
+  fonts = {
+    packages = with pkgs; [
+      jetbrains-mono
+      font-awesome
+      noto-fonts
+      noto-fonts-color-emoji
+    ];
+    fontconfig.defaultFonts = {
+      sansSerif = [ "Noto Sans" ];
+      serif = [ "Noto Serif" ];
+      monospace = [ "JetBrains Mono" ];
+    };
+  };
 
   environment.systemPackages = with pkgs; [
     obsidian

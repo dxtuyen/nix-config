@@ -2,7 +2,6 @@
 
 {
   home.packages = with pkgs; [
-    adwaita-icon-theme
     alacritty
     rofi
     wlsunset
@@ -15,7 +14,6 @@
     pavucontrol
     brightnessctl
     translate-shell
-    wireplumber
     thunar
     networkmanagerapplet
     blueman
