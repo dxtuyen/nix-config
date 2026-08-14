@@ -2,7 +2,6 @@
 
 {
   home.packages = with pkgs; [
-    font-awesome
     adwaita-icon-theme
     alacritty
     rofi
