@@ -37,13 +37,10 @@
       bindsym $mod+d exec $menu
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
-      bindsym $mod+Shift+Escape exec sh -c '~/.local/bin/lock-screen & sleep 1; systemctl suspend'
-      bindsym $mod+Shift+o exec ~/.local/bin/toggle-wlsunset
-      bindsym $mod+Shift+p exec systemctl suspend
-      bindsym $mod+Control+p exec ~/.local/bin/cycle-power-profile
       bindsym $mod+Escape exec systemctl poweroff
+      bindsym $mod+Shift+o exec ~/.local/bin/lock-screen
+      bindsym $mod+Shift+p exec systemctl suspend
       bindsym $mod+Shift+n exec ~/.local/bin/toggle-wlsunset
-      bindsym $mod+End exec systemctl poweroff
 
       bindsym $mod+$left focus left
       bindsym $mod+$down focus down
