@@ -19,8 +19,8 @@
     blueman
     polkit_gnome
     google-chrome
-    zathura
     calibre
+    sioyek
     ticktick
   ];
 }
