@@ -18,6 +18,8 @@
       text = ''
         #! /usr/bin/env bash
         pkill wlsunset 2>/dev/null || true
+        STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
+        echo "auto" > "$STATE_DIR/wlsunset-mode" 2>/dev/null || true
         wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8 &
         swaymsg reload
       '';
@@ -40,13 +42,39 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        if pgrep -x wlsunset >/dev/null; then
-          pkill wlsunset
-          notify-send -a wlsunset -t 2000 "Bảo vệ mắt" "Đã tắt"
+        STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
+        STATE_FILE="$STATE_DIR/wlsunset-mode"
+        mkdir -p "$STATE_DIR"
+
+        if [ -f "$STATE_FILE" ]; then
+          mode=$(cat "$STATE_FILE")
         else
-          wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8 &
-          notify-send -a wlsunset -t 2000 "Bảo vệ mắt" "Đã bật"
+          mode="auto"
+          echo "$mode" > "$STATE_FILE"
         fi
+
+        pkill -x wlsunset 2>/dev/null
+
+        case "$mode" in
+          auto)
+            wlsunset -t 3900 -T 4000 &
+            new_mode="warm"
+            label="Vàng 4000K"
+            ;;
+          warm)
+            wlsunset -t 6400 -T 6500 &
+            new_mode="cold"
+            label="Trắng 6500K"
+            ;;
+          cold)
+            wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8 &
+            new_mode="auto"
+            label="Tự động"
+            ;;
+        esac
+
+        echo "$new_mode" > "$STATE_FILE"
+        notify-send -a wlsunset -t 2000 "$label"
       '';
     };
     ".local/bin/cycle-power-profile" = {
