@@ -92,19 +92,6 @@
         notify-send -a power-profiles -t 2000 "Power Profile" "$next"
       '';
     };
-    ".local/bin/workspace-new" = {
-      executable = true;
-      text = ''
-        #! /usr/bin/env bash
-        target="$(swaymsg -t get_workspaces -r | jq -r '
-          ([.[].num] | unique) as $used |
-          (.[] | select(.focused) | .num) as $current |
-          (first(range($current - 1; 0; -1) | select(. as $n | $used | index($n) | not)) //
-           first(range(1; infinite) | select(. as $n | $used | index($n) | not)))
-        ')"
-        swaymsg workspace number "$target"
-      '';
-    };
     ".local/bin/media-notify" = {
       executable = true;
       text = ''

@@ -34,7 +34,7 @@
 
       bindsym $mod+Return exec $term
       bindsym $mod+Shift+q kill
-      bindsym $mod+d exec $menu
+      bindsym $mod+space exec $menu
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       bindsym $mod+End exec systemctl poweroff
@@ -80,9 +80,8 @@
       bindsym $mod+Shift+8 move container to workspace number 8
       bindsym $mod+Shift+9 move container to workspace number 9
       bindsym $mod+Shift+0 move container to workspace number 10
-      bindsym $mod+Tab exec ~/.local/bin/workspace-new
-      bindsym $mod+Control+h workspace prev
-      bindsym $mod+Control+l workspace next
+      bindsym $mod+bracketleft workspace prev
+      bindsym $mod+bracketright workspace next
 
       bindsym $mod+b splith
       bindsym $mod+v splitv
@@ -91,7 +90,7 @@
       bindsym $mod+e layout toggle split
       bindsym $mod+f fullscreen
       bindsym $mod+Shift+space floating toggle
-      bindsym $mod+space focus mode_toggle
+      bindsym $mod+Tab focus mode_toggle
       bindsym $mod+a focus parent
       bindsym $mod+Shift+a focus child
       bindsym $mod+Shift+minus move scratchpad
