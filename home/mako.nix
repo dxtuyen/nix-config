@@ -12,7 +12,7 @@
       width = 400;
       height = 600;
       default-timeout = 5000;
-      "app-name=quick-lang".default-timeout = 8000;
+      "app-name=quick-lang".default-timeout = 10000;
       "app-name=volume".default-timeout = 2000;
       "app-name=brightness".default-timeout = 2000;
       "app-name=wlsunset".default-timeout = 2000;
