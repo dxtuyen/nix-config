@@ -16,6 +16,17 @@
       set $menu rofi -show combi -combi-modes drun#run -modes combi
 
       output * bg ${./../wallpapers/nixos.jpg} fill
+
+      # Màu cửa sổ hợp tông waybar (màu chữ #4af626 làm viền, nền tối #0a0e17)
+      default_border normal 2
+      default_floating_border normal 2
+      client.focused          #4af626 #0a0e17 #4af626 #4af626 #4af626
+      client.focused_inactive #718079 #0a0e17 #a8d9a0 #718079 #718079
+      client.unfocused        #718079 #0a0e17 #a8d9a0 #718079 #718079
+      client.urgent           #ff5555 #0a0e17 #ff5555 #ff5555 #ff5555
+      client.placeholder      #718079 #0a0e17 #a8d9a0 #718079 #718079
+      client.background       #0a0e17
+
       exec nm-applet --indicator
       exec blueman-applet
       exec /run/current-system/sw/libexec/polkit-gnome-authentication-agent-1
