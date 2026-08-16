@@ -15,7 +15,7 @@
 
   imports = [
     ./packages.nix # Các gói cài qua home.packages
-    ./gtk.nix # Cấu hình GTK
+    ./gtk.nix # Cấu hình GTK: icon Adwaita + dark theme mặc định
     ./sway.nix # Cấu hình Sway (window manager)
     ./waybar.nix # Thanh trạng thái Waybar
     ./mako.nix # Trình thông báo Mako
