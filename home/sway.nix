@@ -80,8 +80,7 @@
       bindsym $mod+Shift+8 move container to workspace number 8
       bindsym $mod+Shift+9 move container to workspace number 9
       bindsym $mod+Shift+0 move container to workspace number 10
-      bindsym $mod+Tab exec ~/.local/bin/workspace-new next
-      bindsym $mod+Shift+Tab exec ~/.local/bin/workspace-new prev
+      bindsym $mod+Tab exec ~/.local/bin/workspace-new
       bindsym $mod+Control+h workspace prev
       bindsym $mod+Control+l workspace next
 

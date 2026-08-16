@@ -95,34 +95,14 @@
     ".local/bin/workspace-new" = {
       executable = true;
       text = ''
-                #! /usr/bin/env bash
-                dir="''${1:-next}"
-                target="$(swaymsg -t get_workspaces -r | python3 -c '
-        import json, sys
-        ws = json.load(sys.stdin)
-        nums = sorted(w["num"] for w in ws)
-        used = set(nums)
-        current = int(sys.argv[1])
-        direction = sys.argv[2]
-
-        if direction == "next":
-            # Smallest free number >= 1
-            t = 1
-            while t in used:
-                t += 1
-            print(t)
-        else:
-            # Largest free number < current, else smallest free
-            t = current - 1
-            while t >= 1 and t in used:
-                t -= 1
-            if t < 1:
-                t = 1
-                while t in used:
-                    t += 1
-            print(t)
-        ' "$(swaymsg -t get_workspaces -r | python3 -c 'import json,sys; ws=json.load(sys.stdin); print(next(w["num"] for w in ws if w["focused"]))')" "$dir")"
-                swaymsg workspace number "$target"
+        #! /usr/bin/env bash
+        target="$(swaymsg -t get_workspaces -r | jq -r '
+          ([.[].num] | unique) as $used |
+          (.[] | select(.focused) | .num) as $current |
+          (first(range($current - 1; 0; -1) | select(. as $n | $used | index($n) | not)) //
+           first(range(1; infinite) | select(. as $n | $used | index($n) | not)))
+        ')"
+        swaymsg workspace number "$target"
       '';
     };
     ".local/bin/media-notify" = {

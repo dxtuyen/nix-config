@@ -22,5 +22,6 @@
     calibre
     sioyek
     ticktick
+    jq
   ];
 }
