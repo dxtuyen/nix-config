@@ -17,15 +17,15 @@
 
       output * bg ${./../wallpapers/nixos.jpg} fill
 
-      # Màu cửa sổ hợp tông waybar (màu chữ #4af626 làm viền, nền tối #0a0e17)
-      default_border normal 2
-      default_floating_border normal 2
-      client.focused          #4af626 #0a0e17 #4af626 #4af626 #4af626
-      client.focused_inactive #718079 #0a0e17 #a8d9a0 #718079 #718079
-      client.unfocused        #718079 #0a0e17 #a8d9a0 #718079 #718079
-      client.urgent           #ff5555 #0a0e17 #ff5555 #ff5555 #ff5555
-      client.placeholder      #718079 #0a0e17 #a8d9a0 #718079 #718079
-      client.background       #0a0e17
+      # Màu cửa sổ kiểu sway gốc, đổi màu xanh dương chủ đạo → xanh lá dịu (không chói, hơi đậm)
+      default_border normal 1
+      default_floating_border normal 1
+      client.focused          #6b8e5a #2d4a3e #ffffff #7a9e6a #2d4a3e
+      client.focused_inactive #5C5F56 #222222 #888888 #292D2E #222222
+      client.unfocused        #222222 #222222 #888888 #292D2E #222222
+      client.urgent           #2f343a #900000 #ffffff #900000 #900000
+      client.placeholder      #000000 #0c0c0c #ffffff #000000 #0c0c0c
+      client.background       #ffffff
 
       exec nm-applet --indicator
       exec blueman-applet
