@@ -3,7 +3,6 @@
 {
   home.packages = with pkgs; [
     ghostty
-    nerd-fonts.hack
     rofi
     wlsunset
     grim
