@@ -189,19 +189,30 @@
   # Systemd timer: chạy cycle-wallpaper đúng 6:00 và 18:00 mỗi ngày
   # để đổi wallpaper sáng/tối. Không cần process chạy nền.
   systemd.user.services.cycle-wallpaper = {
-    Unit.Description = "Cycle wallpaper based on time of day";
-    Install.WantedBy = [ "default.target" ];
-    serviceConfig = {
+    Unit = {
+      Description = "Cycle wallpaper based on time of day";
+    };
+    Service = {
       Type = "oneshot";
       ExecStart = "%h/.local/bin/cycle-wallpaper";
+    };
+    Install = {
+      WantedBy = [ "default.target" ];
     };
   };
 
   systemd.user.timers.cycle-wallpaper = {
-    Unit.Description = "Run cycle-wallpaper at 6:00 and 18:00";
-    Install.WantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnCalendar = "*-*-* 6,18:00:00";
+    Unit = {
+      Description = "Run cycle-wallpaper at 6:00 and 18:00";
+    };
+    Timer = {
+      OnCalendar = [
+        "*-*-* 06:00:00"
+        "*-*-* 18:00:00"
+      ];
+    };
+    Install = {
+      WantedBy = [ "timers.target" ];
     };
   };
 }
