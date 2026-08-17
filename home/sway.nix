@@ -12,15 +12,22 @@
       set $down j
       set $up k
       set $right l
-      set $term alacritty
+      set $term ghostty
       set $menu rofi -show combi -combi-modes drun#run -modes combi
 
-      output * bg ${./../wallpapers/nixos.jpg} fill
+      # Ảnh nền mặc định (fallback) — tránh màn hình đen khi reload
+      output * bg ${./../wallpapers/tokyonight-bright.jpg} fill
+      # Script tự động đổi ảnh theo giờ (sáng/tối)
+      exec ~/.local/bin/cycle-wallpaper
 
       exec nm-applet --indicator
       exec blueman-applet
       exec /run/current-system/sw/libexec/polkit-gnome-authentication-agent-1
       exec wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8
+
+      # Cập nhật môi trường DBus cho XDG Desktop Portal (Sửa lỗi timeout GTK4)
+      exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+      exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
 
       input type:touchpad {
         pointer_accel 0.6
@@ -32,10 +39,53 @@
         dwt enabled
       }
       seat * hide_cursor 7000
+      seat * xcursor_theme Bibata-Modern-Classic 24
+
+      # Tokyo Night style (from ricesway)
+      gaps inner 7
+      gaps outer 4
+      gaps top 0
+      default_border normal 2
+      default_floating_border pixel 2
+      focus_follows_mouse yes
+      workspace_auto_back_and_forth yes
+      smart_borders off
+
+      for_window [shell="xdg_shell"] title_format "%title (%app_id)"
+      for_window [shell="x_wayland"] title_format "%class - %title"
+
+      client.focused           #7aa2f7 #7aa2f7 #1a1b26 #bb9af7 #7aa2f7
+      client.focused_inactive  #7aa2f7 #1a1b26 #c0caf5 #7aa2f7 #7aa2f7
+      client.unfocused         #414868 #1a1b26 #c0caf5 #414868 #414868
+      client.urgent            #ff9e64 #1a1b26 #ff9e64 #565f89 #ff9e64
+      client.placeholder       #1a1b26 #1a1b26 #c0caf5 #565f89 #565f89
+      client.background        #1a1b26
+
+      # Tự động floating cho app đặc biệt (from ricesway)
+      for_window [app_id="pavucontrol"] floating enable, resize set width 30 ppt height 40 ppt
+      for_window [app_id="blueman-manager"] floating enable, resize set width 40 ppt height 40 ppt
+      for_window [app_id="file-roller"] floating enable
+      for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
+
+      # Dialog/popup tự động float
+      for_window [window_role="pop-up"] floating enable
+      for_window [window_role="bubble"] floating enable
+      for_window [window_role="task_dialog"] floating enable
+      for_window [window_role="Preferences"] floating enable
+      for_window [window_type="dialog"] floating enable
+      for_window [window_type="menu"] floating enable
+      for_window [window_role="About"] floating enable
+      for_window [title="Save File"] floating enable
+
+      # Chrome Picture-in-Picture tự float góc phải
+      for_window [title="Picture in picture"] floating enable, sticky enable, resize set width 350 px height 197 px, move position 1530 px 800 px
+
+      # Inhibit idle khi xem video fullscreen
+      for_window [class="google-chrome"] inhibit_idle fullscreen
 
       bindsym $mod+Return exec $term
       bindsym $mod+Shift+q kill
-      bindsym $mod+space exec $menu
+      bindsym $mod+d exec $menu
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       bindsym $mod+End exec systemctl poweroff
@@ -90,7 +140,7 @@
       bindsym $mod+w layout tabbed
       bindsym $mod+e layout toggle split
       bindsym $mod+f fullscreen
-      bindsym $mod+Shift+space floating toggle
+      bindsym $mod+space floating toggle
       bindsym $mod+Tab focus mode_toggle
       bindsym $mod+a focus parent
       bindsym $mod+Shift+a focus child
@@ -120,7 +170,7 @@
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
-      exec swayidle -w timeout 300 '~/.local/bin/lock-screen' before-sleep 'swaylock -f -i ${./../wallpapers/nixos.jpg}' lock 'swaylock -f -i ${./../wallpapers/nixos.jpg}' unlock 'pkill -xu "$USER" -SIGUSR1 swaylock'
+      exec swayidle -w timeout 300 '~/.local/bin/lock-screen' before-sleep '~/.local/bin/lock-screen' lock '~/.local/bin/lock-screen' unlock 'pkill -xu "$USER" -SIGUSR1 swaylock'
     '';
   };
 }

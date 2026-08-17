@@ -2,7 +2,8 @@
 
 {
   home.packages = with pkgs; [
-    alacritty
+    ghostty
+    nerd-fonts.hack
     rofi
     wlsunset
     grim
@@ -22,6 +23,7 @@
     calibre
     sioyek
     ticktick
+    obsidian
     jq
   ];
 }

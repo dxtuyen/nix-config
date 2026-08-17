@@ -14,6 +14,11 @@ in
 {
   programs.sway.enable = true;
   programs.dconf.enable = true;
+
+  # Kích hoạt GL/GPU acceleration đúng chuẩn NixOS (Intel i915).
+  # Thiếu cấu hình này khiến GTK/OpenGL apps (Ghostty) khởi động chậm.
+  hardware.graphics.enable = true;
+
   security = {
     polkit.enable = true;
     rtkit.enable = true;
@@ -37,12 +42,6 @@ in
   };
   services.power-profiles-daemon.enable = true;
   hardware.bluetooth.enable = true;
-
-  xdg.portal = {
-    enable = true;
-    wlr.enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-  };
 
   i18n.inputMethod = {
     enable = true;
@@ -86,9 +85,5 @@ in
       monospace = [ "JetBrains Mono" ];
     };
   };
-
-  environment.systemPackages = with pkgs; [
-    obsidian
-  ];
 
 }

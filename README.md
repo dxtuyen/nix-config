@@ -1,33 +1,10 @@
-# 📘 Chuyển sang máy mới — Hướng dẫn nhanh
+# 🖥️ NixOS Laptop Config — Doxuan Tuyen
 
-## Khi nào cần
-
-- Cài lại / nâng cấp hệ thống
-- Hiểu vì sao máy chạy / không chạy
-- Đồng bộ cấu hình sang máy khác
+Cấu hình NixOS + Home-Manager cho laptop cá nhân, theme **Tokyo Night** đồng bộ toàn bộ (Sway, Waybar, Ghostty, GTK, Mako, Rofi).
 
 ---
 
-## 1. Chuẩn bị
-
-Trước khi rebuild, **commit (lưu) lại toàn bộ thay đổi** (Git là bắt buộc với Nix):
-
-```bash
-sudo nixos-rebuild switch --flake .#laptop
-```
-
-Nếu chưa có Git:
-
-```bash
-git init
-git add .
-git commit -m "Cấu hình laptop"
-git push origin main   # sao lưu lên GitHub/GitLab riêng
-```
-
----
-
-## 2. Lệnh rebuild
+## 🚀 Lệnh rebuild
 
 ```bash
 cd /home/doxuantuyen/nix-config
@@ -37,139 +14,91 @@ sudo nixos-rebuild switch --flake .#laptop
 
 ---
 
-## 3. Chuyển sang máy mới
-
-1. **Cài Git + clone repo** trên máy mới:
-   ```bash
-   git clone <url-repo-của-bạn>
-   cd nix-config
-   ```
-
-2. **Rebuild**:
-   ```bash
-   sudo nixos-rebuild switch --flake .#laptop
-   ```
-
----
-
-## Lộ trình học hiểu `nix-config` từ đầu
-
-Đọc tuần tự, mỗi ngày một phần:
-
-### Tuần 1-2: Nền tảng
-- Đọc `flake.nix` → `inputs`, `outputs` → module `./hosts/laptop/default.nix`
-- Xem `modules/nixos/*.nix` — module dùng chung.
-
-### Tuần 3-4: Cấu hình chính
-- `hosts/laptop/default.nix` → nơi định nghĩa hostname, users, waybar...
-- Bắt đầu xem phần `imports` → `home-manager.users...`
-
-### Tuần 5-7: Home-manager & Ứng dụng
-- `home/packages.nix` → `home/sway.nix` → `home/waybar.nix`
-- Đọc kỹ `home/default.nix` phần **style** và phần **scripts.nix**
-
-### Khi Sway gặp lỗi
-- Xem log: `journalctl --user -u sway`
-- Sửa file `home/sway.nix` → rebuild.
-
----
-
-## Mẹo đọc / tìm kiếm
-
-- **Tìm nhanh config:**
-  ```bash
-  grep -n "battery" home/default.nix
-  ```
-- **Chạy thử an toàn:**
-  ```bash
-  nix eval '.#nixosConfigurations.laptop...'
-  ```
-- **Rebuild thành công:**
-  ```bash
-  sudo nixos-rebuild boot --flake .#laptop
-  ```
-
----
-
-## File thiết yếu
-
-- `hosts/laptop/default.nix`
-- `home/default.nix`
-- `modules/nixos/*.nix`
-- `wallpapers/nixos.jpg` — ảnh nền màn hình
-
----
-
-## Cấu trúc thư mục
+## 🗂️ Cấu trúc thư mục
 
 ```
 nix-config/
 ├── flake.nix                      # Điểm vào chính (nixpkgs + home-manager)
 ├── hosts/laptop/                  # Cấu hình riêng cho máy laptop
-│   └── default.nix                # Import modules + gắn home-manager
+│   └── default.nix                # Import modules + gắn home-manager + portal
 ├── home/                          # Home Manager (user-level)
 │   ├── default.nix                # Import tất cả module + PATH cho ~/.local/bin
 │   ├── packages.nix               # Gói cài qua home.packages
-│   ├── gtk.nix / sway.nix / waybar.nix / mako.nix / fcitx5.nix
+│   ├── sway.nix                   # Cấu hình Sway (window manager)
+│   ├── waybar.nix                 # Thanh trạng thái Waybar
+│   ├── ghostty.nix                # Terminal Ghostty (theme Tokyo Night)
+│   ├── gtk.nix                    # GTK theme Tokyo Night + icon Papirus + cursor Bibata
+│   ├── mako.nix                   # Trình thông báo Mako
+│   ├── fcitx5.nix                 # Bộ gõ tiếng Việt Fcitx5 (Unikey)
 │   ├── scripts.nix                # Script thủ công trong ~/.local/bin
 │   └── remnote.nix                # RemNote AppImage (appimage-run + desktop entry + update-remnote)
 ├── modules/nixos/                 # Module NixOS (system-level) dùng chung
-│   ├── core.nix / desktop.nix / development.nix / laptop.nix
+│   ├── core.nix                   # Nix settings, network, users, basic packages
+│   ├── desktop.nix                # Sway, greetd, pipewire, fcitx5, fonts
+│   ├── development.nix            # VS Code, Python, GCC, CMake, Podman
+│   └── laptop.nix                 # Battery threshold, keyd remap, fwupd
 ├── docs/                          # Tài liệu chi tiết
 │   └── REMNODE.md                 # Hướng dẫn RemNote đầy đủ
-└── wallpapers/                    # Ảnh nền
+└── wallpapers/                    # Ảnh nền (đổi tự động theo giờ)
+    ├── tokyonight-bright.jpg      # Ảnh sáng (6:00 - 17:59)
+    ├── tokyonight-night.png       # Ảnh tối (18:00 - 5:59)
+    └── nixos.jpg                  # Ảnh khoá màn hình (lock-screen)
 ```
-
-## RemNote (AppImage)
-
-RemNote được cài dưới dạng AppImage (file "ngoài Nix") để **không làm chậm rebuild**. Bạn **tự tải file** từ trang chủ RemNote, script chỉ lo phần cài đặt.
-
-**Cách cài/cập nhật:**
-1. **Tải file** `RemNote-*.AppImage` từ trang chủ RemNote về `~/Downloads/`.
-2. **Chạy lệnh**:
-   ```bash
-   update-remnote
-   ```
-   - Script tự tìm file mới nhất trong `~/Downloads/`, so sánh hash với bản đang cài.
-   - **Giống nhau** → báo "đã là phiên bản mới nhất".
-   - **Khác nhau** → cài bản mới.
-   - **Không có file** → báo:
-     ```
-     Không tìm thấy file RemNote-*.AppImage trong ~/Downloads.
-     Hãy tải RemNote về ~/Downloads rồi chạy lại lệnh này.
-     ```
-
-**Cài thủ công (không dùng script):**
-```bash
-mkdir -p ~/Apps/RemNote
-cp ~/Downloads/RemNote-*.AppImage ~/Apps/RemNote/RemNote.AppImage
-chmod +x ~/Apps/RemNote/RemNote.AppImage
-```
-
-**Tóm tắt nhanh:**
-| Tình huống | Thao tác |
-|---|---|
-| Máy mới | `nixos-rebuild switch` → tải file về `~/Downloads/` → `update-remnote` |
-| Cập nhật RemNote | tải file mới về `~/Downloads/` → `update-remnote` |
-| Đã mới nhất | báo ngay, không cần làm gì |
-| Cài thủ công | `cp` + `chmod +x` (xem ở trên) |
-
-📖 **Xem hướng dẫn chi tiết tại [docs/REMNODE.md](docs/REMNODE.md)**
 
 ---
 
-## Ảnh nền & `result` — Giải thích
+## 🎨 Theme Tokyo Night
 
-### Ảnh nền
-- File ảnh nền đặt tại `wallpapers/nixos.jpg`
-- Cấu hình dùng ảnh trong `home/sway.nix`:
-  ```nix
-  output * bg ${./../wallpapers/nixos.jpg} fill
-  ```
-- Đổi ảnh nền = thay file trong `wallpapers/`, không cần sửa cấu hình.
+| Màu | Giá trị | Dùng cho |
+|-----|---------|----------|
+| Nền | `#1a1b26` | Nền cửa sổ, panel |
+| Chữ | `#c0caf5` | Văn bản |
+| Accent | `#7aa2f7` | Focus, border, link |
+| Tím | `#bb9af7` | Split indicator |
+| Không focus | `#414868` | Unfocused border |
 
-### Symlink `result`
-- `result` là **symlink tạm** do `nix build` tạo ra — trỏ đến cấu hình vừa build trong `/nix/store`
-- **Không phải file của dự án**, không cần commit, có thể xóa an toàn
-- Đã thêm vào `.gitignore` nên không xuất hiện trong Git nữa
-- Nếu thấy nó xuất hiện, nguyên nhân là một lệnh `nix build` vừa chạy trong thư mục này.
+---
+
+## ⌨️ Phím tắt chính (Sway)
+
+| Phím | Chức năng |
+|------|-----------|
+| `mod+Return` | Mở terminal (Ghostty) |
+| **`mod+d`** | **Mở launcher Rofi** |
+| `mod+Shift+q` | Đóng cửa sổ |
+| **`mod+space`** | **Toggle floating** cửa sổ hiện tại |
+| `mod+f` | Fullscreen |
+| `mod+Shift+o` | Khóa màn hình |
+| `mod+T` | Dịch Việt ↔ Anh |
+| `mod+1..0` | Chuyển workspace |
+| `mod+Shift+1..0` | Di chuyển cửa sổ sang workspace |
+| `mod+r` | Mode resize (h,j,k,l) |
+| `mod+b` / `mod+v` | Split ngang / dọc |
+| `mod+w` / `mod+s` | Layout tabbed / stacking |
+| `mod+Control+p` | Đổi power profile |
+
+---
+
+## 🌃 Ảnh nền tự động
+
+- **6:00 - 17:59** → `tokyonight-bright.jpg` (sáng)
+- **18:00 - 5:59** → `tokyonight-night.png` (tối)
+- Cơ chế: systemd user timer chạy `cycle-wallpaper` lúc 6:00 và 18:00
+- Khi reset phiên (`mod+Shift+c`) cũng tự đặt lại đúng ảnh theo giờ
+
+---
+
+## 📦 RemNote (AppImage)
+
+RemNote cài dạng AppImage để không làm chậm rebuild. Tự tải file về `~/Downloads` rồi chạy `update-remnote`.
+
+📖 Xem chi tiết tại [docs/REMNODE.md](docs/REMNODE.md)
+
+---
+
+## 📚 Lộ trình học nix-config
+
+1. **Tuần 1-2:** Đọc `flake.nix` → `hosts/laptop/default.nix` → `modules/nixos/*.nix`
+2. **Tuần 3-4:** `home/default.nix` → `home/sway.nix` → `home/scripts.nix`
+3. **Tuần 5+:** Đào sâu các ứng dụng (waybar, ghostty, gtk, mako)
+4. **Khi gặp lỗi:** `journalctl --user -u sway` → sửa → rebuild
