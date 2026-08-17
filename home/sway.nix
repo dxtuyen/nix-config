@@ -140,8 +140,8 @@
       bindsym $mod+w layout tabbed
       bindsym $mod+e layout toggle split
       bindsym $mod+f fullscreen
-      bindsym $mod+space floating toggle
-      bindsym $mod+Tab focus mode_toggle
+      bindsym $mod+Shift+space floating toggle
+      bindsym $mod+space focus mode_toggle
       bindsym $mod+a focus parent
       bindsym $mod+Shift+a focus child
       bindsym $mod+Shift+minus move scratchpad
