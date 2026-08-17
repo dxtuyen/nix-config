@@ -10,10 +10,9 @@
         swayidle -w timeout 10 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' &
         watcher=$!
         swaylock -i ${./../wallpapers/nixos.jpg}
-        kill "$watcher" 2>/dev/null || true
-        swaymsg "output * power on"
       '';
     };
+
     ".local/bin/cycle-wallpaper" = {
       executable = true;
       text = ''
@@ -27,6 +26,7 @@
         fi
       '';
     };
+
     ".local/bin/refresh-session" = {
       executable = true;
       text = ''
@@ -36,7 +36,6 @@
         echo "auto" > "$STATE_DIR/wlsunset-mode" 2>/dev/null || true
         wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8 &
         swaymsg reload
-        # Đặt lại ảnh nền đúng theo giờ sau khi reload
         ~/.local/bin/cycle-wallpaper
       '';
     };
@@ -54,6 +53,7 @@
         esac
       '';
     };
+
     ".local/bin/toggle-wlsunset" = {
       executable = true;
       text = ''
@@ -76,54 +76,54 @@
             wlsunset -t 3900 -T 4000 &
             new_mode="warm"
             label="Vàng 4000K"
+            icon="weather-clear-night"
             ;;
           warm)
             wlsunset -t 6400 -T 6500 &
             new_mode="cold"
             label="Trắng 6500K"
+            icon="weather-clear"
             ;;
           cold)
             wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8 &
             new_mode="auto"
             label="Tự động"
+            icon="preferences-system-time"
             ;;
         esac
 
         echo "$new_mode" > "$STATE_FILE"
-        notify-send -a wlsunset -t 2000 "$label"
+        notify-send -a wlsunset -i "$icon" -t 2000 "Ánh sáng màn hình" "$label"
       '';
     };
+
     ".local/bin/cycle-power-profile" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
         current="$(powerprofilesctl get)"
         case "$current" in
-          power-saver) next="balanced" ;;
-          balanced) next="performance" ;;
-          performance) next="power-saver" ;;
-          *) next="balanced" ;;
+          power-saver) next="balanced"; icon="battery" ;;
+          balanced) next="performance"; icon="power-profile-balanced" ;;
+          performance) next="power-saver"; icon="power-profile-performance" ;;
+          *) next="balanced"; icon="power-profile-balanced" ;;
         esac
         powerprofilesctl set "$next"
-        notify-send -a power-profiles -t 2000 "Power Profile" "$next"
+        notify-send -a power-profiles -i "$icon" -t 2000 "Power Profile" "$next"
       '';
     };
+
     ".local/bin/media-notify" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
         set -eu
 
-        # Sway runs one process per key press. Serialize them so every request
-        # updates the same notification instead of racing to create a new one.
         if [ "''${MEDIA_NOTIFY_LOCKED:-}" != 1 ]; then
           exec env MEDIA_NOTIFY_LOCKED=1 ${pkgs.util-linux}/bin/flock \
             "''${XDG_RUNTIME_DIR:?}/media-notify.lock" "$0" "$@"
         fi
 
-        # A replacement ID must be one assigned by mako, rather than a fixed
-        # arbitrary number. Keep the most recently assigned ID for each kind
-        # of notification so rapid key presses update the visible popup.
         notify_replace() {
           name="$1"
           shift
@@ -153,17 +153,41 @@
           status="$(wpctl get-volume @DEFAULT_AUDIO_SINK@)"
           volume="$(printf '%s\n' "$status" | awk '{ printf "%d", ($2 * 100) + 0.5 }')"
           case "$status" in
-            *MUTED*) notify_replace volume -a volume -t 2000 "Volume" "Muted" ;;
-            *) notify_replace volume -a volume -t 2000 "Volume" "''${volume}%" ;;
+            *MUTED*) 
+              notify_replace volume -a volume -i "audio-volume-muted" -h int:value:0 -t 2000 "Volume" "Muted" 
+              ;;
+            *) 
+              if [ "$volume" -ge 70 ]; then
+                icon="audio-volume-high"
+              elif [ "$volume" -ge 30 ]; then
+                icon="audio-volume-medium"
+              elif [ "$volume" -gt 0 ]; then
+                icon="audio-volume-low"
+              else
+                icon="audio-volume-muted"
+              fi
+              notify_replace volume -a volume -i "$icon" -h "int:value:$volume" -t 2000 "Volume" "''${volume}%" 
+              ;;
           esac
         }
 
         notify_microphone() {
           status="$(wpctl get-volume @DEFAULT_AUDIO_SOURCE@)"
           case "$status" in
-            *MUTED*) notify_replace microphone -a volume -t 2000 "Microphone" "Muted" ;;
-            *) notify_replace microphone -a volume -t 2000 "Microphone" "On" ;;
+            *MUTED*) 
+              notify_replace microphone -a volume -i "microphone-sensitivity-muted" -t 2000 "Microphone" "Muted" 
+              ;;
+            *) 
+              notify_replace microphone -a volume -i "audio-input-microphone" -t 2000 "Microphone" "On" 
+              ;;
           esac
+        }
+
+        notify_brightness() {
+          # Lấy % độ sáng dạng số nguyên (bỏ ký tự %)
+          bright_raw="$(brightnessctl -m | cut -d, -f4)"
+          bright_val="''${bright_raw%%%}"
+          notify_replace brightness -a brightness -i "display-brightness" -h "int:value:$bright_val" -t 2000 "Brightness" "''${bright_raw}"
         }
 
         case "''${1:?missing action}" in
@@ -176,19 +200,17 @@
             ;;
           brightness-up)
             brightnessctl set +10%
-            notify_replace brightness -a brightness -t 2000 "Brightness" "$(brightnessctl -m | cut -d, -f4)"
+            notify_brightness
             ;;
           brightness-down)
             brightnessctl set 10%-
-            notify_replace brightness -a brightness -t 2000 "Brightness" "$(brightnessctl -m | cut -d, -f4)"
+            notify_brightness
             ;;
         esac
       '';
     };
   };
 
-  # Systemd timer: chạy cycle-wallpaper đúng 6:00 và 18:00 mỗi ngày
-  # để đổi wallpaper sáng/tối. Không cần process chạy nền.
   systemd.user.services.cycle-wallpaper = {
     Unit = {
       Description = "Cycle wallpaper based on time of day";
