@@ -25,5 +25,6 @@
     ticktick
     obsidian
     jq
+    fastfetch
   ];
 }
