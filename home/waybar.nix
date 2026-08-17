@@ -5,7 +5,7 @@
     enable = true;
     systemd.enable = true;
     settings.mainBar = {
-      position = "bottom";
+      position = "top";
       height = 30;
       spacing = 4;
       "modules-left" = [
@@ -13,28 +13,22 @@
         "sway/mode"
         "sway/scratchpad"
       ];
-      "modules-center" = [ "sway/window" ];
+      "modules-center" = [ "clock" ];
       "modules-right" = [
         "idle_inhibitor"
-        "network"
-        "pulseaudio"
         "power-profiles-daemon"
+        "pulseaudio"
+        "backlight"
+        "temperature"
+        "battery"
         "cpu"
         "memory"
-        "temperature"
-        "backlight"
-        "battery"
-        "clock"
         "tray"
       ];
       "sway/workspaces" = {
         "disable-scroll" = true;
         "warp-on-scroll" = false;
         format = "{name}";
-      };
-      "sway/window" = {
-        format = "{}";
-        "max-length" = 80;
       };
       "sway/scratchpad" = {
         format = "{icon} {count}";
@@ -63,13 +57,8 @@
         ];
         "on-click" = "pavucontrol";
       };
-      network = {
-        "format-wifi" = "{essid} ({signalStrength}%) ";
-        "format-ethernet" = "{ipaddr}/{cidr} ";
-        "format-disconnected" = "Disconnected ⚠";
-      };
       "power-profiles-daemon" = {
-        format = "{icon}";
+        format = "{icon} {profile}";
         "format-icons" = {
           performance = "";
           balanced = "";
@@ -122,8 +111,10 @@
         ];
       };
       clock = {
-        format = " {:%H:%M}";
-        "format-alt" = "{:%Y-%m-%d}";
+        format = "{:%a %d %b | %I:%M %p}";
+        "format-alt" = "{:%A %d %B %Y}";
+        tooltip-format = "<tt><small>{calendar}</small></tt>";
+        locale = "en_US.UTF-8";
       };
       tray = {
         spacing = 10;
@@ -133,20 +124,21 @@
     style = ''
       * { font-family: "JetBrains Mono", "Font Awesome 6 Free", monospace; font-size: 13px; border: none; border-radius: 0; }
       @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
-      window#waybar { background: rgba(10, 14, 23, .92); color: #4af626; border-top: 1px solid rgba(74,246,38,.22); }
-      #workspaces button { padding: 0 7px; color: #718079; font-size: 15px; }
-      #workspaces button.focused, #workspaces button.active { color: #4af626; font-weight: bold; border-bottom: 2px solid #4af626; }
-      #workspaces button.urgent { color: #ff5555; background-color: rgba(255, 85, 85, 0.25); font-weight: bold; border-bottom: 2px solid #ff5555; }
-      #clock { color: #4af626; font-weight: bold; }
-      #window { margin: 0 5px; color: #a8d9a0; }
-      #scratchpad { margin: 0 5px; padding-left: 10px; color: #a8d9a0; border-left: 1px solid rgba(74,246,38,.22); }
-      #idle_inhibitor, #pulseaudio, #network, #power-profiles-daemon, #cpu, #memory, #temperature, #backlight, #battery, #tray { padding: 0 10px; color: #a8d9a0; border-left: 1px solid rgba(74,246,38,.22); }
-      #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: #f5b84b; }
-      #battery.critical { color: #ff5555; }
-      #temperature.critical, #cpu.critical, #memory.critical { color: #ff5555; animation: blink 1s linear infinite; }
-      #battery.charging { color: #4af626; font-weight: bold; }
-      #battery.plugged { color: #4af626; }
-      #network.disconnected, #pulseaudio.muted { color: #718079; }
+      window#waybar { background: rgba(0, 0, 0, 0); color: #c0caf5; }
+      #workspaces { background: #24283b; border: 1px solid #414868; border-radius: 10px; margin: 4px 0 4px 4px; padding: 0 10px; }
+      #workspaces button { padding: 0 7px; color: #565f89; font-size: 15px; }
+      #workspaces button.focused, #workspaces button.active { color: #7aa2f7; font-weight: bold; }
+      #workspaces button.urgent { color: #f7768e; font-weight: bold; }
+      #idle_inhibitor, #pulseaudio, #backlight, #temperature, #battery, #power-profiles-daemon, #cpu, #memory, #tray, #mode, #scratchpad { background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 0; }
+      #mode { color: #7aa2f7; background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; }
+      #scratchpad { color: #a9b1d6; margin: 4px 5px; }
+      #clock { color: #7aa2f7; font-weight: bold; background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 10px 4px 5px; }
+      #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: #e0af68; }
+      #battery.critical { color: #f7768e; }
+      #temperature.critical, #cpu.critical, #memory.critical { color: #f7768e; animation: blink 1s linear infinite; }
+      #battery.charging { color: #9ece6a; font-weight: bold; }
+      #battery.plugged { color: #9ece6a; }
+      #pulseaudio.muted { color: #565f89; }
     '';
   };
 }

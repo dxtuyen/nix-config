@@ -8,9 +8,22 @@
         #! /usr/bin/env bash
         swayidle -w timeout 10 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' &
         watcher=$!
-        swaylock -i ${./../wallpapers/nixos.jpg}
+        swaylock -f -i ${./../wallpapers/nixos.jpg}
         kill "$watcher" 2>/dev/null || true
         swaymsg "output * power on"
+      '';
+    };
+    ".local/bin/cycle-wallpaper" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # Đổi wallpaper theo giờ: 6:00-17:59 sáng, 18:00-5:59 tối
+        hour="$(date +%H)"
+        if [ "$hour" -ge 6 ] && [ "$hour" -lt 18 ]; then
+          swaymsg "output * bg ${./../wallpapers/tokyonight-bright.jpg} fill"
+        else
+          swaymsg "output * bg ${./../wallpapers/tokyonight-night.png} fill"
+        fi
       '';
     };
     ".local/bin/refresh-session" = {
@@ -22,6 +35,8 @@
         echo "auto" > "$STATE_DIR/wlsunset-mode" 2>/dev/null || true
         wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8 &
         swaymsg reload
+        # Đặt lại ảnh nền đúng theo giờ sau khi reload
+        ~/.local/bin/cycle-wallpaper
       '';
     };
     ".local/bin/quick-lang" = {
@@ -168,6 +183,25 @@
             ;;
         esac
       '';
+    };
+  };
+
+  # Systemd timer: chạy cycle-wallpaper đúng 6:00 và 18:00 mỗi ngày
+  # để đổi wallpaper sáng/tối. Không cần process chạy nền.
+  systemd.user.services.cycle-wallpaper = {
+    Unit.Description = "Cycle wallpaper based on time of day";
+    Install.WantedBy = [ "default.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "%h/.local/bin/cycle-wallpaper";
+    };
+  };
+
+  systemd.user.timers.cycle-wallpaper = {
+    Unit.Description = "Run cycle-wallpaper at 6:00 and 18:00";
+    Install.WantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "*-*-* 6,18:00:00";
     };
   };
 }
