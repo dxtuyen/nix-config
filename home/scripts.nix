@@ -6,9 +6,10 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
+        trap 'kill "$watcher" 2>/dev/null || true; swaymsg "output * power on"' EXIT
         swayidle -w timeout 10 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' &
         watcher=$!
-        swaylock -f -i ${./../wallpapers/nixos.jpg}
+        swaylock -i ${./../wallpapers/nixos.jpg}
         kill "$watcher" 2>/dev/null || true
         swaymsg "output * power on"
       '';
