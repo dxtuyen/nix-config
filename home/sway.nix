@@ -16,7 +16,7 @@
       set $menu rofi -show combi -combi-modes drun#run -modes combi
 
       # Ảnh nền mặc định (fallback) — tránh màn hình đen khi reload
-      output * bg ${./../wallpapers/tokyonight-bright.jpg} fill
+      # output * bg ${./../wallpapers/tokyonight-bright.jpg} fill
       # Script tự động đổi ảnh theo giờ (sáng/tối)
       exec ~/.local/bin/cycle-wallpaper
 
