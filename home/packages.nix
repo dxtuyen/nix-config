@@ -2,7 +2,6 @@
 
 {
   home.packages = with pkgs; [
-    ghostty
     rofi
     wlsunset
     grim

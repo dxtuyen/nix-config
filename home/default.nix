@@ -15,7 +15,7 @@
 
   imports = [
     ./packages.nix # Các gói cài qua home.packages
-    ./ghostty.nix # Terminal Ghostty (theme Tokyo Night)
+    ./foot.nix # Terminal foot (theme Tokyo Night)
     ./gtk.nix # Cấu hình GTK: icon Papirus-Dark + dark theme mặc định
     ./sway.nix # Cấu hình Sway (window manager)
     ./waybar.nix # Thanh trạng thái Waybar

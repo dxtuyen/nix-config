@@ -62,7 +62,7 @@ in
   fonts = {
     packages = with pkgs; [
       jetbrains-mono
-      nerd-fonts.hack
+      nerd-fonts.jetbrains-mono
       font-awesome
       noto-fonts
       noto-fonts-color-emoji
