@@ -5,7 +5,7 @@
     enable = true;
     package = null; # Dùng sway từ NixOS module
     config = null; # Dùng hoàn toàn raw string trong extraConfig
-    systemd.enable = false;
+    systemd.enable = true;
 
     extraConfig = ''
       set $mod Mod4
@@ -24,10 +24,6 @@
       exec blueman-applet
       exec ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1
       exec wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8
-
-      # Cập nhật môi trường DBus cho XDG Desktop Portal
-      exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
-      exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
 
       input type:touchpad {
         pointer_accel 0.6
