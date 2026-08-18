@@ -3,7 +3,7 @@
 {
   programs.waybar = {
     enable = true;
-    systemd.enable = true;
+    systemd.enable = false; # Chạy qua exec trong sway config để chắc chắn sau reboot
     settings.mainBar = {
       position = "top";
       height = 30;

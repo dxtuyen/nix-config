@@ -23,6 +23,7 @@
       exec ~/.local/bin/cycle-wallpaper
 
       # Applets & daemons
+      exec waybar
       exec nm-applet --indicator
       exec blueman-applet
       exec ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1
