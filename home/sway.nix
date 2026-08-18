@@ -21,7 +21,7 @@
       set $up k
       set $right l
       set $term ghostty
-      set $menu rofi -show combi -combi-modes drun#run -modes combi
+      set $menu rofi -show drun
 
       # Wallpaper cycle
       exec ~/.local/bin/cycle-wallpaper
