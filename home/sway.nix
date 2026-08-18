@@ -8,6 +8,9 @@
     systemd.enable = true;
 
     extraConfig = ''
+      # Đảm bảo sway-session.target được kích hoạt khi khởi động qua tuigreet
+      exec systemctl --user start sway-session.target
+
       set $mod Mod4
       set $left h
       set $down j
@@ -176,9 +179,8 @@
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
-      # Idle management & Input method
+      # Idle management
       exec swayidle -w timeout 300 '~/.local/bin/lock-screen' before-sleep '~/.local/bin/lock-screen' lock '~/.local/bin/lock-screen' unlock 'pkill -xu "$USER" -SIGUSR1 swaylock'
-      exec fcitx5 -d --replace
     '';
   };
 }
