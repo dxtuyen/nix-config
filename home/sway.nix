@@ -8,7 +8,11 @@
     systemd.enable = true;
 
     extraConfig = ''
-      # Đảm bảo sway-session.target được kích hoạt khi khởi động qua tuigreet
+      # 1. Đẩy biến màn hình từ Sway vào Systemd & DBus
+      exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway SWAYSOCK
+      exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK
+
+      # 2. Bắt đầu phiên làm việc (Waybar sẽ đợi 2 lệnh trên xong mới chạy)
       exec systemctl --user start sway-session.target
 
       set $mod Mod4
@@ -23,7 +27,6 @@
       exec ~/.local/bin/cycle-wallpaper
 
       # Applets & daemons
-      exec waybar
       exec nm-applet --indicator
       exec blueman-applet
       exec ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1
