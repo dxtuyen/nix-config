@@ -171,6 +171,8 @@
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
       exec swayidle -w timeout 300 '~/.local/bin/lock-screen' before-sleep '~/.local/bin/lock-screen' lock '~/.local/bin/lock-screen' unlock 'pkill -xu "$USER" -SIGUSR1 swaylock'
+
+      exec fcitx5 -d --replace
     '';
   };
 }

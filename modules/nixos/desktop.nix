@@ -5,18 +5,11 @@
   ...
 }:
 
-let
-  fcitxPackage = config.i18n.inputMethod.package;
-  fcitxAddons = config.i18n.inputMethod.fcitx5.addons;
-  fcitxAddonDirs = lib.makeSearchPath "lib/fcitx5" fcitxAddons;
-  fcitxDataDirs = lib.makeSearchPath "share/fcitx5" fcitxAddons;
-in
 {
   programs.sway.enable = true;
   programs.dconf.enable = true;
 
-  # Kích hoạt GL/GPU acceleration đúng chuẩn NixOS (Intel i915).
-  # Thiếu cấu hình này khiến GTK/OpenGL apps (Ghostty) khởi động chậm.
+  # GPU acceleration chuẩn từ NixOS 24.05 trở lên
   hardware.graphics.enable = true;
 
   security = {
@@ -43,33 +36,21 @@ in
   services.power-profiles-daemon.enable = true;
   hardware.bluetooth.enable = true;
 
+  # Cấu hình bộ gõ Fcitx5
   i18n.inputMethod = {
     enable = true;
     type = "fcitx5";
-    fcitx5.addons = [ pkgs.qt6Packages.fcitx5-unikey ];
+    fcitx5.addons = with pkgs; [
+      qt6Packages.fcitx5-unikey
+      fcitx5-gtk
+    ];
   };
 
   environment.sessionVariables = {
-    GTK_IM_MODULE = "fcitx";
     QT_IM_MODULE = "fcitx";
     XMODIFIERS = "@im=fcitx";
-  };
-
-  systemd.user.services.fcitx5-daemon = {
-    description = "Fcitx5 input method daemon";
-    wantedBy = [ "sway-session.target" ];
-    partOf = [ "sway-session.target" ];
-    serviceConfig = {
-      Type = "simple";
-      ExecStart = "${fcitxPackage}/bin/fcitx5";
-      Environment = [
-        # Fcitx ignores addon metadata exposed as buildEnv symlinks.
-        "FCITX_ADDON_DIRS=${fcitxAddonDirs}:${fcitxPackage}/lib/fcitx5"
-        "FCITX_DATA_DIRS=${fcitxDataDirs}:${fcitxPackage}/share/fcitx5"
-      ];
-      Restart = "always";
-      RestartSec = "2";
-    };
+    # Bắt buộc các app Electron / Chromium chạy native Wayland
+    NIXOS_OZONE_WL = "1";
   };
 
   fonts = {
@@ -86,5 +67,4 @@ in
       monospace = [ "JetBrains Mono" ];
     };
   };
-
 }
