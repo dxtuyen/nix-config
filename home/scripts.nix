@@ -113,41 +113,6 @@
       '';
     };
 
-    ".local/bin/cleanup-generations" = {
-      executable = true;
-      text = ''
-        #! /usr/bin/env bash
-        # Giữ 5 bản NixOS gần nhất, xóa các bản cũ hơn và dọn garbage.
-        set -eu
-
-        KEEP=5
-        PROFILE=/nix/var/nix/profiles/system
-
-        # Lấy danh sách generation (số thứ tự) từ profile
-        generations=$(nix-env --profile "$PROFILE" --list-generations \
-          | awk '{print $1}' | grep -E '^[0-9]+$' | sort -n)
-
-        # Đếm tổng số generation
-        total=$(echo "$generations" | wc -l)
-
-        if [ "$total" -le "$KEEP" ]; then
-          echo "Chỉ có $total generation (giữ tối đa $KEEP). Không cần dọn."
-          exit 0
-        fi
-
-        # Lấy danh sách các generation cần xóa (tất cả trừ KEEP bản mới nhất)
-        to_delete=$(echo "$generations" | head -n $((total - KEEP)) | tr '\n' ' ')
-
-        echo "Xóa các generation cũ: $to_delete"
-        sudo nix-env --profile "$PROFILE" --delete-generations $to_delete
-
-        echo "Dọn garbage collection..."
-        sudo nix-collect-garbage -d
-
-        echo "Hoàn tất! Giữ lại $KEEP bản gần nhất."
-      '';
-    };
-
     ".local/bin/media-notify" = {
       executable = true;
       text = ''
