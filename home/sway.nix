@@ -23,8 +23,7 @@
       exec ~/.local/bin/cycle-wallpaper
 
       # Applets & daemons
-      # exec_always + killall để waybar reload khi nhấn $mod+Shift+c (refresh-session)
-      exec_always "${pkgs.procps}/bin/killall waybar; waybar"
+      exec waybar
       exec nm-applet --indicator
       exec blueman-applet
       exec ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1
