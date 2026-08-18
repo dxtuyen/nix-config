@@ -9,6 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Cài đặt Nix với các thiết lập tối ưu
       - uses: DeterminateSystems/nix-installer-action@v20
-      - run: nix fmt -- --check
-      - run: nix flake check --no-build
+
+      # Thêm bộ nhớ đệm (cache) để tăng tốc độ CI
+      - uses: DeterminateSystems/magic-nix-cache-action@v7
+
+      # Kiểm tra định dạng (sử dụng nixfmt-rfc-style đã cấu hình trong flake)
+      - name: Check Nix format
+        run: nix fmt -- --check
+
+      # Kiểm tra tính hợp lệ của flake (bỏ qua build)
+      - name: Check Nix flake
+        run: nix flake check --no-build
