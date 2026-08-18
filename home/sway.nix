@@ -49,7 +49,7 @@
       gaps outer 4
       gaps top 0
       default_border normal 2
-      default_floating_border pixel 2
+      default_floating_border normal 2
       focus_follows_mouse yes
       workspace_auto_back_and_forth yes
       smart_borders off
@@ -90,7 +90,7 @@
       bindsym $mod+Return exec $term
       bindsym $mod+Shift+q kill
       bindsym $mod+d exec $menu
-      bindsym $mod+Shift+d exec rofi -show window
+      bindsym $mod+Tab exec rofi -show window
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       bindsym $mod+End exec systemctl poweroff
@@ -140,8 +140,8 @@
       bindsym $mod+Shift+8 move container to workspace number 8
       bindsym $mod+Shift+9 move container to workspace number 9
       bindsym $mod+Shift+0 move container to workspace number 10
-      bindsym $mod+y workspace prev
-      bindsym $mod+o workspace next
+      bindsym $mod+u workspace prev
+      bindsym $mod+i workspace next
 
       # Layout & Window State
       bindsym $mod+b splith
@@ -170,11 +170,11 @@
       # Custom Utilities & Screenshot
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
-      bindsym $mod+Control+t exec ~/.local/bin/quick-lang polish
-      bindsym Print exec grim -g "$(slurp)" - | wl-copy
-      bindsym Mod1+Print exec grim - | wl-copy
-      bindsym Shift+Print exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim -g "$(slurp)" "$f" && wl-copy < "$f"'
-      bindsym Ctrl+Print exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim "$f" && wl-copy < "$f"'
+      bindsym $mod+Control+t exec ~/.local/bin/toggle-touchpad
+      bindsym --no-repeat Print exec grim -g "$(slurp)" - | wl-copy
+      bindsym --no-repeat Mod1+Print exec grim - | wl-copy
+      bindsym --no-repeat Shift+Print exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim -g "$(slurp)" "$f" && wl-copy < "$f"'
+      bindsym --no-repeat Ctrl+Print exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim "$f" && wl-copy < "$f"'
 
       # Media & Brightness keys
       bindsym XF86AudioRaiseVolume exec ~/.local/bin/media-notify volume-up
