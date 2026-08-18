@@ -10,19 +10,14 @@
   };
 
   outputs =
-    inputs@{ nixpkgs, ... }:
+    inputs@{ self, nixpkgs, home-manager, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
     in
     {
-      formatter.${system} = pkgs.writeShellApplication {
-        name = "nixfmt";
-        text = ''
-          ${pkgs.findutils}/bin/find . -type f -name '*.nix' -print0 \
-            | ${pkgs.findutils}/bin/xargs --no-run-if-empty -0 ${pkgs.nixfmt}/bin/nixfmt "$@"
-        '';
-      };
+      # Định dạng chuẩn: chạy `nix fmt` sẽ tự động dùng nixfmt-rfc-style
+      formatter.${system} = pkgs.nixfmt-rfc-style;
 
       nixosConfigurations.laptop = nixpkgs.lib.nixosSystem {
         inherit system;
@@ -30,7 +25,10 @@
           inherit inputs;
           userName = "doxuantuyen";
         };
-        modules = [ ./hosts/laptop ];
+        modules = [
+          home-manager.nixosModules.home-manager
+          ./hosts/laptop
+        ];
       };
     };
 }

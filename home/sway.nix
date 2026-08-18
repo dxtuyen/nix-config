@@ -3,9 +3,10 @@
 {
   wayland.windowManager.sway = {
     enable = true;
-    package = null;
-    config = null;
-    systemd.enable = true;
+    package = null; # Dùng sway từ NixOS module
+    config = null;  # Dùng hoàn toàn raw string trong extraConfig
+    systemd.enable = false;
+
     extraConfig = ''
       set $mod Mod4
       set $left h
@@ -15,17 +16,16 @@
       set $term ghostty
       set $menu rofi -show combi -combi-modes drun#run -modes combi
 
-      # Ảnh nền mặc định (fallback) — tránh màn hình đen khi reload
-      # output * bg ${./../wallpapers/tokyonight-bright.jpg} fill
-      # Script tự động đổi ảnh theo giờ (sáng/tối)
+      # Wallpaper cycle
       exec ~/.local/bin/cycle-wallpaper
 
+      # Applets & daemons
       exec nm-applet --indicator
       exec blueman-applet
-      exec /run/current-system/sw/libexec/polkit-gnome-authentication-agent-1
+      exec ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1
       exec wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8
 
-      # Cập nhật môi trường DBus cho XDG Desktop Portal (Sửa lỗi timeout GTK4)
+      # Cập nhật môi trường DBus cho XDG Desktop Portal
       exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
       exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
 
@@ -41,7 +41,7 @@
       seat * hide_cursor 7000
       seat * xcursor_theme Bibata-Modern-Classic 24
 
-      # Tokyo Night style (from ricesway)
+      # Tokyo Night style
       gaps inner 7
       gaps outer 4
       gaps top 0
@@ -61,13 +61,13 @@
       client.placeholder       #1a1b26 #1a1b26 #c0caf5 #565f89 #565f89
       client.background        #1a1b26
 
-      # Tự động floating cho app đặc biệt (from ricesway)
+      # Floating rules
       for_window [app_id="pavucontrol"] floating enable, resize set width 30 ppt height 40 ppt
       for_window [app_id="blueman-manager"] floating enable, resize set width 40 ppt height 40 ppt
       for_window [app_id="file-roller"] floating enable
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
-      # Dialog/popup tự động float
+      # Dialog/popup rules
       for_window [window_role="pop-up"] floating enable
       for_window [window_role="bubble"] floating enable
       for_window [window_role="task_dialog"] floating enable
@@ -77,12 +77,13 @@
       for_window [window_role="About"] floating enable
       for_window [title="Save File"] floating enable
 
-      # Chrome Picture-in-Picture tự float góc phải
+      # Chrome Picture-in-Picture
       for_window [title="Picture in picture"] floating enable, sticky enable, resize set width 350 px height 197 px, move position 1530 px 800 px
 
-      # Inhibit idle khi xem video fullscreen
+      # Inhibit idle
       for_window [class="google-chrome"] inhibit_idle fullscreen
 
+      # Keybindings - App & Session
       bindsym $mod+Return exec $term
       bindsym $mod+Shift+q kill
       bindsym $mod+d exec $menu
@@ -94,6 +95,7 @@
       bindsym $mod+Control+p exec ~/.local/bin/cycle-power-profile
       bindsym $mod+Shift+n exec ~/.local/bin/toggle-wlsunset
 
+      # Focus movement
       bindsym $mod+$left focus left
       bindsym $mod+$down focus down
       bindsym $mod+$up focus up
@@ -102,6 +104,8 @@
       bindsym $mod+Down focus down
       bindsym $mod+Up focus up
       bindsym $mod+Right focus right
+
+      # Container movement
       bindsym $mod+Shift+$left move left
       bindsym $mod+Shift+$down move down
       bindsym $mod+Shift+$up move up
@@ -111,6 +115,7 @@
       bindsym $mod+Shift+Up move up
       bindsym $mod+Shift+Right move right
 
+      # Workspaces
       bindsym $mod+1 workspace number 1
       bindsym $mod+2 workspace number 2
       bindsym $mod+3 workspace number 3
@@ -134,6 +139,7 @@
       bindsym $mod+bracketleft workspace prev
       bindsym $mod+bracketright workspace next
 
+      # Layout & Window State
       bindsym $mod+b splith
       bindsym $mod+v splitv
       bindsym $mod+s layout stacking
@@ -146,6 +152,7 @@
       bindsym $mod+Shift+a focus child
       bindsym $mod+Shift+minus move scratchpad
       bindsym $mod+minus scratchpad show
+
       mode "resize" {
         bindsym $left resize shrink width 10px
         bindsym $down resize grow height 10px
@@ -156,6 +163,7 @@
       }
       bindsym $mod+r mode "resize"
 
+      # Custom Utilities & Screenshot
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
       bindsym $mod+Control+t exec ~/.local/bin/quick-lang polish
@@ -163,6 +171,8 @@
       bindsym Mod1+Print exec grim - | wl-copy
       bindsym Shift+Print exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim -g "$(slurp)" "$f" && wl-copy < "$f"'
       bindsym Ctrl+Print exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim "$f" && wl-copy < "$f"'
+
+      # Media & Brightness keys
       bindsym XF86AudioRaiseVolume exec ~/.local/bin/media-notify volume-up
       bindsym XF86AudioLowerVolume exec ~/.local/bin/media-notify volume-down
       bindsym XF86AudioMute exec ~/.local/bin/media-notify volume-mute
@@ -170,8 +180,8 @@
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
+      # Idle management & Input method
       exec swayidle -w timeout 300 '~/.local/bin/lock-screen' before-sleep '~/.local/bin/lock-screen' lock '~/.local/bin/lock-screen' unlock 'pkill -xu "$USER" -SIGUSR1 swaylock'
-
       exec fcitx5 -d --replace
     '';
   };
