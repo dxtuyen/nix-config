@@ -9,8 +9,8 @@
 
     extraConfig = ''
       # 1. Đồng bộ biến màn hình & bộ gõ từ Sway vào Systemd & DBus
-      exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway SWAYSOCK XMODIFIERS QT_IM_MODULE
-      exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK XMODIFIERS QT_IM_MODULE
+      exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway SWAYSOCK XMODIFIERS QT_IM_MODULE FOOT_COLOR_SCHEME=dark
+      exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK XMODIFIERS QT_IM_MODULE FOOT_COLOR_SCHEME
 
       # 2. Bắt đầu phiên làm việc (Waybar sẽ đợi 2 lệnh trên xong mới chạy)
       exec systemctl --user start sway-session.target
@@ -20,7 +20,7 @@
       set $down j
       set $up k
       set $right l
-      set $term ghostty
+      set $term foot
       set $menu rofi -show drun
 
       # Wallpaper cycle
@@ -57,9 +57,9 @@
       for_window [shell="xdg_shell"] title_format "%title (%app_id)"
       for_window [shell="x_wayland"] title_format "%class - %title"
 
-      client.focused           #7aa2f7 #7aa2f7 #1a1b26 #bb9af7 #7aa2f7
-      client.focused_inactive  #7aa2f7 #1a1b26 #c0caf5 #7aa2f7 #7aa2f7
-      client.unfocused         #414868 #1a1b26 #c0caf5 #414868 #414868
+      client.focused           #7aa2f7 #364a82 #c0caf5 #bb9af7 #7aa2f7
+      client.focused_inactive  #565f89 #1a1b26 #c0caf5 #565f89 #565f89
+      client.unfocused         #414868 #1a1b26 #565f89 #414868 #414868
       client.urgent            #ff9e64 #1a1b26 #ff9e64 #565f89 #ff9e64
       client.placeholder       #1a1b26 #1a1b26 #c0caf5 #565f89 #565f89
       client.background        #1a1b26
@@ -90,6 +90,7 @@
       bindsym $mod+Return exec $term
       bindsym $mod+Shift+q kill
       bindsym $mod+d exec $menu
+      bindsym $mod+Shift+d exec rofi -show window
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       bindsym $mod+End exec systemctl poweroff
@@ -139,8 +140,8 @@
       bindsym $mod+Shift+8 move container to workspace number 8
       bindsym $mod+Shift+9 move container to workspace number 9
       bindsym $mod+Shift+0 move container to workspace number 10
-      bindsym $mod+bracketleft workspace prev
-      bindsym $mod+bracketright workspace next
+      bindsym $mod+y workspace prev
+      bindsym $mod+o workspace next
 
       # Layout & Window State
       bindsym $mod+b splith

@@ -44,8 +44,10 @@ in
           j = "down";
           k = "up";
           l = "right";
-          b = "pageup";
-          f = "pagedown";
+          u = "pageup";
+          i = "pagedown";
+          y = "home";
+          o = "end";
         };
       };
     };
