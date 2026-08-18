@@ -5,6 +5,12 @@
   ...
 }:
 
+let
+  fcitxPackage = config.i18n.inputMethod.package;
+  fcitxAddons = config.i18n.inputMethod.fcitx5.addons;
+  fcitxAddonDirs = lib.makeSearchPath "lib/fcitx5" fcitxAddons;
+  fcitxDataDirs = lib.makeSearchPath "share/fcitx5" fcitxAddons;
+in
 {
   programs.sway.enable = true;
   programs.dconf.enable = true;
@@ -65,6 +71,23 @@
       sansSerif = [ "Noto Sans" ];
       serif = [ "Noto Serif" ];
       monospace = [ "JetBrains Mono" ];
+    };
+  };
+
+  systemd.user.services.fcitx5-daemon = {
+    description = "Fcitx5 input method daemon";
+    wantedBy = [ "sway-session.target" ];
+    partOf = [ "sway-session.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${fcitxPackage}/bin/fcitx5";
+      Environment = [
+        # Fcitx ignores addon metadata exposed as buildEnv symlinks.
+        "FCITX_ADDON_DIRS=${fcitxAddonDirs}:${fcitxPackage}/lib/fcitx5"
+        "FCITX_DATA_DIRS=${fcitxDataDirs}:${fcitxPackage}/share/fcitx5"
+      ];
+      Restart = "always";
+      RestartSec = "2";
     };
   };
 }
