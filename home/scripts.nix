@@ -49,8 +49,41 @@
         case "$mode" in
           vi-en) result="$(trans -b vi:en "$text")"; printf %s "$result" | wl-copy; notify-send -a quick-lang -t 7000 "VI → EN" "$result" ;;
           en-vi) result="$(trans -b en:vi "$text")"; printf %s "$result" | wl-copy; notify-send -a quick-lang -t 7000 "EN → VI" "$result" ;;
-          polish) printf '%s' "Rewrite and improve this English text. Return only the improved version:\n\n$text" | wl-copy; notify-send -a quick-lang -t 7000 "English Polish" "Prompt đã được copy." ;;
         esac
+      '';
+    };
+
+    ".local/bin/toggle-touchpad" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
+        STATE_FILE="$STATE_DIR/touchpad-enabled"
+        mkdir -p "$STATE_DIR"
+
+        if [ -f "$STATE_FILE" ]; then
+          enabled=$(cat "$STATE_FILE")
+        else
+          enabled="on"
+        fi
+
+        case "$enabled" in
+          on)
+            swaymsg input type:touchpad events disabled
+            new_state="off"
+            label="Touchpad đã tắt"
+            icon="touchpad-disabled"
+            ;;
+          off)
+            swaymsg input type:touchpad events enabled
+            new_state="on"
+            label="Touchpad đã bật"
+            icon="input-touchpad"
+            ;;
+        esac
+
+        echo "$new_state" > "$STATE_FILE"
+        notify-send -a toggle-touchpad -i "$icon" -t 2000 "Touchpad" "$label"
       '';
     };
 
