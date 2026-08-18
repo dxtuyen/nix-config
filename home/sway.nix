@@ -8,9 +8,9 @@
     systemd.enable = true;
 
     extraConfig = ''
-      # 1. Đẩy biến màn hình từ Sway vào Systemd & DBus
-      exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway SWAYSOCK
-      exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK
+      # 1. Đồng bộ biến màn hình & bộ gõ từ Sway vào Systemd & DBus
+      exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway SWAYSOCK XMODIFIERS QT_IM_MODULE
+      exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK XMODIFIERS QT_IM_MODULE
 
       # 2. Bắt đầu phiên làm việc (Waybar sẽ đợi 2 lệnh trên xong mới chạy)
       exec systemctl --user start sway-session.target
