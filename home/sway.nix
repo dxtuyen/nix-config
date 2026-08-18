@@ -4,7 +4,7 @@
   wayland.windowManager.sway = {
     enable = true;
     package = null; # Dùng sway từ NixOS module
-    config = null;  # Dùng hoàn toàn raw string trong extraConfig
+    config = null; # Dùng hoàn toàn raw string trong extraConfig
     systemd.enable = false;
 
     extraConfig = ''

@@ -3,9 +3,9 @@
 {
   services.mako = {
     enable = true;
-    iconPath = "${pkgs.papirus-icon-theme}/share/icons/Papirus-Dark";
 
     settings = {
+      icon-path = "${pkgs.papirus-icon-theme}/share/icons/Papirus-Dark";
       icons = 1;
       max-icon-size = 33;
       icon-location = "left";
