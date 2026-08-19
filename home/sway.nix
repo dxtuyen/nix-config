@@ -93,11 +93,10 @@
       bindsym $mod+Tab exec rofi -show window
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
-      bindsym $mod+End exec ~/.local/bin/poweroff-without-save
-      bindsym $mod+Shift+End exec ~/.local/bin/poweroff-with-save
+      bindsym $mod+End exec systemctl poweroff
       bindsym $mod+Control+End exec systemctl reboot
-      bindsym $mod+Shift+s exec ~/.local/bin/save-session
-      bindsym $mod+Shift+r exec ~/.local/bin/restore-session
+      bindsym $mod+Shift+s exec ~/.local/bin/open-study-apps
+      bindsym $mod+Shift+w exec ~/.local/bin/open-work-apps
       bindsym $mod+Shift+o exec ~/.local/bin/lock-screen
       bindsym $mod+Shift+p exec systemctl suspend
       bindsym $mod+Control+p exec ~/.local/bin/cycle-power-profile
@@ -124,21 +123,32 @@
       bindsym $mod+Shift+Right move right
 
       # Workspaces
-      bindsym $mod+1 workspace number 1
-      bindsym $mod+2 workspace number 2
-      bindsym $mod+3 workspace number 3
-      bindsym $mod+4 workspace number 4
-      bindsym $mod+5 workspace number 5
+      # Định nghĩa tên workspace — CHỈ SỬA Ở ĐÂY khi muốn đổi tên
+      set $ws1 "1.study"
+      set $ws2 "2.code"
+      set $ws3 "3.terminal"
+      set $ws4 "4.work"
+      set $ws5 "5"
+      workspace number $ws1
+      workspace number $ws2
+      workspace number $ws3
+      workspace number $ws4
+      workspace number $ws5
+      bindsym $mod+1 workspace number $ws1
+      bindsym $mod+2 workspace number $ws2
+      bindsym $mod+3 workspace number $ws3
+      bindsym $mod+4 workspace number $ws4
+      bindsym $mod+5 workspace number $ws5
       bindsym $mod+6 workspace number 6
       bindsym $mod+7 workspace number 7
       bindsym $mod+8 workspace number 8
       bindsym $mod+9 workspace number 9
       bindsym $mod+0 workspace number 10
-      bindsym $mod+Shift+1 move container to workspace number 1
-      bindsym $mod+Shift+2 move container to workspace number 2
-      bindsym $mod+Shift+3 move container to workspace number 3
-      bindsym $mod+Shift+4 move container to workspace number 4
-      bindsym $mod+Shift+5 move container to workspace number 5
+      bindsym $mod+Shift+1 move container to workspace number $ws1
+      bindsym $mod+Shift+2 move container to workspace number $ws2
+      bindsym $mod+Shift+3 move container to workspace number $ws3
+      bindsym $mod+Shift+4 move container to workspace number $ws4
+      bindsym $mod+Shift+5 move container to workspace number $ws5
       bindsym $mod+Shift+6 move container to workspace number 6
       bindsym $mod+Shift+7 move container to workspace number 7
       bindsym $mod+Shift+8 move container to workspace number 8
