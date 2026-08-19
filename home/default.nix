@@ -13,6 +13,11 @@
     # (không dùng sessionPath nữa để tránh quản lý 2 nơi).
   };
 
+  # Nền tảng XDG: bật MỘT LẦN duy nhất tại entry point,
+  # để module con (remnote, thunar...) chỉ khai báo nội dung
+  # qua xdg.configFile / xdg.desktopEntries mà không phải tự bật.
+  xdg.enable = true;
+
   imports = [
     ./packages.nix # Các gói cài qua home.packages
     ./foot.nix # Terminal foot (theme Tokyo Night)
@@ -23,6 +28,7 @@
     ./fcitx5.nix # Bộ gõ tiếng Việt Fcitx5
     ./scripts.nix # Các script thủ công trong ~/.local/bin
     ./remnote.nix # Tích hợp RemNote AppImage (appimage-run + desktop entry + update-remnote)
+    ./thunar.nix # Đăng ký Foot làm terminal mặc định cho Thunar
   ];
 
   # Quản lý profile home-manager (cho phép lệnh home-manager switch)
