@@ -1,40 +1,41 @@
-# Nix-Config Map - Bat dau tai day
+# Nix-Config Map — Start Here
 
-Vault Obsidian hoc toan bo cau truc repo nix-config.
-Mo thu muc `nix-config/docs/nixmap/` nhu mot Vault trong Obsidian.
+An Obsidian vault that explains the entire structure of the `nix-config` repository.
+Open the `nix-config/docs/nixmap/` folder as a vault in Obsidian.
 
-## Cach dung
+## How to use
 
-Moi file md duoi day giai thich mot phan cua repo.
-Khong can doc tuan tu, di theo lien ket [[brackets]] de kham pha.
-Moi bai gi quyen DINH + NGUYEN LY + VI SAO.
+Each Markdown file below explains one part of the repository.
+You do not need to read them in order — follow the `[[bracketed links]]` to explore.
+Every note has the same shape: **WHAT it is + WHY it works this way + WHERE it lives**.
 
-## Danh muc
+## Table of contents
 
-| # | File | Noi dung |
+| # | File | Contents |
 |---|------|----------|
-| 00 | [[README]] | Ban dang o day |
-| 01 | [[01-Kien-truc-tong-quan]] | Toan bo repo xoay quanh cai gi |
-| 02 | [[02-Nguyen-ly-NixOS]] | NixOS Module la gi, hop thanh he dieu hanh |
-| 03 | [[03-Home-Manager]] | User config: apps, scripts, desktop |
-| 04 | [[04-Sway-desktop]] | Sway, Waybar, RoFi, Mako, Foot |
-| 05 | [[05-Cau-chuyen-Thunar]] | Cau chuyen thuc te: Khac Thunar | 
-| 06 | [[06-Thu-tuc-rebuild]] | Lenh rebuild, rollback, nixos-rebuild |
-| 07 | [[07-Thuat-gon-demo]] | Glossary don gian |
+| 00 | [[README]] | You are here |
+| 01 | [[01-Architecture-Overview]] | What the whole repository revolves around |
+| 02 | [[02-NixOS-Principles]] | What a NixOS module is and how it combines into an OS |
+| 03 | [[03-Home-Manager]] | User configuration: apps, scripts, desktop |
+| 04 | [[04-Sway-Desktop]] | Sway, Waybar, Rofi, Mako, Foot |
+| 05 | [[05-Thunar-Integration]] | Real-life story: integrating Thunar with Foot and Neovim |
+| 06 | [[06-Rebuild-Workflow]] | Rebuild commands, rollback, `nixos-rebuild` |
+| 07 | [[07-Glossary]] | Simple glossary |
 
-## Toi nen doc gi truoc
+## Where to start
 
-Neu muon di tu dau den cuoi:
+If you want to go from zero to full understanding:
 
-1. [[01-Kien-truc-tong-quan]] - hieu ban do
-2. [[02-Nguyen-ly-NixOS]] - hieu trich thiet HDH
-3. [[03-Home-Manager]] - hieu user-level
-4. [[04-Sway-desktop]] - hieu UI
-5. [[05-Cau-chuyen-Thunar]] - ap dung thuc te
-6. [[07-Glossary]] - tra cuu bat ky luc nao
+1. [[01-Architecture-Overview]] — understand the map
+2. [[02-NixOS-Principles]] — understand how the OS is built
+3. [[03-Home-Manager]] — understand user-level config
+4. [[04-Sway-Desktop]] — understand the UI
+5. [[05-Thunar-Integration]] — see a real application
+6. [[07-Glossary]] — look up terms any time
 
-## Khong bao gio quen
+## Never forget
 
-- Sau khi `sudo nixos-rebuild switch --flake .#laptop`/`nh os switch` thi moi ap dung
-- `nh os switch` tuong duong nanti, vit ngon
-- Cac thanh phan tre moi luu luc logic chuyen day du va build-se veri
+- Changes only take effect after `sudo nixos-rebuild switch --flake .#laptop` or `nh os switch`.
+- `nh os switch` is a convenient, faster alternative to `nixos-rebuild`.
+- The day the system is "finished" is the day this map stops being a map
+  and starts being a to-do list. Keep it alive.
