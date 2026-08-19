@@ -124,10 +124,10 @@
       # Workspaces
       # Định nghĩa tên workspace — CHỈ SỬA Ở ĐÂY khi muốn đổi tên
       set $ws1 "1.study"
-      set $ws2 "2.code"
-      set $ws3 "3.terminal"
-      set $ws4 "4.work"
-      set $ws5 "5"
+      set $ws2 "2.AI"
+      set $ws3 "3.code"
+      set $ws4 "4.terminal"
+      set $ws5 "5.others"
       workspace number $ws1
       workspace number $ws2
       workspace number $ws3
