@@ -51,7 +51,6 @@
       default_border normal 2
       default_floating_border normal 2
       focus_follows_mouse yes
-      workspace_auto_back_and_forth yes
       smart_borders off
 
       for_window [shell="xdg_shell"] title_format "%title (%app_id)"
