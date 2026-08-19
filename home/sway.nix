@@ -93,7 +93,11 @@
       bindsym $mod+Tab exec rofi -show window
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
-      bindsym $mod+End exec systemctl poweroff
+      bindsym $mod+End exec ~/.local/bin/poweroff-without-save
+      bindsym $mod+Shift+End exec ~/.local/bin/poweroff-with-save
+      bindsym $mod+Control+End exec systemctl reboot
+      bindsym $mod+Shift+s exec ~/.local/bin/save-session
+      bindsym $mod+Shift+r exec ~/.local/bin/restore-session
       bindsym $mod+Shift+o exec ~/.local/bin/lock-screen
       bindsym $mod+Shift+p exec systemctl suspend
       bindsym $mod+Control+p exec ~/.local/bin/cycle-power-profile
