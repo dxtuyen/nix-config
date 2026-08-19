@@ -243,146 +243,43 @@
       '';
     };
 
-    ".local/bin/save-session" = {
+    ".local/bin/open-study-apps" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Lưu snapshot session (workspace + app) vào $XDG_STATE_HOME/sway-session.json
-        set -eu
-
-        STATE_DIR="''${XDG_STATE_HOME:-$HOME/.local/state}"
-        STATE_FILE="$STATE_DIR/sway-session.json"
-        mkdir -p "$STATE_DIR"
-
-        # Quét cây cửa sổ: gom app theo workspace, bỏ workspace ẩn __i3_scratch
-        # và các node không phải cửa sổ thật (không có app_id/class).
-        swaymsg -t get_tree | jq -c '
-          [ .nodes[]? | select(.type == "output")
-            | .nodes[]? | select(.type == "workspace")
-            | select(.name != "__i3_scratch")
-            | { name: .name, apps: ([ .. | objects
-                | select(has("app_id") or has("window_properties"))
-                | (.app_id // .window_properties.class // empty)
-              ] | unique) }
-          ]' > "$STATE_FILE"
-
-        ws_count="$(jq length "$STATE_FILE")"
-        app_count="$(jq '[ .[].apps[] ] | length' "$STATE_FILE")"
-        notify-send -a save-session -i "document-save" -t 3000 \
-          "Session" "Đã lưu session: $ws_count workspaces, $app_count ứng dụng."
-      '';
-    };
-
-    ".local/bin/restore-session" = {
-      executable = true;
-      text = ''
-        #! /usr/bin/env bash
-        # Khôi phục session: mở lại đúng workspace + app (không khôi phục layout)
+        # Mở app học tập vào workspace 1.study: RemNote, Calibre
         set -u
 
-        STATE_DIR="''${XDG_STATE_HOME:-$HOME/.local/state}"
-        STATE_FILE="$STATE_DIR/sway-session.json"
+        notify-send -a open-study-apps -i "view-refresh" -t 3000 -u normal \
+          "Mở app Study" "Đang mở RemNote, Calibre..."
 
-        # Nếu chưa có session lưu -> thông báo và thoát
-        if [ ! -s "$STATE_FILE" ]; then
-          notify-send -a restore-session -i "dialog-warning" -t 5000 -u normal \
-            "Khôi phục Session" "Chưa có session để khôi phục.\nBấm Mod4+Shift+s để lưu session trước."
-          exit 0
-        fi
+        # Chuyển đến workspace 1.study rồi mở app — app sẽ tự nằm trên workspace đó
+        swaymsg "workspace number 1.study; exec appimage-run $HOME/Apps/RemNote/RemNote.AppImage" >/dev/null 2>&1 || true
+        swaymsg "workspace number 1.study; exec calibre" >/dev/null 2>&1 || true
 
-        # Map app_id/class -> lệnh mở lại. "" nghĩa là chưa biết cách mở.
-        open_app() {
-          case "$1" in
-            google-chrome|Google-chrome|chrome) cmd="google-chrome" ;;
-            obsidian|Obsidian) cmd="obsidian" ;;
-            thunar|Thunar) cmd="thunar" ;;
-            calibre|Calibre) cmd="calibre" ;;
-            sioyek|Sioyek) cmd="sioyek" ;;
-            ticktick|TickTick) cmd="ticktick" ;;
-            remnote|RemNote|org.remnote*) cmd="remnote" ;;
-            foot|foot-*|org.codeberg.dnkl.foot) cmd="foot" ;;
-            code|code-oss|Code) cmd="code" ;;
-            *) cmd="" ;;
-          esac
-        }
-
-        # Đếm số cửa sổ hiện có của một app (để chắc chắn chờ cửa sổ MỚI,
-        # không nhầm với cửa sổ đã mở sẵn).
-        count_app_windows() {
-          local target="$1"
-          swaymsg -t get_tree 2>/dev/null | jq --arg t "$target" '
-            [ .. | objects
-              | select(has("app_id") or has("window_properties"))
-              | (.app_id // .window_properties.class // "")
-              | select(. == $t)
-            ] | length'
-        }
-
-        # Chờ sway sẵn sàng (tối đa ~6s)
-        for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
-          swaymsg -t get_workspaces >/dev/null 2>&1 && break
-          sleep 0.3
-        done
-
-        skipped=""
-
-        mapfile -t workspaces < <(jq -c '.[]' "$STATE_FILE")
-        for ws in "''${workspaces[@]}"; do
-          name="$(jq -r '.name' <<< "$ws")"
-          # Focus workspace này và GIỮ NGUYÊN trong suốt vòng lặp app
-          # để cửa sổ mới mở ra luôn rơi vào đúng workspace.
-          swaymsg "workspace number $name" >/dev/null 2>&1 || true
-          for app in $(jq -r '.apps[]' <<< "$ws"); do
-            open_app "$app"
-            if [ -z "$cmd" ]; then
-              skipped="$skipped $app"
-              continue
-            fi
-            before="$(count_app_windows "$app")"
-            swaymsg "exec $cmd" >/dev/null 2>&1 || true
-            # Chờ cửa sổ mới xuất hiện (tối đa ~30s) trước khi mở app kế tiếp
-            # hoặc chuyển workspace — nhờ đó app luôn mở đúng workspace.
-            i=0
-            while [ "$i" -lt 60 ]; do
-              after="$(count_app_windows "$app")"
-              [ "''${after:-0}" -gt "''${before:-0}" ] && break
-              sleep 0.5
-              i=$((i + 1))
-            done
-          done
-        done
-
-        if [ -n "$skipped" ]; then
-          notify-send -a restore-session -i "dialog-information" -t 5000 \
-            "Khôi phục Session" "Đã khôi phục.\nBỏ qua (chưa có lệnh):$skipped"
-        else
-          notify-send -a restore-session -i "view-refresh" -t 4000 \
-            "Khôi phục Session" "Đã khôi phục session."
-        fi
+        notify-send -a open-study-apps -i "document-open-recent" -t 3000 \
+          "Mở app Study" "Đã mở: RemNote, Calibre (1.study)."
       '';
     };
 
-    ".local/bin/poweroff-with-save" = {
+    ".local/bin/open-work-apps" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Lưu session rồi tắt máy
-        "$HOME/.local/bin/save-session"
-        systemctl poweroff
+        # Mở app công việc vào workspace 4.work: TickTick, Chrome
+        set -u
+
+        notify-send -a open-work-apps -i "view-refresh" -t 3000 -u normal \
+          "Mở app Work" "Đang mở TickTick, Chrome..."
+
+        # Chuyển đến workspace 4.work rồi mở app — app sẽ tự nằm trên workspace đó
+        swaymsg "workspace number 4.work; exec ticktick" >/dev/null 2>&1 || true
+        swaymsg "workspace number 4.work; exec google-chrome" >/dev/null 2>&1 || true
+
+        notify-send -a open-work-apps -i "document-open-recent" -t 3000 \
+          "Mở app Work" "Đã mở: TickTick, Chrome (4.work)."
       '';
     };
-
-    ".local/bin/poweroff-without-save" = {
-      executable = true;
-      text = ''
-        #! /usr/bin/env bash
-        # Xóa session lưu rồi tắt máy (tắt thường, không giữ lại session)
-        STATE_DIR="''${XDG_STATE_HOME:-$HOME/.local/state}"
-        rm -f "$STATE_DIR/sway-session.json"
-        systemctl poweroff
-      '';
-    };
-
   };
 
   systemd.user.services.cycle-wallpaper = {
