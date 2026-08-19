@@ -22,6 +22,7 @@
     sioyek
     ticktick
     obsidian
+    anki
     jq
     fastfetch
   ];

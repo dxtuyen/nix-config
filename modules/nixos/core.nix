@@ -42,6 +42,7 @@
     ];
   };
 
+  # Gói hệ thống — áp dụng cho MỌI máy import core.nix
   environment.systemPackages = with pkgs; [
     git
     curl
@@ -50,6 +51,7 @@
     zip
     neovim
     htop
+    file # Xác định dạng file bất kỳ (PDF, zip, ELF, script...)
   ];
 
   home-manager = {

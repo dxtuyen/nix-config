@@ -14,8 +14,7 @@
 #   - Mở app: tìm "RemNote" trong Rofi/WOFI
 
 {
-  # Cần xdg.enable=true để home-manager tạo file .desktop trong ~/.local/share/applications
-  xdg.enable = true;
+  # (xdg.enable được bật tập trung tại entry point home/default.nix)
 
   # Cài appimage-run (công cụ chạy AppImage trên NixOS)
   home.packages = with pkgs; [
