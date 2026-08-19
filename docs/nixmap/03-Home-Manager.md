@@ -1,47 +1,60 @@
-# 03 - Home Manager
+# 03 — Home Manager
 
-## Home Manager la gi
+## What is Home Manager
 
-Home Manager la cong cu cua Nix de quan ly **cau hinh user**.
-Trong khi NixOS quan ly he thong (can root), Home Manager quan ly
-`~/.config`, `~/.local/bin`, goi cai cho user.
+Home Manager is a Nix tool that manages **user-level configuration**.
+While NixOS manages the system (needs root), Home Manager manages
+`~/.config`, `~/.local/bin`, and user-installed packages.
 
-## Vi tri trong repo
+## Where it sits in the repository
 
-- `home/default.nix` = diem vao. Import tat ca file trong `home/`.
-- Moi file trong `home/` = mot module Home Manager.
+- `home/default.nix` = the entry point. It imports every file inside `home/`.
+- Each file inside `home/` = one Home Manager module.
+- The home-manager NixOS module is enabled in `modules/nixos/core.nix`
+  (`useGlobalPkgs`, `useUserPackages`, `backupFileExtension`),
+  and the user's home config is wired in `hosts/laptop/default.nix`
+  via `home-manager.users.${userName} = import ../../home;`.
 
-## Cac file trong home/
+## Files inside home/
 
-| File | Noi dung |
-|------|----------|
-| `default.nix` | Diem vao, import tat ca, bat xdg.enable, PATH ~/.local/bin |
-| `packages.nix` | Goi cai qua home.packages (rofi, thunar, obsidian...) |
-| `foot.nix` | Terminal Foot (theme Tokyo Night) |
-| `gtk.nix` | GTK theme, icon, cursor |
-| `sway.nix` | Cau hinh Sway (window manager) |
-| `waybar.nix` | Thanh trang thai Waybar |
-| `mako.nix` | Trinh thong bao Mako |
-| `fcitx5.nix` | Bo go tieng Viet Fcitx5 |
-| `scripts.nix` | Script thu cong trong ~/.local/bin |
-| `remnote.nix` | RemNote AppImage |
-| `thunar.nix` | Dang ky Foot lam terminal + entry Neovim |
+| File | Purpose |
+|------|---------|
+| `default.nix` | Entry point; imports all modules, enables `xdg`, adds `~/.local/bin` to PATH via bash |
+| `packages.nix` | User packages via `home.packages` (rofi, thunar, obsidian, anki...) |
+| `foot.nix` | Foot terminal (Tokyo Night theme) |
+| `gtk.nix` | GTK theme, icon theme, cursor, dark mode |
+| `sway.nix` | Sway window manager configuration |
+| `waybar.nix` | Waybar status bar |
+| `mako.nix` | Mako notification daemon |
+| `fcitx5.nix` | Vietnamese input method (Fcitx5 + Unikey) |
+| `scripts.nix` | Hand-written scripts installed into `~/.local/bin` |
+| `remnote.nix` | RemNote AppImage integration |
+| `thunar.nix` | Register Foot as Thunar's default terminal + Neovim entry |
 
-## Vi sao tach nhu vay
+## Why split this way
 
-- **Moi file mot chu de**: de tim, de sua.
-- **Import trung tam**: `default.nix` la noi duy nhat import. De biet co gi.
-- **Tai su dung**: muon them may moi, chi can import `home/`.
+- **One file per topic**: easy to find, easy to change.
+- **Centralised imports**: `default.nix` is the only file that imports. You always know what is active.
+- **Reusability**: a new machine only has to import `home/`.
+- **Clean separation of powers**: `default.nix` owns the foundation (XDG, PATH);
+  child modules (remnote, thunar...) only declare content.
 
-## Vi sao co xdg.enable o default.nix
+## Why `xdg.enable` lives in default.nix
 
-`xdg.enable = true` bat kha nang tao file `.desktop` va cau hinh MIME.
-Dat o `default.nix` (entry point) de **mot noi duy nhat** quan ly nen tang,
-con module con (remnote, thunar...) chi khai bao noi dung.
+`xdg.enable = true` enables XDG base directory support and is the single switch that
+turns on `xdg.configFile`, `xdg.desktopEntries` and `xdg.mimeApps` in child modules.
+It lives at the entry point so the foundation is switched on **exactly once**,
+and `remnote.nix`, `thunar.nix`, `fcitx5.nix` etc. never have to enable it themselves.
 
-## Lien quan
+## Why PATH lives in bash, not sessionPath
 
-- [[01-Kien-truc-tong-quan]] - vi tri cua home trong repo
-- [[02-Nguyen-ly-NixOS]] - khac biet system vs user
-- [[04-Sway-desktop]] - cau hinh UI
-- [[05-Cau-chuyen-Thunar]] - vi du thuc te dung xdg
+`~/.local/bin` (where scripts like `update-remnote`, `lock-screen`, `quick-lang` land)
+is added to PATH via `programs.bash.initExtra`. NixOS doesn't create `~/.bashrc` for you,
+so `programs.bash.enable` is the single place that writes it.
+
+## Related
+
+- [[01-Architecture-Overview]] — where `home/` sits in the repo
+- [[02-NixOS-Principles]] — the difference between system and user
+- [[04-Sway-Desktop]] — the UI built on top of these modules
+- [[05-Thunar-Integration]] — a real example that uses `xdg`
