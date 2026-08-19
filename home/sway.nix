@@ -96,7 +96,6 @@
       bindsym $mod+End exec systemctl poweroff
       bindsym $mod+Control+End exec systemctl reboot
       bindsym $mod+Shift+s exec ~/.local/bin/open-study-apps
-      bindsym $mod+Shift+w exec ~/.local/bin/open-work-apps
       bindsym $mod+Shift+o exec ~/.local/bin/lock-screen
       bindsym $mod+Shift+p exec systemctl suspend
       bindsym $mod+Control+p exec ~/.local/bin/cycle-power-profile

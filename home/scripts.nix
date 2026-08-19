@@ -247,37 +247,17 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Mở app học tập vào workspace 1.study: RemNote, Calibre
+        # Mở RemNote và Calibre (không tự chuyển workspace)
         set -u
 
         notify-send -a open-study-apps -i "view-refresh" -t 3000 -u normal \
           "Mở app Study" "Đang mở RemNote, Calibre..."
 
-        # Chuyển đến workspace 1.study rồi mở app — app sẽ tự nằm trên workspace đó
-        swaymsg "workspace number 1.study; exec appimage-run $HOME/Apps/RemNote/RemNote.AppImage" >/dev/null 2>&1 || true
-        swaymsg "workspace number 1.study; exec calibre" >/dev/null 2>&1 || true
+        swaymsg "exec appimage-run $HOME/Apps/RemNote/RemNote.AppImage" >/dev/null 2>&1 || true
+        swaymsg "exec calibre" >/dev/null 2>&1 || true
 
         notify-send -a open-study-apps -i "document-open-recent" -t 3000 \
-          "Mở app Study" "Đã mở: RemNote, Calibre (1.study)."
-      '';
-    };
-
-    ".local/bin/open-work-apps" = {
-      executable = true;
-      text = ''
-        #! /usr/bin/env bash
-        # Mở app công việc vào workspace 4.work: TickTick, Chrome
-        set -u
-
-        notify-send -a open-work-apps -i "view-refresh" -t 3000 -u normal \
-          "Mở app Work" "Đang mở TickTick, Chrome..."
-
-        # Chuyển đến workspace 4.work rồi mở app — app sẽ tự nằm trên workspace đó
-        swaymsg "workspace number 4.work; exec ticktick" >/dev/null 2>&1 || true
-        swaymsg "workspace number 4.work; exec google-chrome" >/dev/null 2>&1 || true
-
-        notify-send -a open-work-apps -i "document-open-recent" -t 3000 \
-          "Mở app Work" "Đã mở: TickTick, Chrome (4.work)."
+          "Mở app Study" "Đã mở: RemNote, Calibre."
       '';
     };
   };
