@@ -4,8 +4,8 @@ let
   batteryThreshold = pkgs.writeShellApplication {
     name = "set-battery-threshold";
     text = ''
-      start_threshold=80
-      end_threshold=85
+      start_threshold=85
+      end_threshold=90
       configured=0
       for battery in /sys/class/power_supply/BAT*; do
         [ -d "$battery" ] || continue
@@ -28,6 +28,24 @@ let
   };
 in
 {
+  # zram — compressed swap inside RAM (zstd). Much faster than SSD swap and
+  # reduces SSD wear. Ubuntu/Fedora/ChromeOS enable it by default.
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 50; # 50% RAM as compressed swap (Fedora default)
+    priority = 100; # higher priority than any disk swap
+  };
+
+  # Tuning for a zram-only system: let the kernel swap to zram eagerly instead
+  # of waiting too long and letting OOM-killer eat desktop apps under load.
+  boot.kernel.sysctl = {
+    "vm.swappiness" = 100;
+    "vm.watermark_boost_factor" = 0;
+    "vm.watermark_scale_factor" = 10;
+    "vm.page-cluster" = 0; # reduce latency for single-page swaps on RAM
+  };
+
   services.fwupd.enable = true;
 
   services.keyd = {
@@ -54,7 +72,7 @@ in
   };
 
   systemd.services.battery-threshold = {
-    description = "Set battery charge threshold to 80-85 percent";
+    description = "Set battery charge threshold to 85-90 percent";
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
