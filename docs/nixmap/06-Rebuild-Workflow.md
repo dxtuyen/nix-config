@@ -60,6 +60,18 @@ so the usual way is still `nh os switch` / `nixos-rebuild switch`.)
 - `nix.gc.options = "--delete-older-than 14d"` — keep only last 14 days
 - `nix.optimise.automatic = true` — squash duplicate packages; weekly
 
+## Setting up a brand-new machine
+
+This repo is fully reproducible. On a new machine:
+
+```bash
+# Build + switch — zram (compressed RAM swap) is configured in laptop.nix,
+# so no disk swap file/partition setup is needed at all.
+nh os switch
+```
+
+No manual partitioning, no `mkswap`, no swap file creation: memory pressure is handled entirely by zram (100% of RAM, zstd) with tuned `vm.swappiness = 100`.
+
 ## Common mistakes
 
 | Mistake | What actually happens |

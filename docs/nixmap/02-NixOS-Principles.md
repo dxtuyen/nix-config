@@ -14,7 +14,7 @@ For example:
 - `modules/nixos/core.nix` = the core: Nix settings, network, user, basic packages.
 - `modules/nixos/desktop.nix` = the desktop: Sway, greetd, PipeWire, fonts, Fcitx5.
 - `modules/nixos/development.nix` = development: VS Code, Python, GCC, Podman.
-- `modules/nixos/laptop.nix` = laptop specifics: battery threshold, keyd, fwupd.
+- `modules/nixos/laptop.nix` = laptop specifics: battery threshold, keyd, fwupd, zram (compressed swap).
 
 ## Anatomy of a module
 
@@ -41,7 +41,7 @@ For example:
 | `core.nix` | Nix settings, automatic GC, network, user account, base packages (git, curl, neovim, file...) |
 | `desktop.nix` | Sway, greetd, PipeWire, Fcitx5 + Unikey, fonts, GPU acceleration, Polkit |
 | `development.nix` | VS Code, Python + venv, GCC, CMake, Podman, Distrobox |
-| `laptop.nix` | Battery charge threshold 80–85%, keyd remapping, fwupd |
+| `laptop.nix` | Battery threshold 80–85%, keyd remap, fwupd, zram (100% RAM, zstd) + swap tuning |
 
 ## Related
 

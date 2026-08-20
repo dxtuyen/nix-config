@@ -23,6 +23,10 @@
 | **allowUnfree** | `nixpkgs.config.allowUnfree = true` — permits non-free packages (Chrome, etc.) |
 | **nh** | Nix helper (`programs.nh.enable`) — a friendlier wrapper around `nixos-rebuild` |
 | **State version** | `system.stateVersion = "26.05"` — pins backward-compatible defaults |
+| **Swap file** | `/swapfile` (8G, priority -2) declared in `laptop.nix` — lets the system hibernate safely, used only after zram is exhausted. Created once per machine via `sudo nix run .#setup-swapfile` |
+| **zram** | Compressed swap **inside RAM** (3.7G, zstd, priority 10) — faster than SSD swap and reduces SSD wear. Ubuntu/Fedora/ChromeOS enable it by default |
+| **Hibernate** | `systemctl hibernate` — saves RAM to swap and powers off; resume restores exactly |
+| **Resume device** | `boot.resumeDevice = "/swapfile"` — tells the kernel where to find the hibernation image |
 
 ## Wayland / desktop
 

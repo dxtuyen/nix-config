@@ -46,6 +46,8 @@ wayland.windowManager.sway = {
 | `mod+Shift+s` | Open study apps (RemNote + Calibre) |
 | `mod+Shift+o` | Lock screen |
 | `mod+Shift+p` | Suspend |
+| `mod+End` | Power off |
+| `mod+Control+End` | Reboot |
 | `mod+Control+p` | Cycle power profile |
 | `mod+t` | Translate VI → EN (quick-lang) |
 | `mod+Shift+t` | Translate EN → VI (quick-lang) |
