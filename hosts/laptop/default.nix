@@ -13,6 +13,7 @@
     ../../modules/nixos/desktop.nix
     ../../modules/nixos/development.nix
     ../../modules/nixos/laptop.nix
+    ../../modules/nixos/system-tweaks.nix
   ];
 
   networking.hostName = "laptop";
@@ -25,22 +26,4 @@
   };
 
   system.stateVersion = "26.05";
-
-  # Cấu hình XDG Desktop Portal cho Sway / wlroots
-  xdg.portal = {
-    enable = true;
-    wlr.enable = true;
-    extraPortals = with pkgs; [
-      xdg-desktop-portal-gtk
-    ];
-    config = {
-      common.default = [ "gtk" ];
-      sway = {
-        default = lib.mkForce [
-          "wlr"
-          "gtk"
-        ];
-      };
-    };
-  };
 }

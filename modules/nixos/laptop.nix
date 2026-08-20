@@ -30,20 +30,12 @@ in
 {
   # zram — compressed swap inside RAM (zstd). Much faster than SSD swap and
   # reduces SSD wear. Ubuntu/Fedora/ChromeOS enable it by default.
+  # Minimal "set and forget" safety net: kernel keeps default swappiness (60),
+  # so ZRAM is only touched when RAM is genuinely under pressure.
   zramSwap = {
     enable = true;
     algorithm = "zstd";
     memoryPercent = 50; # 50% RAM as compressed swap (Fedora default)
-    priority = 100; # higher priority than any disk swap
-  };
-
-  # Tuning for a zram-only system: let the kernel swap to zram eagerly instead
-  # of waiting too long and letting OOM-killer eat desktop apps under load.
-  boot.kernel.sysctl = {
-    "vm.swappiness" = 100;
-    "vm.watermark_boost_factor" = 0;
-    "vm.watermark_scale_factor" = 10;
-    "vm.page-cluster" = 0; # reduce latency for single-page swaps on RAM
   };
 
   services.fwupd.enable = true;

@@ -24,6 +24,16 @@ then letting Nix build exactly that.
 - `hosts/laptop/default.nix` = the configuration for the machine called "laptop". It imports the shared modules.
 - `home/default.nix` = the entry point of Home Manager. It imports every file inside `home/`.
 
+## The NixOS modules (`modules/nixos/`)
+
+| Module | Responsibility |
+|--------|----------------|
+| `core.nix` | Shared base for every machine: Nix daemon, boot, network, users, system packages |
+| `desktop.nix` | Display server (Sway), GPU, audio (PipeWire), power, bluetooth, XDG portal, Fcitx5, fonts |
+| `development.nix` | Dev tools (VS Code, Python, GCC...) + Podman |
+| `laptop.nix` | Laptop-specific: ZRAM, keyd, battery threshold, fwupd |
+| `system-tweaks.nix` | System performance & maintenance: earlyoom, fstrim, nix-ld |
+
 ## Why split it this way
 
 - **Reusability**: `core.nix` is shared by every machine. A new machine only imports the modules it needs.
