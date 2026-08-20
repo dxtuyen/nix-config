@@ -42,6 +42,24 @@ in
   services.power-profiles-daemon.enable = true;
   hardware.bluetooth.enable = true;
 
+  # XDG Desktop Portal cho Sway / wlroots
+  xdg.portal = {
+    enable = true;
+    wlr.enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk
+    ];
+    config = {
+      common.default = [ "gtk" ];
+      sway = {
+        default = lib.mkForce [
+          "wlr"
+          "gtk"
+        ];
+      };
+    };
+  };
+
   # Cấu hình bộ gõ Fcitx5
   i18n.inputMethod = {
     enable = true;
