@@ -32,6 +32,8 @@
       "app-name=wlsunset".background-color = "#1a1b26";
       "app-name=power-profiles".default-timeout = 2000;
       "app-name=power-profiles".background-color = "#1a1b26";
+      "app-name=toggle-touchpad".default-timeout = 2000;
+      "app-name=toggle-touchpad".background-color = "#1a1b26";
     };
   };
 }
