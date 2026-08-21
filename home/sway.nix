@@ -48,16 +48,13 @@
       gaps inner 7
       gaps outer 4
       gaps top 0
-      default_border normal 2
-      default_floating_border normal 2
+      default_border pixel 2
+      default_floating_border pixel 2
       focus_follows_mouse yes
       smart_borders off
 
-      for_window [shell="xdg_shell"] title_format "%title (%app_id)"
-      for_window [shell="x_wayland"] title_format "%class - %title"
-
       client.focused           #7aa2f7 #364a82 #c0caf5 #bb9af7 #7aa2f7
-      client.focused_inactive  #565f89 #1a1b26 #c0caf5 #565f89 #565f89
+      client.focused_inactive  #a9b1d6 #1a1b26 #c0caf5 #a9b1d6 #a9b1d6
       client.unfocused         #414868 #1a1b26 #565f89 #414868 #414868
       client.urgent            #ff9e64 #1a1b26 #ff9e64 #565f89 #ff9e64
       client.placeholder       #1a1b26 #1a1b26 #c0caf5 #565f89 #565f89

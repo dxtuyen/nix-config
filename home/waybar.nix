@@ -10,6 +10,7 @@
       spacing = 4;
       "modules-left" = [
         "sway/workspaces"
+        "sway/window"
         "sway/mode"
         "sway/scratchpad"
       ];
@@ -32,6 +33,11 @@
         "disable-scroll" = true;
         "warp-on-scroll" = false;
         format = "{name}";
+      };
+      "sway/window" = {
+        format = "{title}";
+        "max-length" = 60;
+        tooltip = true;
       };
       "sway/scratchpad" = {
         format = "{icon} {count}";
@@ -139,6 +145,7 @@
       #workspaces button { padding: 0 7px; color: #565f89; font-size: 15px; }
       #workspaces button.focused, #workspaces button.active { color: #7aa2f7; font-weight: bold; }
       #workspaces button.urgent { color: #f7768e; font-weight: bold; }
+      #window { background: #364a82; border: 1px solid #7aa2f7; border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: #c0caf5; font-weight: bold; }
       #idle_inhibitor, #pulseaudio, #backlight, #temperature, #battery, #power-profiles-daemon, #cpu, #memory, #tray, #mode, #scratchpad { background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 0; }
       #mode { color: #7aa2f7; background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; }
       #scratchpad { color: #a9b1d6; margin: 4px 5px; }
