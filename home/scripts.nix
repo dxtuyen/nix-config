@@ -65,20 +65,19 @@
         STATE_FILE="$STATE_DIR/touchpad-enabled"
         mkdir -p "$STATE_DIR"
 
-        if [ -f "$STATE_FILE" ]; then
-          enabled=$(cat "$STATE_FILE")
-        else
-          enabled="on"
-        fi
+        # Query trạng thái THỰC TẾ từ sway thay vì tin state file
+        # (state file có thể lệch sau khi restart session vì sway luôn bật touchpad khi khởi động)
+        current="$(swaymsg -t get_inputs 2>/dev/null | jq -r '[.[] | select(.type == "touchpad") | (.libinput.send_events // .libinput.events)][0] // empty' 2>/dev/null)"
+        [ -n "$current" ] || current="enabled"
 
-        case "$enabled" in
-          on)
+        case "$current" in
+          enabled)
             swaymsg input type:touchpad events disabled
             new_state="off"
             label="Touchpad đã tắt"
-            icon="touchpad-disabled"
+            icon="input-touchpad"
             ;;
-          off)
+          disabled)
             swaymsg input type:touchpad events enabled
             new_state="on"
             label="Touchpad đã bật"
