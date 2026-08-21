@@ -6,6 +6,10 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
+        # Nếu swaylock đã chạy rồi thì thoát ngay, tránh phải mở khóa 2 lần
+        if pgrep -x swaylock >/dev/null 2>&1; then
+          exit 0
+        fi
         trap 'kill "$watcher" 2>/dev/null || true; swaymsg "output * power on"' EXIT
         swayidle -w timeout 10 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' &
         watcher=$!
@@ -258,6 +262,318 @@
 
         notify-send -a open-study-apps -i "document-open-recent" -t 3000 \
           "Mở app Study" "Đã mở: RemNote, Calibre."
+      '';
+    };
+
+    ".local/bin/pomodoro" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # Pomodoro countdown timer
+        # Usage: pomodoro {start <minutes>|pause|resume|toggle|reset|status|daemon}
+
+        STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
+        STATE_FILE="$STATE_DIR/pomodoro-state"
+        PID_FILE="$STATE_DIR/pomodoro.pid"
+        mkdir -p "$STATE_DIR"
+
+        read_state() {
+          if [ -f "$STATE_FILE" ]; then
+            . "$STATE_FILE"
+          else
+            DURATION=""
+            RUNNING="false"
+            END_TIME=""
+            REMAINING=""
+          fi
+        }
+
+        write_state() {
+          printf 'DURATION="%s"\nRUNNING="%s"\nEND_TIME="%s"\nREMAINING="%s"\n' \
+            "$DURATION" "$RUNNING" "$END_TIME" "$REMAINING" > "$STATE_FILE"
+        }
+
+        get_remaining() {
+          if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
+            now=$(date +%s)
+            remaining=$((END_TIME - now))
+            [ "$remaining" -lt 0 ] && remaining=0
+          elif [ -n "$REMAINING" ]; then
+            remaining="$REMAINING"
+          else
+            remaining=0
+          fi
+          echo "$remaining"
+        }
+
+        format_time() {
+          local secs=$1
+          printf "%02d:%02d" $((secs / 60)) $((secs % 60))
+        }
+
+        play_sound() {
+          paplay /run/current-system/sw/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga 2>/dev/null || true
+        }
+
+        daemon_loop() {
+          while true; do
+            read_state
+            if [ "$RUNNING" != "true" ] || [ -z "$END_TIME" ]; then
+              exit 0
+            fi
+            now=$(date +%s)
+            remaining=$((END_TIME - now))
+            if [ "$remaining" -le 0 ]; then
+              RUNNING="false"
+              END_TIME=""
+              REMAINING=""
+              write_state
+              play_sound
+              notify-send -a pomodoro -i "chronometer" -t 10000 -u critical \
+                "Pomodoro" "Time's up! $DURATION min session finished 🎉"
+              pkill -RTMIN+8 waybar 2>/dev/null || true
+              exit 0
+            fi
+            sleep 1
+          done
+        }
+
+        ensure_daemon() {
+          if pgrep -f "pomodoro daemon" >/dev/null 2>&1; then
+            return
+          fi
+          nohup "$HOME/.local/bin/pomodoro" daemon >/dev/null 2>&1 &
+          echo $! > "$PID_FILE"
+        }
+
+        case "''${1:-status}" in
+          start)
+            minutes="''${2:-}"
+            if ! [[ "$minutes" =~ ^[0-9]+$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
+              echo "Usage: pomodoro start <minutes> (1-480)" >&2
+              exit 1
+            fi
+            now=$(date +%s)
+            DURATION="$minutes"
+            RUNNING="true"
+            END_TIME=$((now + minutes * 60))
+            REMAINING=""
+            write_state
+            ensure_daemon
+            pkill -RTMIN+8 waybar 2>/dev/null || true
+            notify-send -a pomodoro -i "chronometer" -t 3000 \
+              "Pomodoro" "Started $minutes min session 🍅"
+            ;;
+
+          pause)
+            read_state
+            if [ "$RUNNING" = "true" ]; then
+              now=$(date +%s)
+              REMAINING=$((END_TIME - now))
+              [ "$REMAINING" -lt 0 ] && REMAINING=0
+              RUNNING="false"
+              END_TIME=""
+              write_state
+              pkill -RTMIN+8 waybar 2>/dev/null || true
+              notify-send -a pomodoro -i "chronometer" -t 2000 "Pomodoro" "Paused ⏸"
+            fi
+            ;;
+
+          resume)
+            read_state
+            if [ "$RUNNING" != "true" ] && [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
+              now=$(date +%s)
+              END_TIME=$((now + REMAINING))
+              RUNNING="true"
+              write_state
+              ensure_daemon
+              pkill -RTMIN+8 waybar 2>/dev/null || true
+              notify-send -a pomodoro -i "chronometer" -t 2000 "Pomodoro" "Resumed ▶"
+            fi
+            ;;
+
+          toggle)
+            read_state
+            if [ "$RUNNING" = "true" ]; then
+              now=$(date +%s)
+              REMAINING=$((END_TIME - now))
+              [ "$REMAINING" -lt 0 ] && REMAINING=0
+              RUNNING="false"
+              END_TIME=""
+              write_state
+              pkill -RTMIN+8 waybar 2>/dev/null || true
+              notify-send -a pomodoro -i "chronometer" -t 2000 "Pomodoro" "Paused ⏸"
+            elif [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
+              now=$(date +%s)
+              END_TIME=$((now + REMAINING))
+              RUNNING="true"
+              write_state
+              ensure_daemon
+              pkill -RTMIN+8 waybar 2>/dev/null || true
+              notify-send -a pomodoro -i "chronometer" -t 2000 "Pomodoro" "Resumed ▶"
+            fi
+            ;;
+
+          reset)
+            read_state
+            DURATION=""
+            RUNNING="false"
+            END_TIME=""
+            REMAINING=""
+            write_state
+            pkill -RTMIN+8 waybar 2>/dev/null || true
+            ;;
+
+          daemon)
+            daemon_loop
+            ;;
+
+          status)
+            read_state
+            remaining=$(get_remaining)
+            if [ "$RUNNING" = "true" ]; then
+              icon="🍅"
+              class="running"
+              state_icon="▶"
+              state_label="Running"
+            else
+              icon="🍅"
+              class="idle"
+              state_icon="⏹"
+              state_label="Stopped"
+            fi
+            if [ -n "$DURATION" ]; then
+              duration_label="$DURATION min"
+            else
+              duration_label="No session"
+            fi
+            printf '{"text": "%s %s %s", "class": "%s", "tooltip": "Pomodoro %s\\n%s | %s"}\n' \
+              "$icon" "$(format_time "$remaining")" "$state_icon" "$class" "$duration_label" "$state_label" "$(format_time "$remaining")"
+            ;;
+
+          *)
+            echo "Usage: pomodoro {start <minutes>|pause|resume|toggle|reset|status}" >&2
+            exit 1
+            ;;
+        esac
+      '';
+    };
+
+    ".local/bin/pomodoro-menu" = {
+      executable = true;
+      text = ''
+                #! /usr/bin/env bash
+                # Rofi menu for pomodoro countdown timer
+                set -u
+
+                POMODORO="$HOME/.local/bin/pomodoro"
+                STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
+                STATE_FILE="$STATE_DIR/pomodoro-state"
+
+                # Read current state to show Pause or Resume based on state
+                RUNNING="false"
+                REMAINING=""
+                if [ -f "$STATE_FILE" ]; then
+                  . "$STATE_FILE"
+                fi
+
+                # Build menu based on state
+                if [ "$RUNNING" = "true" ]; then
+                  STATE_ITEM="⏸ Pause"
+                elif [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
+                  STATE_ITEM="▶ Resume"
+                else
+                  STATE_ITEM=""
+                fi
+
+                if [ -n "$STATE_ITEM" ]; then
+                  MENU="🍅 Pomodoro
+        $STATE_ITEM
+        ↺ Reset
+        ▶ Start 5 min
+        ▶ Start 15 min
+        ▶ Start 30 min
+        ▶ Start 60 min
+        ▶ Start 120 min
+        ✏️ Custom time..."
+                else
+                  MENU="🍅 Pomodoro
+        ▶ Start 5 min
+        ▶ Start 15 min
+        ▶ Start 30 min
+        ▶ Start 60 min
+        ▶ Start 120 min
+        ✏️ Custom time..."
+                fi
+
+                choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -p "Pomodoro" \
+                  -mesg "Type to filter, then press Enter")
+
+                case "$choice" in
+                  "▶ Start 5 min") exec "$POMODORO" start 5 ;;
+                  "▶ Start 15 min") exec "$POMODORO" start 15 ;;
+                  "▶ Start 30 min") exec "$POMODORO" start 30 ;;
+                  "▶ Start 60 min") exec "$POMODORO" start 60 ;;
+                  "▶ Start 120 min") exec "$POMODORO" start 120 ;;
+                  "✏️ Custom time...") exec "$POMODORO" start "$(rofi -dmenu -p "Minutes" -mesg "Enter minutes (1-480)" | tr -d '[:space:]')" ;;
+                  "⏸ Pause") exec "$POMODORO" toggle ;;
+                  "▶ Resume") exec "$POMODORO" toggle ;;
+                  "↺ Reset") exec "$POMODORO" reset ;;
+                esac
+      '';
+    };
+
+    ".local/bin/power-menu" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # Rofi menu for power & session actions
+        set -u
+
+        MENU="⏻ Poweroff
+        ↻ Reboot
+        ⏾ Suspend
+        🔒 Lock
+        ⚡ Power Profile
+        ↺ Reload Session
+        ⏏ Exit Sway"
+
+        choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -p "Power" \
+          -mesg "Select an action, then press Enter")
+
+        case "$choice" in
+          "⏻ Poweroff") exec systemctl poweroff ;;
+          "↻ Reboot") exec systemctl reboot ;;
+          "⏾ Suspend") exec systemctl suspend ;;
+          "🔒 Lock") exec ~/.local/bin/lock-screen ;;
+          "⚡ Power Profile") exec ~/.local/bin/cycle-power-profile ;;
+          "↺ Reload Session") exec ~/.local/bin/refresh-session ;;
+          "⏏ Exit Sway") exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit' ;;
+        esac
+      '';
+    };
+
+    ".local/bin/screenshot-menu" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # Rofi menu for screenshot actions
+        set -u
+
+        MENU="📷 Vùng chọn → Clipboard (Print)
+        🖥️ Toàn màn hình → Clipboard (Alt+Print)
+        📁 Vùng chọn → Lưu file (Shift+Print)
+        💾 Toàn màn hình → Lưu file (Ctrl+Print)"
+
+        choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -p "Screenshot" \
+          -mesg "Select an action, then press Enter")
+
+        case "$choice" in
+          "📷 Vùng chọn → Clipboard (Print)") exec grim -g "$(slurp)" - | wl-copy ;;
+          "🖥️ Toàn màn hình → Clipboard (Alt+Print)") exec grim - | wl-copy ;;
+          "📁 Vùng chọn → Lưu file (Shift+Print)") exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim -g "$(slurp)" "$f" && wl-copy < "$f"' ;;
+          "💾 Toàn màn hình → Lưu file (Ctrl+Print)") exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim "$f" && wl-copy < "$f"' ;;
+        esac
       '';
     };
   };

@@ -92,12 +92,7 @@
       bindsym $mod+Tab exec rofi -show window
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
-      bindsym $mod+End exec systemctl poweroff
-      bindsym $mod+Control+End exec systemctl reboot
       bindsym $mod+Shift+s exec ~/.local/bin/open-study-apps
-      bindsym $mod+Shift+o exec ~/.local/bin/lock-screen
-      bindsym $mod+Shift+p exec systemctl suspend
-      bindsym $mod+Control+p exec ~/.local/bin/cycle-power-profile
       bindsym $mod+Shift+n exec ~/.local/bin/toggle-wlsunset
 
       # Focus movement
@@ -178,9 +173,12 @@
       bindsym $mod+r mode "resize"
 
       # Custom Utilities & Screenshot
+      bindsym $mod+p exec ~/.local/bin/pomodoro-menu
+      bindsym $mod+Shift+p exec ~/.local/bin/power-menu
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
-      bindsym $mod+Control+t exec ~/.local/bin/toggle-touchpad
+      bindsym $mod+Ctrl+t exec ~/.local/bin/toggle-touchpad
+      bindsym $mod+Print exec ~/.local/bin/screenshot-menu
       bindsym --no-repeat Print exec grim -g "$(slurp)" - | wl-copy
       bindsym --no-repeat Mod1+Print exec grim - | wl-copy
       bindsym --no-repeat Shift+Print exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim -g "$(slurp)" "$f" && wl-copy < "$f"'
@@ -195,7 +193,8 @@
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
       # Idle management
-      exec swayidle -w timeout 300 '~/.local/bin/lock-screen' before-sleep '~/.local/bin/lock-screen' lock '~/.local/bin/lock-screen' unlock 'pkill -xu "$USER" -SIGUSR1 swaylock'
+      # Chỉ dùng timeout và before-sleep để tránh chạy lock-screen trùng lặp (gây phải mở khóa 2 lần)
+      exec swayidle -w timeout 300 '~/.local/bin/lock-screen' before-sleep '~/.local/bin/lock-screen'
     '';
   };
 }
