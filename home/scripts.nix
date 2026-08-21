@@ -134,19 +134,43 @@
       '';
     };
 
-    ".local/bin/cycle-power-profile" = {
+    ".local/bin/power-profile-menu" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
+        # Rofi menu to select power profile directly
+        set -u
+
         current="$(powerprofilesctl get)"
+
         case "$current" in
-          power-saver) next="balanced"; icon="battery" ;;
-          balanced) next="performance"; icon="power-profile-balanced" ;;
-          performance) next="power-saver"; icon="power-profile-performance" ;;
-          *) next="balanced"; icon="power-profile-balanced" ;;
+          power-saver) current_label="Power Saver" ;;
+          balanced) current_label="Balanced" ;;
+          performance) current_label="Performance" ;;
+          *) current_label="$current" ;;
         esac
-        powerprofilesctl set "$next"
-        notify-send -a power-profiles -i "$icon" -t 2000 "Power Profile" "$next"
+
+        MENU="🔋 Power Saver
+        ⚖️ Balanced
+        🚀 Performance"
+
+        choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -p "Power Profile" \
+          -mesg "Current: $current_label — Select a profile, then press Enter")
+
+        case "$choice" in
+          "🔋 Power Saver")
+            powerprofilesctl set power-saver
+            notify-send -a power-profiles -i "battery" -t 2000 "Power Profile" "Power Saver"
+            ;;
+          "⚖️ Balanced")
+            powerprofilesctl set balanced
+            notify-send -a power-profiles -i "power-profile-balanced" -t 2000 "Power Profile" "Balanced"
+            ;;
+          "🚀 Performance")
+            powerprofilesctl set performance
+            notify-send -a power-profiles -i "power-profile-performance" -t 2000 "Power Profile" "Performance"
+            ;;
+        esac
       '';
     };
 
@@ -542,11 +566,11 @@
           -mesg "Select an action, then press Enter")
 
         case "$choice" in
-          "⏻ Poweroff") exec systemctl poweroff ;;
-          "↻ Reboot") exec systemctl reboot ;;
-          "⏾ Suspend") exec systemctl suspend ;;
+          "⏻ Poweroff") notify-send -a power -i "system-shutdown" -t 2000 "Power" "Powering off..."; exec systemctl poweroff ;;
+          "↻ Reboot") notify-send -a power -i "system-reboot" -t 2000 "Power" "Rebooting..."; exec systemctl reboot ;;
+          "⏾ Suspend") notify-send -a power -i "system-suspend" -t 2000 "Power" "Suspending..."; exec systemctl suspend ;;
           "🔒 Lock") exec ~/.local/bin/lock-screen ;;
-          "⚡ Power Profile") exec ~/.local/bin/cycle-power-profile ;;
+          "⚡ Power Profile") exec ~/.local/bin/power-profile-menu ;;
           "↺ Reload Session") exec ~/.local/bin/refresh-session ;;
           "⏏ Exit Sway") exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit' ;;
         esac
@@ -560,19 +584,35 @@
         # Rofi menu for screenshot actions
         set -u
 
-        MENU="📷 Vùng chọn → Clipboard (Print)
-        🖥️ Toàn màn hình → Clipboard (Alt+Print)
-        📁 Vùng chọn → Lưu file (Shift+Print)
-        💾 Toàn màn hình → Lưu file (Ctrl+Print)"
+        MENU="📷 Selection → Clipboard (Print)
+        🖥️ Fullscreen → Clipboard (Alt+Print)
+        📁 Selection → Save file (Shift+Print)
+        💾 Fullscreen → Save file (Ctrl+Print)"
 
         choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -p "Screenshot" \
           -mesg "Select an action, then press Enter")
 
         case "$choice" in
-          "📷 Vùng chọn → Clipboard (Print)") exec grim -g "$(slurp)" - | wl-copy ;;
-          "🖥️ Toàn màn hình → Clipboard (Alt+Print)") exec grim - | wl-copy ;;
-          "📁 Vùng chọn → Lưu file (Shift+Print)") exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim -g "$(slurp)" "$f" && wl-copy < "$f"' ;;
-          "💾 Toàn màn hình → Lưu file (Ctrl+Print)") exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim "$f" && wl-copy < "$f"' ;;
+          "📷 Selection → Clipboard (Print)")
+            grim -g "$(slurp)" - | wl-copy
+            notify-send -a screenshot -i "camera-photo" -t 2000 "Screenshot" "Selection copied to clipboard"
+            ;;
+          "🖥️ Fullscreen → Clipboard (Alt+Print)")
+            grim - | wl-copy
+            notify-send -a screenshot -i "camera-photo" -t 2000 "Screenshot" "Fullscreen copied to clipboard"
+            ;;
+          "📁 Selection → Save file (Shift+Print)")
+            f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"
+            mkdir -p "$(dirname "$f")"
+            grim -g "$(slurp)" "$f" && wl-copy < "$f"
+            notify-send -a screenshot -i "camera-photo" -t 2000 "Screenshot" "Selection saved to file"
+            ;;
+          "💾 Fullscreen → Save file (Ctrl+Print)")
+            f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"
+            mkdir -p "$(dirname "$f")"
+            grim "$f" && wl-copy < "$f"
+            notify-send -a screenshot -i "camera-photo" -t 2000 "Screenshot" "Fullscreen saved to file"
+            ;;
         esac
       '';
     };
