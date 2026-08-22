@@ -297,7 +297,6 @@
 
         STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
         STATE_FILE="$STATE_DIR/pomodoro-state"
-        PID_FILE="$STATE_DIR/pomodoro.pid"
         mkdir -p "$STATE_DIR"
 
         read_state() {
@@ -308,12 +307,13 @@
             RUNNING="false"
             END_TIME=""
             REMAINING=""
+            TYPE="work"
           fi
         }
 
         write_state() {
-          printf 'DURATION="%s"\nRUNNING="%s"\nEND_TIME="%s"\nREMAINING="%s"\n' \
-            "$DURATION" "$RUNNING" "$END_TIME" "$REMAINING" > "$STATE_FILE"
+          printf 'DURATION="%s"\nRUNNING="%s"\nEND_TIME="%s"\nREMAINING="%s"\nTYPE="%s"\n' \
+            "$DURATION" "$RUNNING" "$END_TIME" "$REMAINING" "$TYPE" > "$STATE_FILE"
         }
 
         get_remaining() {
@@ -347,13 +347,16 @@
             now=$(date +%s)
             remaining=$((END_TIME - now))
             if [ "$remaining" -le 0 ]; then
+              finished_duration="$DURATION"
               RUNNING="false"
               END_TIME=""
               REMAINING=""
+              DURATION=""
+              TYPE="work"
               write_state
               play_sound
               notify-send -a pomodoro -i "chronometer" -t 10000 -u critical \
-                "Pomodoro" "Time's up! $DURATION min session finished 🎉"
+                "Pomodoro" "Time's up! $finished_duration min session finished 🎉"
               pkill -RTMIN+8 waybar 2>/dev/null || true
               exit 0
             fi
@@ -366,14 +369,22 @@
             return
           fi
           nohup "$HOME/.local/bin/pomodoro" daemon >/dev/null 2>&1 &
-          echo $! > "$PID_FILE"
         }
 
         case "''${1:-status}" in
           start)
-            minutes="''${2:-}"
+            # Usage: pomodoro start [work|break|custom] <minutes>
+            # Default type is "work" if not specified
+            type_arg="''${2:-}"
+            if [[ "$type_arg" =~ ^(work|break|custom)$ ]]; then
+              TYPE="$type_arg"
+              minutes="''${3:-}"
+            else
+              TYPE="work"
+              minutes="$type_arg"
+            fi
             if ! [[ "$minutes" =~ ^[0-9]+$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
-              echo "Usage: pomodoro start <minutes> (1-480)" >&2
+              echo "Usage: pomodoro start [work|break|custom] <minutes> (1-480)" >&2
               exit 1
             fi
             now=$(date +%s)
@@ -384,8 +395,20 @@
             write_state
             ensure_daemon
             pkill -RTMIN+8 waybar 2>/dev/null || true
-            notify-send -a pomodoro -i "chronometer" -t 3000 \
-              "Pomodoro" "Started $minutes min session 🍅"
+            case "$TYPE" in
+              break)
+                notify-send -a pomodoro -i "chronometer" -t 3000 \
+                  "Pomodoro" "Break $minutes min ☕"
+                ;;
+              custom)
+                notify-send -a pomodoro -i "chronometer" -t 3000 \
+                  "Pomodoro" "Custom $minutes min ⏱️"
+                ;;
+              *)
+                notify-send -a pomodoro -i "chronometer" -t 3000 \
+                  "Pomodoro" "Started $minutes min session 🍅"
+                ;;
+            esac
             ;;
 
           pause)
@@ -443,6 +466,7 @@
             RUNNING="false"
             END_TIME=""
             REMAINING=""
+            TYPE="work"
             write_state
             pkill -RTMIN+8 waybar 2>/dev/null || true
             ;;
@@ -454,14 +478,27 @@
           status)
             read_state
             remaining=$(get_remaining)
+            case "$TYPE" in
+              break)
+                icon="☕"
+                class="break"
+                type_label="Break"
+                ;;
+              custom)
+                icon="⏱️"
+                class="custom"
+                type_label="Custom"
+                ;;
+              *)
+                icon="🍅"
+                class="running"
+                type_label="Pomodoro"
+                ;;
+            esac
             if [ "$RUNNING" = "true" ]; then
-              icon="🍅"
-              class="running"
               state_icon="▶"
               state_label="Running"
             else
-              icon="🍅"
-              class="idle"
               state_icon="⏹"
               state_label="Stopped"
             fi
@@ -470,8 +507,8 @@
             else
               duration_label="No session"
             fi
-            printf '{"text": "%s %s %s", "class": "%s", "tooltip": "Pomodoro %s\\n%s | %s"}\n' \
-              "$icon" "$(format_time "$remaining")" "$state_icon" "$class" "$duration_label" "$state_label" "$(format_time "$remaining")"
+            printf '{"text": "%s %s %s", "class": "%s", "tooltip": "%s %s\\n%s | %s"}\n' \
+              "$icon" "$(format_time "$remaining")" "$state_icon" "$class" "$type_label" "$duration_label" "$state_label" "$(format_time "$remaining")"
             ;;
 
           *)
@@ -509,36 +546,48 @@
                   STATE_ITEM=""
                 fi
 
-                if [ -n "$STATE_ITEM" ]; then
-                  MENU="🍅 Pomodoro
-        $STATE_ITEM
+                 if [ -n "$STATE_ITEM" ]; then
+                   MENU="$STATE_ITEM
         ↺ Reset
-        ▶ Start 5 min
-        ▶ Start 15 min
-        ▶ Start 30 min
-        ▶ Start 60 min
-        ▶ Start 120 min
+        🍅 Start 5 min
+        🍅 Start 15 min
+        🍅 Start 30 min
+        🍅 Start 60 min
+        🍅 Start 120 min
+        ☕ Break 5 min
+        ☕ Break 10 min
+        ☕ Break 15 min
         ✏️ Custom time..."
-                else
-                  MENU="🍅 Pomodoro
-        ▶ Start 5 min
-        ▶ Start 15 min
-        ▶ Start 30 min
-        ▶ Start 60 min
-        ▶ Start 120 min
+                 else
+                   MENU="🍅 Start 5 min
+        🍅 Start 15 min
+        🍅 Start 30 min
+        🍅 Start 60 min
+        🍅 Start 120 min
+        ☕ Break 5 min
+        ☕ Break 10 min
+        ☕ Break 15 min
         ✏️ Custom time..."
-                fi
+                 fi
 
                 choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -p "Pomodoro" \
                   -mesg "Type to filter, then press Enter")
 
                 case "$choice" in
-                  "▶ Start 5 min") exec "$POMODORO" start 5 ;;
-                  "▶ Start 15 min") exec "$POMODORO" start 15 ;;
-                  "▶ Start 30 min") exec "$POMODORO" start 30 ;;
-                  "▶ Start 60 min") exec "$POMODORO" start 60 ;;
-                  "▶ Start 120 min") exec "$POMODORO" start 120 ;;
-                  "✏️ Custom time...") exec "$POMODORO" start "$(rofi -dmenu -p "Minutes" -mesg "Enter minutes (1-480)" | tr -d '[:space:]')" ;;
+                  "🍅 Start 5 min") exec "$POMODORO" start work 5 ;;
+                  "🍅 Start 15 min") exec "$POMODORO" start work 15 ;;
+                  "🍅 Start 30 min") exec "$POMODORO" start work 30 ;;
+                  "🍅 Start 60 min") exec "$POMODORO" start work 60 ;;
+                  "🍅 Start 120 min") exec "$POMODORO" start work 120 ;;
+                  "✏️ Custom time...")
+                    minutes="$(rofi -dmenu -p "Minutes" -mesg "Enter minutes (1-480)" | tr -d '[:space:]')"
+                    if [ -n "$minutes" ]; then
+                      exec "$POMODORO" start custom "$minutes"
+                    fi
+                    ;;
+                  "☕ Break 5 min") exec "$POMODORO" start break 5 ;;
+                  "☕ Break 10 min") exec "$POMODORO" start break 10 ;;
+                  "☕ Break 15 min") exec "$POMODORO" start break 15 ;;
                   "⏸ Pause") exec "$POMODORO" toggle ;;
                   "▶ Resume") exec "$POMODORO" toggle ;;
                   "↺ Reset") exec "$POMODORO" reset ;;

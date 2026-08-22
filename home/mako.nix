@@ -34,6 +34,14 @@
       "app-name=power-profiles".background-color = "#1a1b26";
       "app-name=toggle-touchpad".default-timeout = 2000;
       "app-name=toggle-touchpad".background-color = "#1a1b26";
+      "app-name=pomodoro".default-timeout = 5000;
+      "app-name=pomodoro".background-color = "#1a1b26";
+      "app-name=open-study-apps".default-timeout = 3000;
+      "app-name=open-study-apps".background-color = "#1a1b26";
+      "app-name=screenshot".default-timeout = 2000;
+      "app-name=screenshot".background-color = "#1a1b26";
+      "app-name=power".default-timeout = 2000;
+      "app-name=power".background-color = "#1a1b26";
     };
   };
 }
