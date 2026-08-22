@@ -268,18 +268,12 @@
           . "$STATE_FILE"
         fi
 
-        # Sinh danh sách menu từ cấu hình
-        MENU=""
-        for m in $WORK_TIMES; do
-          MENU="$MENU
-        $WORK_ICON Start $m min"
-        done
-        for m in $BREAK_TIMES; do
-          MENU="$MENU
-        $BREAK_ICON Break $m min"
-        done
-        MENU="$MENU
-        ✏️ Custom time..."
+        # Sinh danh sách menu từ cấu hình — không có dòng trống đầu
+        MENU="$(
+          for m in $WORK_TIMES; do echo "$WORK_ICON Start $m min"; done
+          for m in $BREAK_TIMES; do echo "$BREAK_ICON Break $m min"; done
+          echo "✏️ Custom time..."
+        )"
 
         # Thêm mục Pause/Resume/Reset theo trạng thái
         EXTRA=""
