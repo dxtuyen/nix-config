@@ -11,20 +11,15 @@
           exit 0
         fi
         trap 'kill "$watcher" 2>/dev/null || true; swaymsg "output * power on"' EXIT
-        swayidle -w timeout 10 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' &
+        # swayidle con này tính từ thời điểm KHÓA:
+        #   sau 10s  → tắt màn hình
+        #   sau 10 phút vẫn khóa → suspend
+        swayidle -w \
+          timeout 10 'swaymsg "output * power off"' \
+          timeout 600 'if pgrep -x swaylock >/dev/null; then systemctl suspend; fi' \
+          resume 'swaymsg "output * power on"' &
         watcher=$!
         swaylock -i ${./../wallpapers/nixos.jpg}
-      '';
-    };
-
-    ".local/bin/suspend-if-locked" = {
-      executable = true;
-      text = ''
-        #! /usr/bin/env bash
-        # Chỉ suspend nếu màn hình vẫn còn khóa (tránh ngủ khi đang dùng)
-        if pgrep -x swaylock >/dev/null 2>&1; then
-          systemctl suspend
-        fi
       '';
     };
 
