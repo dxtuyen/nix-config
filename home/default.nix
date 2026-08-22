@@ -27,6 +27,7 @@
     ./mako.nix # Trình thông báo Mako
     ./fcitx5.nix # Bộ gõ tiếng Việt Fcitx5
     ./scripts.nix # Các script thủ công trong ~/.local/bin
+    ./pomodoro.nix # Pomodoro timer + menu (tách riêng cho gọn)
     ./remnote.nix # Tích hợp RemNote AppImage (appimage-run + desktop entry + update-remnote)
     ./thunar.nix # Đăng ký Foot làm terminal mặc định cho Thunar
   ];

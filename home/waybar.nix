@@ -121,7 +121,6 @@
       };
       "custom/pomodoro" = {
         exec = "~/.local/bin/pomodoro status";
-        interval = 5;
         signal = 8;
         return-type = "json";
         "on-click" = "~/.local/bin/pomodoro-menu";
