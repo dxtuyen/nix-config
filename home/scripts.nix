@@ -6,20 +6,39 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Nếu swaylock đã chạy rồi thì thoát ngay, tránh phải mở khóa 2 lần
+        # NGUỒN DUY NHẤT cho việc khóa màn hình.
+        # (Tắt/bật màn — dpms — do swayidle CHÍNH quản lý, theo mẫu sway wiki.)
+        # Idempotent: đã khóa → thoát ngay (tránh mở khóa 2 lần).
         if pgrep -x swaylock >/dev/null 2>&1; then
           exit 0
         fi
-        trap 'kill "$watcher" 2>/dev/null || true; swaymsg "output * power on"' EXIT
-        # swayidle con này tính từ thời điểm KHÓA:
-        #   sau 10s  → tắt màn hình
-        #   sau 10 phút vẫn khóa → suspend
-        swayidle -w \
-          timeout 10 'swaymsg "output * power off"' \
-          timeout 600 'if pgrep -x swaylock >/dev/null; then systemctl suspend; fi' \
-          resume 'swaymsg "output * power on"' &
-        watcher=$!
-        swaylock -i ${./../wallpapers/nixos.jpg}
+        trap 'swaymsg "output * dpms on" >/dev/null 2>&1 || true' EXIT
+        exec swaylock -f -i ${./../wallpapers/nixos.jpg}
+      '';
+    };
+
+    ".local/bin/suspend-if-locked" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # CHỈ suspend nếu màn hình VẪN CÒN KHÓA.
+        # (Lớp bảo vệ: nếu người dùng vừa mở khóa thì thoát ngay.)
+        if pgrep -x swaylock >/dev/null 2>&1; then
+          systemctl suspend
+        fi
+      '';
+    };
+
+    ".local/bin/dpms-if-locked" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # Bật/tắt màn (dpms off/on) — CHỈ khi màn hình đang khóa.
+        # Tránh làm tắt màn khi người dùng đã mở khóa & đang dùng.
+        action="''${1:?usage: dpms-if-locked <off|on>}"
+        if pgrep -x swaylock >/dev/null 2>&1; then
+          swaymsg "output * dpms $action" >/dev/null 2>&1 || true
+        fi
       '';
     };
 

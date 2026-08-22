@@ -8,6 +8,9 @@
     systemd.enable = true;
 
     extraConfig = ''
+      # 0. Dọn swayidle cũ trước khi chạy bản mới (tránh trùng lặp khi reload)
+      exec pkill -x swayidle 2>/dev/null || true
+
       # 1. Đồng bộ biến màn hình & bộ gõ từ Sway vào Systemd & DBus
       exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway SWAYSOCK XMODIFIERS QT_IM_MODULE FOOT_COLOR_SCHEME=dark
       exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK XMODIFIERS QT_IM_MODULE FOOT_COLOR_SCHEME
@@ -189,11 +192,18 @@
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
-      # Idle management
-      # 10 phút không hoạt động → khóa màn hình
-      # (suspend sau 10 phút vẫn khóa được xử lý bên trong lock-screen)
+      # Idle management — MÔ HÌNH CHUẨN CỘNG ĐỒNG SWAY (sway wiki).
+      # Đếm từ TƯƠNG TÁC CUỐI, rõ ràng từng bước:
+      #   600s    → khóa màn hình                    (10 phút)
+      #   610s    → tắt màn dpms nếu còn khóa        (10s sau khi khóa)
+      #   resume  → bất cứ phím/chuột: bật màn NGAY
+      #   1200s   → suspend nếu còn khóa             (20 phút)
+      #   before-sleep → luôn khóa trước khi ngủ
       exec swayidle -w \
         timeout 600 '~/.local/bin/lock-screen' \
+        timeout 610 '~/.local/bin/dpms-if-locked off' \
+        timeout 1200 '~/.local/bin/suspend-if-locked' \
+        resume '~/.local/bin/dpms-if-locked on' \
         before-sleep '~/.local/bin/lock-screen'
     '';
   };
