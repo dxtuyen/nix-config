@@ -17,6 +17,17 @@
       '';
     };
 
+    ".local/bin/suspend-if-locked" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # Chỉ suspend nếu màn hình vẫn còn khóa (tránh ngủ khi đang dùng)
+        if pgrep -x swaylock >/dev/null 2>&1; then
+          systemctl suspend
+        fi
+      '';
+    };
+
     ".local/bin/cycle-wallpaper" = {
       executable = true;
       text = ''

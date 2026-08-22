@@ -190,8 +190,12 @@
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
       # Idle management
-      # Chỉ dùng timeout và before-sleep để tránh chạy lock-screen trùng lặp (gây phải mở khóa 2 lần)
-      exec swayidle -w timeout 600 '~/.local/bin/lock-screen' before-sleep '~/.local/bin/lock-screen'
+      # 10 phút không hoạt động → khóa màn hình
+      # 20 phút không hoạt động → nếu vẫn còn khóa thì suspend
+      exec swayidle -w \
+        timeout 600 '~/.local/bin/lock-screen' \
+        timeout 1200 '~/.local/bin/suspend-if-locked' \
+        before-sleep '~/.local/bin/lock-screen'
     '';
   };
 }
