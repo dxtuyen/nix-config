@@ -195,37 +195,44 @@
           status)
             read_state
             remaining=$(get_remaining)
-            case "$TYPE" in
-              break)
-                icon="☕"
-                class="break"
-                type_label="Break"
-                ;;
-              custom)
-                icon="⏱️"
-                class="custom"
-                type_label="Custom"
-                ;;
-              *)
-                icon="🍅"
-                class="running"
-                type_label="Pomodoro"
-                ;;
-            esac
-            if [ "$RUNNING" = "true" ]; then
-              state_icon="▶"
-              state_label="Running"
+
+            # Trạng thái mặc định (chưa có session / sau reset): icon trung tính ⏱, không cà chua đỏ
+            if [ -z "$DURATION" ]; then
+              icon="⏱"
+              class="idle"
+              text="$icon"
+              tooltip="Pomodoro - No session"
             else
-              state_icon="⏹"
-              state_label="Stopped"
-            fi
-            if [ -n "$DURATION" ]; then
+              case "$TYPE" in
+                break)
+                  icon="☕"
+                  class="break"
+                  type_label="Break"
+                  ;;
+                custom)
+                  icon="⏱️"
+                  class="custom"
+                  type_label="Custom"
+                  ;;
+                *)
+                  icon="🍅"
+                  class="running"
+                  type_label="Pomodoro"
+                  ;;
+              esac
+              if [ "$RUNNING" = "true" ]; then
+                state_icon="▶"
+                state_label="Running"
+              else
+                state_icon="⏹"
+                state_label="Stopped"
+              fi
               duration_label="$DURATION min"
-            else
-              duration_label="No session"
+              text="$icon $(format_time "$remaining") $state_icon"
+              tooltip="$type_label $duration_label\\n$state_label | $(format_time "$remaining")"
             fi
-            printf '{"text": "%s %s %s", "class": "%s", "tooltip": "%s %s\\n%s | %s"}\n' \
-              "$icon" "$(format_time "$remaining")" "$state_icon" "$class" "$type_label" "$duration_label" "$state_label" "$(format_time "$remaining")"
+            printf '{"text": "%s", "class": "%s", "tooltip": "%s"}\n' \
+              "$text" "$class" "$tooltip"
             ;;
 
           *)
@@ -247,62 +254,65 @@
         STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
         STATE_FILE="$STATE_DIR/pomodoro-state"
 
-        # Read current state to show Pause or Resume based on state
+        # ═══ CẤU HÌNH THỜI LƯỢNG — chỉ cần sửa ở đây ═══
+        # Đổi số phút trong list là menu & lệnh tự cập nhật đồng bộ
+        WORK_TIMES="30 60 120"   # phiên Work (phút)
+        BREAK_TIMES="5 10 15"    # phiên Break (phút)
+        WORK_ICON="🍅"
+        BREAK_ICON="☕"
+
+        # Đọc trạng thái hiện tại để hiện Pause/Resume/Reset
         RUNNING="false"
         REMAINING=""
         if [ -f "$STATE_FILE" ]; then
           . "$STATE_FILE"
         fi
 
-        # Build menu based on state
-        if [ "$RUNNING" = "true" ]; then
-          STATE_ITEM="⏸ Pause"
-        elif [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
-          STATE_ITEM="▶ Resume"
-        else
-          STATE_ITEM=""
-        fi
+        # Sinh danh sách menu từ cấu hình
+        MENU=""
+        for m in $WORK_TIMES; do
+          MENU="$MENU
+        $WORK_ICON Start $m min"
+        done
+        for m in $BREAK_TIMES; do
+          MENU="$MENU
+        $BREAK_ICON Break $m min"
+        done
+        MENU="$MENU
+        ✏️ Custom time..."
 
-        if [ -n "$STATE_ITEM" ]; then
-          MENU="$STATE_ITEM
-        ↺ Reset
-        🍅 Start 30 min
-        🍅 Start 60 min
-        🍅 Start 120 min
-        ☕ Break 5 min
-        ☕ Break 10 min
-        ☕ Break 15 min
-        ✏️ Custom time..."
-        else
-          MENU="🍅 Start 30 min
-        🍅 Start 60 min
-        🍅 Start 120 min
-        ☕ Break 5 min
-        ☕ Break 10 min
-        ☕ Break 15 min
-        ✏️ Custom time..."
+        # Thêm mục Pause/Resume/Reset theo trạng thái
+        EXTRA=""
+        if [ "$RUNNING" = "true" ]; then
+          EXTRA="⏸ Pause
+        ↺ Reset"
+        elif [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
+          EXTRA="▶ Resume
+        ↺ Reset"
         fi
+        [ -n "$EXTRA" ] && MENU="$EXTRA
+        $MENU"
 
         choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -p "Pomodoro" \
           -mesg "Type to filter, then press Enter")
 
+        # Xử lý các nút trạng thái
         case "$choice" in
-          "🍅 Start 30 min") exec "$POMODORO" start work 30 ;;
-          "🍅 Start 60 min") exec "$POMODORO" start work 60 ;;
-          "🍅 Start 120 min") exec "$POMODORO" start work 120 ;;
+          "⏸ Pause"|"▶ Resume") exec "$POMODORO" toggle ;;
+          "↺ Reset") exec "$POMODORO" reset ;;
           "✏️ Custom time...")
             minutes="$(rofi -dmenu -p "Minutes" -mesg "Enter minutes (1-480)" | tr -d '[:space:]')"
-            if [ -n "$minutes" ]; then
-              exec "$POMODORO" start custom "$minutes"
-            fi
+            [ -n "$minutes" ] && exec "$POMODORO" start custom "$minutes"
             ;;
-          "☕ Break 5 min") exec "$POMODORO" start break 5 ;;
-          "☕ Break 10 min") exec "$POMODORO" start break 10 ;;
-          "☕ Break 15 min") exec "$POMODORO" start break 15 ;;
-          "⏸ Pause") exec "$POMODORO" toggle ;;
-          "▶ Resume") exec "$POMODORO" toggle ;;
-          "↺ Reset") exec "$POMODORO" reset ;;
         esac
+
+        # Xử lý các lựa chọn start — sinh tự động từ cấu hình
+        for m in $WORK_TIMES; do
+          [ "$choice" = "$WORK_ICON Start $m min" ] && exec "$POMODORO" start work "$m"
+        done
+        for m in $BREAK_TIMES; do
+          [ "$choice" = "$BREAK_ICON Break $m min" ] && exec "$POMODORO" start break "$m"
+        done
       '';
     };
   };
