@@ -191,7 +191,7 @@
 
       # Idle management
       # Chỉ dùng timeout và before-sleep để tránh chạy lock-screen trùng lặp (gây phải mở khóa 2 lần)
-      exec swayidle -w timeout 300 '~/.local/bin/lock-screen' before-sleep '~/.local/bin/lock-screen'
+      exec swayidle -w timeout 600 '~/.local/bin/lock-screen' before-sleep '~/.local/bin/lock-screen'
     '';
   };
 }
