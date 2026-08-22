@@ -191,10 +191,9 @@
 
       # Idle management
       # 10 phút không hoạt động → khóa màn hình
-      # 20 phút không hoạt động → nếu vẫn còn khóa thì suspend
+      # (suspend sau 10 phút vẫn khóa được xử lý bên trong lock-screen)
       exec swayidle -w \
         timeout 600 '~/.local/bin/lock-screen' \
-        timeout 1200 '~/.local/bin/suspend-if-locked' \
         before-sleep '~/.local/bin/lock-screen'
     '';
   };
