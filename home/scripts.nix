@@ -549,8 +549,6 @@
                  if [ -n "$STATE_ITEM" ]; then
                    MENU="$STATE_ITEM
         ↺ Reset
-        🍅 Start 5 min
-        🍅 Start 15 min
         🍅 Start 30 min
         🍅 Start 60 min
         🍅 Start 120 min
@@ -559,8 +557,6 @@
         ☕ Break 15 min
         ✏️ Custom time..."
                  else
-                   MENU="🍅 Start 5 min
-        🍅 Start 15 min
         🍅 Start 30 min
         🍅 Start 60 min
         🍅 Start 120 min
@@ -574,8 +570,6 @@
                   -mesg "Type to filter, then press Enter")
 
                 case "$choice" in
-                  "🍅 Start 5 min") exec "$POMODORO" start work 5 ;;
-                  "🍅 Start 15 min") exec "$POMODORO" start work 15 ;;
                   "🍅 Start 30 min") exec "$POMODORO" start work 30 ;;
                   "🍅 Start 60 min") exec "$POMODORO" start work 60 ;;
                   "🍅 Start 120 min") exec "$POMODORO" start work 120 ;;
