@@ -176,10 +176,10 @@
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
       bindsym $mod+Ctrl+t exec ~/.local/bin/toggle-touchpad
       bindsym $mod+Print exec ~/.local/bin/screenshot-menu
-      bindsym --no-repeat Print exec grim -g "$(slurp)" - | wl-copy
-      bindsym --no-repeat Mod1+Print exec grim - | wl-copy
-      bindsym --no-repeat Shift+Print exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim -g "$(slurp)" "$f" && wl-copy < "$f"'
-      bindsym --no-repeat Ctrl+Print exec sh -c 'f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"; mkdir -p "$(dirname "$f")"; grim "$f" && wl-copy < "$f"'
+      bindsym --no-repeat Print exec ~/.local/bin/screenshot selection-clipboard
+      bindsym --no-repeat Mod1+Print exec ~/.local/bin/screenshot fullscreen-clipboard
+      bindsym --no-repeat Shift+Print exec ~/.local/bin/screenshot selection-save
+      bindsym --no-repeat Ctrl+Print exec ~/.local/bin/screenshot fullscreen-save
 
       # Media & Brightness keys
       bindsym XF86AudioRaiseVolume exec ~/.local/bin/media-notify volume-up
