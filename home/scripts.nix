@@ -318,6 +318,46 @@
       '';
     };
 
+    ".local/bin/screenshot" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # Screenshot helper: kiểm tra exit code của slurp để tránh thông báo sai khi hủy
+        set -u
+
+        mode="''${1:?missing mode}"
+
+        case "$mode" in
+          selection-clipboard)
+            region="$(slurp)" || exit 1
+            grim -g "$region" - | wl-copy
+            notify-send -a screenshot -i "camera-photo" -t 2000 "Screenshot" "Selection copied to clipboard"
+            ;;
+          fullscreen-clipboard)
+            grim - | wl-copy
+            notify-send -a screenshot -i "camera-photo" -t 2000 "Screenshot" "Fullscreen copied to clipboard"
+            ;;
+          selection-save)
+            region="$(slurp)" || exit 1
+            f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"
+            mkdir -p "$(dirname "$f")"
+            grim -g "$region" "$f" && wl-copy < "$f"
+            notify-send -a screenshot -i "camera-photo" -t 2000 "Screenshot" "Selection saved to file"
+            ;;
+          fullscreen-save)
+            f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"
+            mkdir -p "$(dirname "$f")"
+            grim "$f" && wl-copy < "$f"
+            notify-send -a screenshot -i "camera-photo" -t 2000 "Screenshot" "Fullscreen saved to file"
+            ;;
+          *)
+            echo "Unknown mode: $mode" >&2
+            exit 1
+            ;;
+        esac
+      '';
+    };
+
     ".local/bin/screenshot-menu" = {
       executable = true;
       text = ''
@@ -335,24 +375,16 @@
 
         case "$choice" in
           "📷 Selection → Clipboard (Print)")
-            grim -g "$(slurp)" - | wl-copy
-            notify-send -a screenshot -i "camera-photo" -t 2000 "Screenshot" "Selection copied to clipboard"
+            exec ~/.local/bin/screenshot selection-clipboard
             ;;
           "🖥️ Fullscreen → Clipboard (Alt+Print)")
-            grim - | wl-copy
-            notify-send -a screenshot -i "camera-photo" -t 2000 "Screenshot" "Fullscreen copied to clipboard"
+            exec ~/.local/bin/screenshot fullscreen-clipboard
             ;;
           "📁 Selection → Save file (Shift+Print)")
-            f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"
-            mkdir -p "$(dirname "$f")"
-            grim -g "$(slurp)" "$f" && wl-copy < "$f"
-            notify-send -a screenshot -i "camera-photo" -t 2000 "Screenshot" "Selection saved to file"
+            exec ~/.local/bin/screenshot selection-save
             ;;
           "💾 Fullscreen → Save file (Ctrl+Print)")
-            f="$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"
-            mkdir -p "$(dirname "$f")"
-            grim "$f" && wl-copy < "$f"
-            notify-send -a screenshot -i "camera-photo" -t 2000 "Screenshot" "Fullscreen saved to file"
+            exec ~/.local/bin/screenshot fullscreen-save
             ;;
         esac
       '';
