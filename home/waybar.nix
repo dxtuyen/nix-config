@@ -121,7 +121,7 @@
       };
       "custom/pomodoro" = {
         exec = "~/.local/bin/pomodoro status";
-        interval = 1;
+        interval = 5;
         signal = 8;
         return-type = "json";
         "on-click" = "~/.local/bin/pomodoro-menu";
@@ -153,6 +153,8 @@
       #custom-pomodoro { background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; font-weight: bold; }
       #custom-pomodoro.running { color: #f7768e; }
       #custom-pomodoro.idle { color: #565f89; }
+      #custom-pomodoro.break { color: #9ece6a; }
+      #custom-pomodoro.custom { color: #7aa2f7; }
       #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: #e0af68; }
       #battery.critical { color: #f7768e; }
       #temperature.critical, #cpu.critical, #memory.critical { color: #f7768e; animation: blink 1s linear infinite; }
