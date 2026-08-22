@@ -194,15 +194,15 @@
 
       # Idle management — MÔ HÌNH CHUẨN CỘNG ĐỒNG SWAY (sway wiki).
       # Đếm từ TƯƠNG TÁC CUỐI, rõ ràng từng bước:
-      #   600s    → khóa màn hình                    (10 phút)
-      #   610s    → tắt màn dpms nếu còn khóa        (10s sau khi khóa)
-      #   resume  → bất cứ phím/chuột: bật màn NGAY
-      #   1200s   → suspend nếu còn khóa             (20 phút)
+      #   300s    → khóa màn hình                    (5 phút)
+      #   310s    → tắt màn dpms nếu còn khóa        (10 GIÂY sau khi khóa)
+      #   resume  → bất cứ phím/chuột: bật màn ngay
+      #   900s    → suspend nếu còn khóa             (15 phút)
       #   before-sleep → luôn khóa trước khi ngủ
       exec swayidle -w \
-        timeout 600 '~/.local/bin/lock-screen' \
-        timeout 610 '~/.local/bin/dpms-if-locked off' \
-        timeout 1200 '~/.local/bin/suspend-if-locked' \
+        timeout 300 '~/.local/bin/lock-screen' \
+        timeout 310 '~/.local/bin/dpms-if-locked off' \
+        timeout 900 '~/.local/bin/suspend-if-locked' \
         resume '~/.local/bin/dpms-if-locked on' \
         before-sleep '~/.local/bin/lock-screen'
     '';
