@@ -557,7 +557,7 @@
         ☕ Break 15 min
         ✏️ Custom time..."
                  else
-        🍅 Start 30 min
+                   MENU="🍅 Start 30 min
         🍅 Start 60 min
         🍅 Start 120 min
         ☕ Break 5 min
