@@ -13,6 +13,7 @@
     pavucontrol
     brightnessctl
     translate-shell
+    goldendict-ng
     thunar
     networkmanagerapplet
     blueman

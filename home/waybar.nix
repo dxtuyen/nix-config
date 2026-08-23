@@ -84,8 +84,8 @@
       memory = {
         format = " {}%";
         states = {
-          warning = 70;
-          critical = 90;
+          warning = 80;
+          critical = 95;
         };
       };
       temperature = {
