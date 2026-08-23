@@ -41,17 +41,37 @@
         ~/.local/bin/cycle-wallpaper
       '';
     };
+    ".local/bin/dict-lookup" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # Mở GoldenDict để tra từ điển (hiển thị đẹp, có IPA).
+        # GoldenDict tự đọc bộ từ điển StarDict trong ~/.stardict/dic.
+        exec ${pkgs.goldendict-ng}/bin/goldendict
+      '';
+    };
+
     ".local/bin/quick-lang" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Dịch nhanh văn bản đang bôi chọn (primary selection) hoặc clipboard
-        # Dùng engine Bing vì Google thường bị rate limiting ở VN
+        # Dịch nhanh bằng Gemini API — hiểu ngữ cảnh, hỗ trợ cả đoạn dài.
+        # API key đọc từ biến GEMINI_API_KEY hoặc file ~/.config/quick-lang/api.key.
         set -u
 
         mode="''${1:-vi-en}"
 
-        # Ưu tiên primary selection (text đang bôi), fallback sang clipboard
+        # ---- Lấy API key ----
+        API_KEY="''${GEMINI_API_KEY:-}"
+        if [ -z "$API_KEY" ] && [ -r "''${XDG_CONFIG_HOME:-$HOME/.config}/quick-lang/api.key" ]; then
+          API_KEY="$(cat "''${XDG_CONFIG_HOME:-$HOME/.config}/quick-lang/api.key" 2>/dev/null | tr -d '[:space:]')"
+        fi
+        if [ -z "$API_KEY" ]; then
+          notify-send -a quick-lang -u critical -t 7000 "Quick Lang" "Chưa có API key. Ghi key vào ~/.config/quick-lang/api.key hoặc đặt biến GEMINI_API_KEY."
+          exit 1
+        fi
+
+        # ---- Lấy văn bản: ưu tiên primary selection (text đang bôi), fallback clipboard ----
         text="$(wl-paste -p 2>/dev/null || true)"
         [ -n "''${text//[[:space:]]/}" ] || text="$(wl-paste 2>/dev/null || true)"
         [ -n "''${text//[[:space:]]/}" ] || {
@@ -60,17 +80,24 @@
         }
 
         case "$mode" in
-          vi-en) from="vi"; to="en"; label="VI → EN" ;;
-          en-vi) from="en"; to="vi"; label="EN → VI" ;;
+          vi-en) from="Vietnamese"; to="English"; label="VI → EN" ;;
+          en-vi) from="English"; to="Vietnamese"; label="EN → VI" ;;
           *) notify-send -a quick-lang -t 7000 "Quick Lang" "Mode không hợp lệ: $mode"; exit 1 ;;
         esac
 
-        # Thử Bing trước, fallback sang Google nếu Bing lỗi
-        result="$(timeout 15 trans -b -e bing "$from:$to" "$text" 2>/dev/null || true)"
-        [ -n "''${result//[[:space:]]/}" ] || result="$(timeout 15 trans -b -e google "$from:$to" "$text" 2>/dev/null || true)"
+        # ---- Gọi Gemini Flash ----
+        prompt="$(printf 'Dịch văn bản sau từ %s sang %s. Chỉ trả về bản dịch, không thêm giải thích hay chú thích.\n\nVăn bản:\n%s' "$from" "$to" "$text")"
+        response="$(timeout 30 curl -sS \
+          -H "Content-Type: application/json" \
+          -d "$(jq -n --arg p "$prompt" '{contents:[{parts:[{text:$p}]}]}')" \
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$API_KEY" 2>/dev/null || true)"
+
+        result="$(printf '%s' "$response" | jq -r '.candidates[0].content.parts[0].text // empty' 2>/dev/null || true)"
+        # Làm sạch nếu model tự bọc markdown code fence
+        result="$(printf '%s' "$result" | sed -e 's/^```[a-zA-Z]*//' -e 's/```$//' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
 
         if [ -z "''${result//[[:space:]]/}" ]; then
-          notify-send -a quick-lang -u critical -t 7000 "Quick Lang" "Dịch thất bại. Kiểm tra kết nối mạng hoặc thử lại."
+          notify-send -a quick-lang -u critical -t 7000 "Quick Lang" "Dịch thất bại. Kiểm tra API key hoặc kết nối mạng."
           exit 1
         fi
 
