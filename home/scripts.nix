@@ -6,14 +6,15 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Nếu swaylock đã chạy rồi thì thoát ngay, tránh phải mở khóa 2 lần
+        # Nếu swaylock đã chạy thì thoát ngay (tránh khóa chồng kép → phải mở khóa 2 lần)
         if pgrep -x swaylock >/dev/null 2>&1; then
           exit 0
         fi
-        trap 'kill "$watcher" 2>/dev/null || true; swaymsg "output * power on"' EXIT
-        swayidle -w timeout 10 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' &
-        watcher=$!
-        swaylock -i ${./../wallpapers/nixos.jpg}
+
+        # -f (daemonize): swaylock tách background và thoát NGAY LẬP TỨC,
+        # nên swayidle -w không bị block chờ swaylock → fix tận gốc bug "phải mở khóa nhiều lần"
+        # và giúp before-sleep / timeout 900 (auto suspend) chạy đúng lúc.
+        exec ${pkgs.swaylock}/bin/swaylock -f -i ${./../wallpapers/nixos.jpg}
       '';
     };
 

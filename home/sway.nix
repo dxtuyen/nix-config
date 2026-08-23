@@ -8,8 +8,9 @@
     systemd.enable = true;
 
     extraConfig = ''
-      # 0. Dọn swayidle cũ trước khi chạy bản mới (tránh trùng lặp khi reload)
-      exec pkill -x swayidle 2>/dev/null || true
+      # 0. Dọn swayidle cũ trước khi chạy bản mới (exec_always: chạy lại mỗi lần reload,
+      # nên không bao giờ kẹt ở bản cũ sau khi sửa config)
+      exec_always pkill -x swayidle 2>/dev/null || true
 
       # 1. Đồng bộ biến màn hình & bộ gõ từ Sway vào Systemd & DBus
       exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway SWAYSOCK XMODIFIERS QT_IM_MODULE FOOT_COLOR_SCHEME=dark
@@ -193,15 +194,22 @@
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
-      # Idle management — đúng tinh thần sway wiki, đơn giản & an toàn:
-      #   300s idle → khóa màn hình
-      #   900s idle → sleep (suspend) — lúc này màn đã khóa nên an toàn
-      #   before-sleep → luôn khóa trước khi ngủ
-      # (swayidle tự reset khi có bất kỳ thao tác nào, nên không bao giờ suspend khi đang dùng)
-      exec swayidle -w \
+      # Idle management — 1 swayidle duy nhất quản lý toàn bộ chuỗi (theo sway wiki).
+      # exec_always: đảm bảo mỗi lần swaymsg reload, swayidle bản mới được chạy lại
+      # (exec thường chỉ chạy 1 lần lúc khởi động → gây lọcu ở bản cũ như vừa gặp).
+      #   300s idle → khóa màn hình (lock-screen dùng `swaylock -f`, trả về ngay)
+      #   310s idle → tắt màn (power off); có thao tác → bật lại nhưng vẫn khóa
+      #   900s idle → sleep (suspend) — màn đã tắt & khóa nên an toàn
+      #   before-sleep → luôn khóa lại trước khi ngủ
+      #   after-resume  → bật màn lại sau khi máy dậy
+      # (swayidle tự reset khi có bất kỳ thao tác nào nên không bao giờ suspend khi đang dùng)
+      exec_always swayidle -w \
         timeout 300 '~/.local/bin/lock-screen' \
+        timeout 310 'swaymsg "output * power off"' \
+        resume 'swaymsg "output * power on"' \
         timeout 900 'systemctl suspend' \
-        before-sleep '~/.local/bin/lock-screen'
+        before-sleep '~/.local/bin/lock-screen' \
+        after-resume 'swaymsg "output * power on"'
     '';
   };
 }
