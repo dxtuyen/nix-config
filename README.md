@@ -80,14 +80,15 @@ Chuỗi tự động hóa (theo đúng sway wiki) do `swayidle` quản lý:
 
 | Sau | Hành động | Ghi chú |
 |-----|-----------|---------|
-| **300s** (5 phút) | Khóa màn hình (`lock-screen`) | Script khóa sẽ tắt màn sau 10s nữa nếu không hoạt động |
-| **900s** (15 phút) | **Sleep (suspend)** | Chỉ sau khi đã khóa — an toàn |
-| **before-sleep** | Luôn khóa lại trước khi ngủ | Chống người khác dùng khi mở máy |
+| **300s** (5 phút) | Khóa màn hình (`lock-screen`) | Script dùng `swaylock -f` (daemonize) nên trả về ngay — không chặn swayidle |
+| **310s** | Tắt màn (`output * power off`) | Có thao tác → bật lại màn nhưng **vẫn khóa** |
+| **900s** (15 phút) | **Sleep (suspend)** | Lúc này màn đã tắt + khóa → an toàn |
+| **before-sleep** | Luôn khóa lại trước khi ngủ | Guard `pgrep swaylock` → chỉ khóa 1 lần, không phải mở khóa 2 lần |
+| **after-resume** | Bật màn sau khi máy dậy | Chống màn đen khi mở máy |
 
 **Script `lock-screen`** (trong `~/.local/bin`):
 - Idempotent: đã khóa → thoát (tránh phải mở khóa 2 lần)
-- Khi khóa sẽ BẮT đầu một `swayidle` phụ: sau 10s không thao tác → tắt màn (`power off`); có thao tác → bật màn ngay nhưng **vẫn khóa**
-- Khi mở khóa thành công, `trap EXIT` dọn dẹp tài nguyên
+- Dùng `swaylock -f` (daemonize): lock-screen trả về ngay lập tức — đây là điểm mấu chốt giúp `before-sleep` và `timeout 900` (tự ngủ) chạy đúng lúc; trước đây swaylock chạy foreground làm swayidle bị block → phải mở khóa nhiều lần
 
 ---
 
