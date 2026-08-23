@@ -45,13 +45,37 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
+        # Dịch nhanh văn bản đang bôi chọn (primary selection) hoặc clipboard
+        # Dùng engine Bing vì Google thường bị rate limiting ở VN
+        set -u
+
         mode="''${1:-vi-en}"
-        text="$(wl-paste -p 2>/dev/null || wl-paste 2>/dev/null || true)"
-        [ -n "''${text//[[:space:]]/}" ] || { notify-send -a quick-lang -t 7000 "Quick Lang" "Không có văn bản nào được chọn hoặc copy."; exit 1; }
+
+        # Ưu tiên primary selection (text đang bôi), fallback sang clipboard
+        text="$(wl-paste -p 2>/dev/null || true)"
+        [ -n "''${text//[[:space:]]/}" ] || text="$(wl-paste 2>/dev/null || true)"
+        [ -n "''${text//[[:space:]]/}" ] || {
+          notify-send -a quick-lang -t 7000 "Quick Lang" "Không có văn bản nào được chọn hoặc copy."
+          exit 1
+        }
+
         case "$mode" in
-          vi-en) result="$(trans -b vi:en "$text")"; printf %s "$result" | wl-copy; notify-send -a quick-lang -t 7000 "VI → EN" "$result" ;;
-          en-vi) result="$(trans -b en:vi "$text")"; printf %s "$result" | wl-copy; notify-send -a quick-lang -t 7000 "EN → VI" "$result" ;;
+          vi-en) from="vi"; to="en"; label="VI → EN" ;;
+          en-vi) from="en"; to="vi"; label="EN → VI" ;;
+          *) notify-send -a quick-lang -t 7000 "Quick Lang" "Mode không hợp lệ: $mode"; exit 1 ;;
         esac
+
+        # Thử Bing trước, fallback sang Google nếu Bing lỗi
+        result="$(timeout 15 trans -b -e bing "$from:$to" "$text" 2>/dev/null || true)"
+        [ -n "''${result//[[:space:]]/}" ] || result="$(timeout 15 trans -b -e google "$from:$to" "$text" 2>/dev/null || true)"
+
+        if [ -z "''${result//[[:space:]]/}" ]; then
+          notify-send -a quick-lang -u critical -t 7000 "Quick Lang" "Dịch thất bại. Kiểm tra kết nối mạng hoặc thử lại."
+          exit 1
+        fi
+
+        printf %s "$result" | wl-copy
+        notify-send -a quick-lang -t 7000 "$label" "$result"
       '';
     };
 
