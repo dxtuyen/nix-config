@@ -176,7 +176,6 @@
       # Custom Utilities & Screenshot
       bindsym $mod+p exec ~/.local/bin/pomodoro-menu
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
-      bindsym $mod+Shift+o exec ~/.local/bin/lock-screen # Khóa màn hình nhanh (swaylock)
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
       bindsym $mod+g exec ~/.local/bin/dict-lookup
