@@ -17,7 +17,6 @@
     thunar
     networkmanagerapplet
     blueman
-    polkit_gnome
     google-chrome
     calibre
     sioyek
@@ -27,8 +26,9 @@
     jq
     fastfetch
 
-    # Máy ảo — luyện tập cài máy mới theo docs/06-Luyen-Tap-VM.md (QEMU trực tiếp + KVM)
-    qemu
+    # Máy ảo — luyện tập cài máy mới theo docs/06-Luyen-Tap-VM.md
+    # qemu_kvm: bản QEMU chỉ target x86_64 + KVM, nhẹ hơn meta-package qemu
+    qemu_kvm
     qemu-utils
     OVMF
   ];

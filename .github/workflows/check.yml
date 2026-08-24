@@ -1,7 +1,10 @@
 name: Nix checks
 
+# push chỉ chạy trên main để PR nội bộ không bị chạy đôi (push + pull_request)
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 jobs:
@@ -10,11 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Cài đặt Nix với các thiết lập tối ưu
       - uses: DeterminateSystems/nix-installer-action@v20
-
-      # Thêm bộ nhớ đệm (cache) để tăng tốc độ CI
-      - uses: DeterminateSystems/magic-nix-cache-action@v7
 
       # Kiểm tra định dạng (sử dụng nixfmt-rfc-style đã cấu hình trong flake)
       - name: Check Nix format

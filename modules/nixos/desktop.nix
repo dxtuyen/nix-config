@@ -30,7 +30,6 @@ in
       user = "greeter";
     };
   };
-  services.displayManager.gdm.enable = false;
 
   services.pipewire = {
     enable = true;

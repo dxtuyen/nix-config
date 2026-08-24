@@ -13,7 +13,7 @@ Mỗi trang trả lời một câu hỏi thực tế, đọc theo nhu cầu, kh�
 | **[04 — Sao lưu & Khôi phục](04-Sao-Luu-Phuc-Hoi.md)** | Backup dữ liệu ngoài Nix, khôi phục sau khi cài | Chuẩn bị cài lại / sang máy mới |
 | **[05 — Từ điển thuật ngữ](05-Tu-Dien-Thuat-Ngu.md)** | Tra nhanh: Nix, flake, zram, hibernate, module... | Gặp thuật ngữ lạ |
 | **[06 — Luyện VM](06-Luyen-Tap-VM.md)** | Tập cài máy bằng máy ảo (QEMU/KVM), không rủi ro | Muốn làm quen cài máy |
-| **[RemNote](REMNODE.md)** | Cài & cập nhật RemNote AppImage | Cần xài / cập nhật RemNote |
+| **[RemNote](REMNOTE.md)** | Cài & cập nhật RemNote AppImage | Cần xài / cập nhật RemNote |
 
 ## Luồng nhanh theo tình huống
 
