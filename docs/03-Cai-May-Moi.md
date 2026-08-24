@@ -267,6 +267,11 @@ Sau khi vào desktop (Sway), mở terminal và kiểm tra theo thứ tự:
 3. **Phân vùng đúng**: `lsblk -f`.
 4. **Clone repo về máy** để lần sau rebuild tại chỗ: `git clone https://github.com/doxuantuyen/nix-config.git ~/nix-config`.
 5. **Thử hibernate**: chạy `sudo systemctl hibernate` — máy lưu tất cả cửa sổ rồi tắt nguồn; bật lại, đăng nhập, mọi thứ khôi phục nguyên trạng.
+6. **Chế độ ngủ (deep sleep)**: chạy `cat /sys/power/mem_sleep`.
+   - Thấy `s2idle [deep]` → máy hỗ trợ deep (S3), giữ nguyên config. ✓
+   - Chỉ thấy `[s2idle]` → máy **không hỗ trợ** deep. Kernel tự bỏ qua tham số
+     nên không lỗi gì cả; chỉ cần **xóa dòng `"mem_sleep_default=deep"`**
+     trong `modules/nixos/laptop.nix` rồi rebuild cho gọn.
 
 ---
 
@@ -295,6 +300,8 @@ git clone https://github.com/doxuantuyen/nix-config.git /tmp/nix-config
 cp /mnt/etc/nixos/hardware-configuration.nix /tmp/nix-config/hosts/laptop/
 # → hardware-configuration.nix đã tự sinh đúng swap (không sửa)
 # → sửa modules/nixos/laptop.nix: resume=UUID=<SWAP_UUID>
+# → dòng "mem_sleep_default=deep": giữ nguyên; sau reboot kiểm tra Bước 9 mục 6 —
+#   nếu máy mới không hỗ trợ (chỉ thấy [s2idle]) thì xóa dòng này đi
 
 # cài
 cd /tmp/nix-config
@@ -314,6 +321,7 @@ reboot
 | `nixos-generate-config` không thấy swap | Chưa `swapon` | Chạy `swapon /dev/nvme0n1p3` rồi sinh lại |
 | Hibernate không dậy được | `resume=UUID=` sai/thiếu | Kiểm tra `blkid`, sửa `resume=UUID=` trong `laptop.nix`, rebuild |
 | Swap nhỏ hơn RAM → hibernate lỗi | Vi phạm quy tắc vàng | Tăng swap ≥ RAM (Bước 4) |
+| Ngủ tốn pin bất thường | Máy không hỗ trợ S3 → rơi về s2idle | Kiểm tra `cat /sys/power/mem_sleep`; xóa `"mem_sleep_default=deep"` trong `laptop.nix` (Bước 9 mục 6). Muốn tiết kiệm pin hơn: thử hibernate hoặc kiểm tra BIOS có bản cập nhật bật S3 |
 | Không đăng nhập được user | Chưa đặt mật khẩu `doxuantuyen` | Login root ở TTY (`Ctrl+Alt+F2`) → `passwd doxuantuyen` |
 | Quên copy `hardware-configuration.nix` | UUID root/boot cũ → lỗi boot | Copy file mới vào `hosts/laptop/` rồi rebuild |
 
