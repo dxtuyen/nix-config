@@ -40,6 +40,15 @@ in
 
   services.fwupd.enable = true;
 
+  # Ngủ/suspend chuẩn logind cho laptop: đóng nắp (dù có hay không cắm sạc) → suspend;
+  # gắn dock → giữ nguyên không suspend. swayidle sẽ tự khóa màn hình trước khi ngủ
+  # nhờ before-sleep, nên khi dậy từ suspend màn hình luôn khóa (chuẩn sway wiki).
+  services.logind = {
+    lidSwitch = "suspend";
+    lidSwitchExternalPower = "suspend";
+    lidSwitchDocked = "ignore";
+  };
+
   services.keyd = {
     enable = true;
     keyboards.default = {
