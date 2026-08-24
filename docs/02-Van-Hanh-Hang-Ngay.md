@@ -47,6 +47,27 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | before-sleep | luôn khóa lại trước khi ngủ |
 | lock / unlock | logind khóa → khóa ngay; unlock → bật màn |
 
+## Chế độ ngủ: deep (S3) vs s2idle
+
+Config đặt `mem_sleep_default=deep` trong `boot.kernelParams` của
+`modules/nixos/laptop.nix` — nghĩa là mọi lần ngủ (đóng nắp laptop, idle 900s,
+`power-menu` → Suspend) máy rơi vào **deep sleep (S3)** thay vì `s2idle`
+(modern standby) → **tốn ít pin hơn đáng kể** khi ngủ.
+
+Kiểm tra máy đang ngủ bằng chế độ nào:
+
+```bash
+cat /sys/power/mem_sleep
+```
+
+- `s2idle [deep]` → đang dùng **deep** (dấu ngoặc vuông = chế độ mặc định). ✓
+- `[s2idle]` → máy không hỗ trợ S3, tự rơi về s2idle. Tham số
+  `mem_sleep_default=deep` khi đó **bị kernel bỏ qua, vô hại** — có thể giữ
+  nguyên hoặc xóa dòng đó trong `modules/nixos/laptop.nix` cho gọn rồi rebuild.
+
+> Lưu ý: tham số này chỉ hiệu lực sau khi **khởi động lại** (nó là tham số
+> kernel), rebuild + reboot một lần là áp dụng.
+
 ## Hibernate
 
 Cách dùng: chạy `systemctl hibernate` (hoặc dùng menu nguồn `power-menu`) — máy nén toàn bộ RAM vào **swap 10G**, tắt nguồn; khi bật lại khôi phục nguyên trạng.

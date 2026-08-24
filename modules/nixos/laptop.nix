@@ -44,8 +44,12 @@ in
   # Điều kiện hibernate: phân vùng swap phải ≥ RAM (máy này 10G ≥ 7.4G).
   # resume=UUID=... báo kernel swap nào chứa image hibernate khi dậy — khi sang
   # máy mới, nhớ sửa UUID này cho khớp với swap mới (xem docs/03-Cai-May-Moi.md Bước 7).
+  # mem_sleep_default=deep → ngủ "deep" (S3, ACPI S3 sleep) thay vì s2idle
+  # (modern standby). Kiểm tra máy có hỗ trợ không: cat /sys/power/mem_sleep
+  # sẽ hiện [s2idle] deep — chọn deep để tiết kiệm pin hơn khi gập máy/ngủ.
   boot.kernelParams = [
     "resume=UUID=044520bf-eed9-498c-a382-97615c111b1f"
+    "mem_sleep_default=deep"
   ];
 
   services.fwupd.enable = true;
