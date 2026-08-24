@@ -1,5 +1,4 @@
 {
-  inputs,
   pkgs,
   userName,
   ...
@@ -26,7 +25,11 @@
     networkmanager.enable = true;
     firewall.enable = true;
   };
-  programs.nh.enable = true;
+  programs.nh = {
+    enable = true;
+    # Cho `nh os switch` / `nh clean` biết flake mặc định mà không cần gõ path
+    flake = "/home/${userName}/nix-config";
+  };
 
   time.timeZone = "Asia/Ho_Chi_Minh";
   services.timesyncd.enable = true;
@@ -54,10 +57,4 @@
     htop
     file # Xác định dạng file bất kỳ (PDF, zip, ELF, script...)
   ];
-
-  home-manager = {
-    useGlobalPkgs = true;
-    useUserPackages = true;
-    backupFileExtension = "backup";
-  };
 }

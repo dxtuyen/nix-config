@@ -21,27 +21,19 @@
       text-color = "#c0caf5";
       border-color = "#7aa2f7";
       border-radius = 8;
+      # Riêng timeout từng app — background-color đã trùng mặc định nên không
+      # cần khai lại từng app nữa.
       "app-name=quick-lang".default-timeout = 10000;
-      "app-name=quick-lang".background-color = "#1a1b26";
       "app-name=quick-lang".border-color = "#bb9af7";
       "app-name=volume".default-timeout = 2000;
-      "app-name=volume".background-color = "#1a1b26";
       "app-name=brightness".default-timeout = 2000;
-      "app-name=brightness".background-color = "#1a1b26";
       "app-name=wlsunset".default-timeout = 2000;
-      "app-name=wlsunset".background-color = "#1a1b26";
       "app-name=power-profiles".default-timeout = 2000;
-      "app-name=power-profiles".background-color = "#1a1b26";
       "app-name=toggle-touchpad".default-timeout = 2000;
-      "app-name=toggle-touchpad".background-color = "#1a1b26";
       "app-name=pomodoro".default-timeout = 5000;
-      "app-name=pomodoro".background-color = "#1a1b26";
       "app-name=open-study-apps".default-timeout = 3000;
-      "app-name=open-study-apps".background-color = "#1a1b26";
       "app-name=screenshot".default-timeout = 2000;
-      "app-name=screenshot".background-color = "#1a1b26";
       "app-name=power".default-timeout = 2000;
-      "app-name=power".background-color = "#1a1b26";
     };
   };
 }

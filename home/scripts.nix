@@ -64,8 +64,10 @@
           exit 1
         fi
 
-        # Firmware UEFI: hỏi nix lấy đúng đường dẫn (KHÔNG find /nix/store)
-        OVMF_CODE="$(${pkgs.nix}/bin/nix eval --raw nixpkgs#OVMF.firmware)"
+        # Firmware UEFI: nội suy lúc BUILD từ pkgs.OVMF — offline, pin theo
+        # flake.lock (trước đây gọi `nix eval nixpkgs#OVMF` lúc chạy, phụ thuộc
+        # global registry & có thể phải tải mạng).
+        OVMF_CODE="${pkgs.OVMF.firmware}"
 
         ARGS=(
           -machine q35,accel=kvm
@@ -82,7 +84,7 @@
           ARGS+=(-boot c)
         fi
 
-        exec ${pkgs.qemu}/bin/qemu-system-x86_64 "''${ARGS[@]}"
+        exec ${pkgs.qemu_kvm}/bin/qemu-system-x86_64 "''${ARGS[@]}"
       '';
     };
 
