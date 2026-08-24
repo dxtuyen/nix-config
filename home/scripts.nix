@@ -14,7 +14,8 @@
         # -f (daemonize): swaylock tách background và thoát NGAY LẬP TỨC,
         # nên swayidle -w không bị block chờ swaylock → fix tận gốc bug "phải mở khóa nhiều lần"
         # và giúp before-sleep / timeout 900 (auto suspend) chạy đúng lúc.
-        exec ${pkgs.swaylock}/bin/swaylock -f -i ${./../wallpapers/nixos.jpg}
+        # -e (ignore-empty-password): Enter không password sẽ không bị tính là nhập sai.
+        exec ${pkgs.swaylock}/bin/swaylock -f -e -i ${./../wallpapers/nixos.jpg}
       '';
     };
 

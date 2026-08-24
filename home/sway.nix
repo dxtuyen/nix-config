@@ -176,6 +176,7 @@
       # Custom Utilities & Screenshot
       bindsym $mod+p exec ~/.local/bin/pomodoro-menu
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
+      bindsym $mod+Shift+o exec ~/.local/bin/lock-screen # Khóa màn hình nhanh (swaylock)
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
       bindsym $mod+g exec ~/.local/bin/dict-lookup
@@ -194,14 +195,15 @@
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
-      # Idle management — 1 swayidle duy nhất quản lý toàn bộ chuỗi (theo sway wiki).
+      # Idle management — 1 swayidle duy nhất quản lý toàn bộ chuỗi (chuẩn sway wiki + swayidle(1)).
       # exec_always: đảm bảo mỗi lần swaymsg reload, swayidle bản mới được chạy lại
-      # (exec thường chỉ chạy 1 lần lúc khởi động → gây lọcu ở bản cũ như vừa gặp).
-      #   300s idle → khóa màn hình (lock-screen dùng `swaylock -f`, trả về ngay)
-      #   310s idle → tắt màn (power off); có thao tác → bật lại nhưng vẫn khóa
-      #   900s idle → sleep (suspend) — màn đã tắt & khóa nên an toàn
-      #   before-sleep → luôn khóa lại trước khi ngủ
-      #   after-resume  → bật màn lại sau khi máy dậy
+      # (exec thường chỉ chạy 1 lần lúc khởi động → kẹt bản cũ như từng gặp).
+      #   300s idle       → khóa màn hình (lock-screen dùng `swaylock -f`, trả về ngay)
+      #   310s idle       → tắt màn (power off); có thao tác → bật lại nhưng vẫn khóa
+      #   900s idle       → sleep (suspend) — màn đã tắt & khóa nên an toàn
+      #   before-sleep    → luôn khóa lại trước khi ngủ (chuẩn swayidle(1))
+      #   after-resume    → bật màn lại sau khi máy dậy
+      #   lock / unlock   → logind báo khóa/mở khóa phiên (vd: loginctl lock-session, đóng nắp đã cấu hình suspend)
       # (swayidle tự reset khi có bất kỳ thao tác nào nên không bao giờ suspend khi đang dùng)
       exec_always swayidle -w \
         timeout 300 '~/.local/bin/lock-screen' \
@@ -209,7 +211,9 @@
         resume 'swaymsg "output * power on"' \
         timeout 900 'systemctl suspend' \
         before-sleep '~/.local/bin/lock-screen' \
-        after-resume 'swaymsg "output * power on"'
+        after-resume 'swaymsg "output * power on"' \
+        lock '~/.local/bin/lock-screen' \
+        unlock 'swaymsg "output * power on"'
     '';
   };
 }

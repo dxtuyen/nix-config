@@ -84,11 +84,12 @@ Chuỗi tự động hóa (theo đúng sway wiki) do `swayidle` quản lý:
 | **310s** | Tắt màn (`output * power off`) | Có thao tác → bật lại màn nhưng **vẫn khóa** |
 | **900s** (15 phút) | **Sleep (suspend)** | Lúc này màn đã tắt + khóa → an toàn |
 | **before-sleep** | Luôn khóa lại trước khi ngủ | Guard `pgrep swaylock` → chỉ khóa 1 lần, không phải mở khóa 2 lần |
+| **lock / unlock** | Logind báo khóa/mở khóa phiên (`loginctl lock-session`, đóng nắp…) | Khóa ngay; unlock → bật màn |
 | **after-resume** | Bật màn sau khi máy dậy | Chống màn đen khi mở máy |
 
 **Script `lock-screen`** (trong `~/.local/bin`):
 - Idempotent: đã khóa → thoát (tránh phải mở khóa 2 lần)
-- Dùng `swaylock -f` (daemonize): lock-screen trả về ngay lập tức — đây là điểm mấu chốt giúp `before-sleep` và `timeout 900` (tự ngủ) chạy đúng lúc; trước đây swaylock chạy foreground làm swayidle bị block → phải mở khóa nhiều lần
+- Dùng `swaylock -f -e` (daemonize + ignore empty password): swaylock tách background và thoát ngay — điểm mấu chốt giúp `before-sleep` và `timeout 900` (tự ngủ) chạy đúng lúc; trước đây swaylock chạy foreground làm swayidle bị block → phải mở khóa nhiều lần
 
 ---
 
@@ -105,6 +106,7 @@ Chuỗi tự động hóa (theo đúng sway wiki) do `swayidle` quản lý:
 | `Mod+Shift+n` | Toggle wlsunset (Auto → Vàng 4000K → Trắng 6500K) |
 | `Mod+p` | Pomodoro menu |
 | `Mod+Shift+p` | Menu nguồn (poweroff/reboot/suspend/lock/profile…) |
+| `Mod+Shift+o` | Khóa màn hình nhanh (swaylock) |
 | `Mod+Shift+s` | Mở nhanh ứng học (RemNote + Calibre) |
 | `Mod+t` | Dịch Việt → Anh (quick-lang) |
 | `Mod+Shift+t` | Dịch Anh → Việt (quick-lang) |
