@@ -38,20 +38,12 @@ in
     memoryPercent = 50; # 50% RAM as compressed swap (Fedora default)
   };
 
-  # --- Swap + Hibernation ---
-  # The 10 GiB partition nvme0n1p3 (UUID 044520bf-eed9-498c-a382-97615c111b1f) is a
-  # dedicated swap area. It is enabled via swapDevices (which concatenates onto the
-  # generated [ ] from hardware-configuration.nix) so it survives rebuilds.
-  # Hibernation ("suspend-to-disk") writes RAM to this swap partition and powers off;
-  # Linux requires swap >= RAM for that (7.4G RAM < 10G swap — OK).
-  # The `resume=UUID=...` kernel param tells the bootloader which swap holds the image.
-  swapDevices = [
-    {
-      device = "/dev/disk/by-uuid/044520bf-eed9-498c-a382-97615c111b1f";
-    }
-  ];
-
-  # resume= points the kernel at the swap partition holding the hibernation image.
+  # --- Hibernation ---
+  # swapDevices được khai trong hosts/laptop/hardware-configuration.nix (file tự sinh
+  # bởi nixos-generate-config) — mỗi máy sẽ tự điền đúng UUID swap của máy đó.
+  # Điều kiện hibernate: phân vùng swap phải ≥ RAM (máy này 10G ≥ 7.4G).
+  # resume=UUID=... báo kernel swap nào chứa image hibernate khi dậy — khi sang
+  # máy mới, nhớ sửa UUID này cho khớp với swap mới (xem docs/03-Cai-May-Moi.md Bước 7).
   boot.kernelParams = [
     "resume=UUID=044520bf-eed9-498c-a382-97615c111b1f"
   ];

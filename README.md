@@ -42,7 +42,7 @@ nix-config/
 │   ├── core.nix                 # Nền tảng: Nix/flake, boot, mạng, user
 │   ├── desktop.nix              # Sway/greetd, PipeWire, Fcitx5, fonts
 │   ├── development.nix          # VS Code, Python, GCC, podman…
-│   ├── laptop.nix               # Swap 10G + hibernate, zram, keyd, battery threshold
+│   ├── laptop.nix               # Hibernate (resume=UUID=), zram, keyd, battery threshold — swap nằm trong hardware-config
 │   └── system-tweaks.nix        # earlyoom, fstrim, nix-ld
 ├── docs/                        # 📚 Tài liệu tiếng Việt (xem bên dưới)
 └── wallpapers/                  # Ảnh nền sáng/tối + ảnh khóa màn hình

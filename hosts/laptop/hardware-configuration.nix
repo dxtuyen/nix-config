@@ -38,7 +38,14 @@
     ];
   };
 
-  swapDevices = [ ];
+  # Phân vùng swap 10G (nvme0n1p3). Khai ở ĐÂY thay vì trong module laptop.nix vì
+  # nixos-generate-config sẽ tự sinh mục này theo đúng swap đang bật — máy mới làm
+  # theo docs/03-Cai-May-Moi.md Bước 7 là swap tự khớp, chỉ còn sửa resume=UUID=.
+  swapDevices = [
+    {
+      device = "/dev/disk/by-uuid/044520bf-eed9-498c-a382-97615c111b1f";
+    }
+  ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
