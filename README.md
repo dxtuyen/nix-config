@@ -106,7 +106,6 @@ Chuỗi tự động hóa (theo đúng sway wiki) do `swayidle` quản lý:
 | `Mod+Shift+n` | Toggle wlsunset (Auto → Vàng 4000K → Trắng 6500K) |
 | `Mod+p` | Pomodoro menu |
 | `Mod+Shift+p` | Menu nguồn (poweroff/reboot/suspend/lock/profile…) |
-| `Mod+Shift+o` | Khóa màn hình nhanh (swaylock) |
 | `Mod+Shift+s` | Mở nhanh ứng học (RemNote + Calibre) |
 | `Mod+t` | Dịch Việt → Anh (quick-lang) |
 | `Mod+Shift+t` | Dịch Anh → Việt (quick-lang) |
