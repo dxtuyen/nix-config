@@ -11,23 +11,13 @@
 
 Máy mục tiêu: **laptop UEFI**, ổ **NVMe 238.5 GB**, **RAM 7.4 GB** (giống máy này).
 
-Sơ đồ sau khi phân vùng (`/dev/nvme0n1`):
+Sơ đồ phân vùng mục tiêu (`/dev/nvme0n1`):
 
-```
-+---------------------------+----------+------------------+-------------------+
-| Partition                 | Kích thước | FS / Loại         | Mount             |
-+---------------------------+----------+------------------+-------------------+
-| /dev/nvme0n1p1  (EFI)    | 1 GiB    | vfat (FAT32)     | /boot (systemd-boot) |
-| /dev/nvme0n1p2  (root)   | còn lại | ext4             | /                 |
-| /dev/nvme0n1p3  (swap)   | 10 GiB   | swap             | [SWAP]           |
-+---------------------------+----------+------------------+-------------------+
-```
-
-| Phân vùng | Kích thước | Loại (cfdisk) | Mục đích |
-|---|---|---|
-| `p1` | **1 GiB** | `EFI System` | systemd-boot (bootloader) |
-| `p2` | **~227 GiB** | `Linux root (x86)` | Hệ điều hành `/` |
-| `p3` | **10 GiB** | `Linux swap` | Swap + **Hibernate** |
+| Phân vùng | Kích thước | FS / Loại | Mount | Mục đích |
+|---|---|---|---|---|
+| `/dev/nvme0n1p1` | **1 GiB** | vfat (FAT32) — `EFI System` | `/boot` | systemd-boot (bootloader) |
+| `/dev/nvme0n1p2` | **~227 GiB** | ext4 — `Linux root (x86)` | `/` | Hệ điều hành |
+| `/dev/nvme0n1p3` | **10 GiB** | swap — `Linux swap` | `[SWAP]` | Swap + **Hibernate** |
 
 > ⚠️ **Quy tắc vàng cho Hibernate:** phân vùng swap phải **≥ RAM** vì lúc hibernate,
 > kernel nén toàn bộ RAM vào swap rồi tắt máy. Máy có RAM 7.4 GB → swap 10 GB là đủ.
