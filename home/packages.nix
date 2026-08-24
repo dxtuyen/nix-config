@@ -26,5 +26,10 @@
     anki
     jq
     fastfetch
+
+    # Máy ảo — luyện tập cài máy mới theo docs/06-Luyen-Tap-VM.md (QEMU trực tiếp + KVM)
+    qemu
+    qemu-utils
+    OVMF
   ];
 }

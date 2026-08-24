@@ -61,6 +61,7 @@ Bắt đầu từ hub [`docs/README.md`](docs/README.md):
 | [Cài máy mới từ đầu](docs/03-Cai-May-Moi.md) | USB → phân vùng → install → kiểm tra hibernate |
 | [Sao lưu & Khôi phục](docs/04-Sao-Luu-Phuc-Hoi.md) | Backup dữ liệu trước khi cài lại |
 | [Từ điển thuật ngữ](docs/05-Tu-Dien-Thuat-Ngu.md) | Tra thuật ngữ Nix / Sway / Hibernate |
+| [Luyện VM](docs/06-Luyen-Tap-VM.md) | Tập cài máy bằng máy ảo (QEMU/KVM) |
 | [RemNote AppImage](docs/REMNODE.md) | Cài & cập nhật RemNote |
 
 ---
