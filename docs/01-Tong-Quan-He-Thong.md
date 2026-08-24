@@ -22,7 +22,7 @@
 | `core.nix` | Nền tảng: Nix/flake, systemd-boot, NetworkManager, user `doxuantuyen`, gói hệ thống tối thiểu |
 | `desktop.nix` | Sway + greetd (tuigreet), PipeWire, XDG portal, Fcitx5 + Unikey, fonts, power-profiles-daemon, bluetooth |
 | `development.nix` | VS Code, Python, GCC, CMake, gdb, podman, distrobox, nix-ld |
-| `laptop.nix` | **Swap 10G + hibernate** (`swapDevices` + `resume=UUID=`), zram 50% RAM, keyd, battery threshold 85–90%, fwupd, logind (đóng nắp → suspend) |
+| `laptop.nix` | **Hibernate** (`resume=UUID=`), zram 50% RAM, keyd, battery threshold 85–90%, fwupd, logind (đóng nắp → suspend) — **swap khai trong `hosts/laptop/hardware-configuration.nix`** (tự sinh) |
 | `system-tweaks.nix` | earlyoom (chống treo RAM), fstrim hàng tuần |
 
 ## Các file trong `home/`

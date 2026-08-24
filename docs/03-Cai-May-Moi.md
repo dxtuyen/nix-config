@@ -32,7 +32,7 @@ Sơ đồ phân vùng mục tiêu (`/dev/nvme0n1`):
 | `EFI` | `/dev/nvme0n1p1` | Phân vùng EFI 1 GiB |
 | `ROOT` | `/dev/nvme0n1p2` | Phân vùng root (ext4) |
 | `SWAP` | `/dev/nvme0n1p3` | Phân vùng swap (10 GiB) |
-| `SWAP_UUID` | `044520bf-eed9-498c-a382-97615c111b1f` | UUID của `SWAP` — **phải khớp** với `modules/nixos/laptop.nix` |
+| `SWAP_UUID` | `044520bf-eed9-498c-a382-97615c111b1f` | UUID của `SWAP` — phải khớp cả `hardware-configuration.nix` (swapDevices) lẫn `resume=UUID=` trong `laptop.nix` |
 
 > Nếu máy mới dùng ổ SATA (`/dev/sda`…) thì chỉ cần đổi tên thiết bị, còn UUID và các file vẫn như thường.
 
@@ -172,7 +172,7 @@ cat /mnt/etc/nixos/hardware-configuration.nix
 Những gì file vừa sinh chứa:
 - `fileSystems."/"` → UUID của `p2`.
 - `fileSystems."/boot"` → UUID của `p1`.
-- `swapDevices` → có thể đã tự điền `p3` hoặc để `[ ]` (tuỳ lần sinh). Giữ nguyên, bước sau xử lý.
+- `swapDevices` → vì bạn đã `swapon` trước khi chạy `nixos-generate-config`, mục này sẽ **tự điền đúng phân vùng swap** — chính là nơi khai swap duy nhất.
 
 ---
 
@@ -194,33 +194,35 @@ cp /mnt/etc/nixos/hardware-configuration.nix \
 
 File này mang **UUID root + boot của máy mới** — tự sinh nên không cần sửa tay.
 
-### 7.3 Đồng bộ **UUID swap** trong `modules/nixos/laptop.nix`
+### 7.3 Swap — tự khớp nhờ `hardware-configuration.nix` (không cần sửa!)
 
-Mở `modules/nixos/laptop.nix`, tìm khối `--- Swap + Hibernation ---`:
+Bản thiết kế: `swapDevices` được khai trong `hosts/laptop/hardware-configuration.nix`
+(file **tự sinh** bởi `nixos-generate-config` ở Bước 6). Vì bạn đã `swapon` trước khi
+chạy lệnh sinh config, file này sẽ **tự điền đúng UUID swap của máy mới** →
+không phải sửa gì về swap. Kiểm tra nhanh:
+
+```bash
+grep -A4 swapDevices /tmp/nix-config/hosts/laptop/hardware-configuration.nix
+# phải thấy UUID khớp với `blkid` ở Bước 5
+```
+
+### 7.4 Đồng bộ **UUID swap** trong `modules/nixos/laptop.nix`
+
+`laptop.nix` chỉ còn khai **1 chỗ** liên quan swap — tham số kernel `resume=UUID=`:
 
 ```nix
-swapDevices = [
-  { device = "/dev/disk/by-uuid/044520bf-eed9-498c-a382-97615c111b1f"; }
-];
+# --- Hibernation ---
 boot.kernelParams = [
-  "resume=UUID=044520bf-eed9-498c-a382-97615c111b1f"
+  "resume=UUID=044520bf-eed9-498c-a382-97615c111b1f"   # ← sửa UUID này cho khớp SWAP_UUID mới
 ];
 ```
 
-> 🖥️ Thay mỗi chỗ `044520bf-...` bằng **`SWAP_UUID`** mới lấy ở Bước 5.
-> Có **2 nơi phải cùng một UUID**:
-> 1. `device = "/dev/disk/by-uuid/<SWAP_UUID>"`
-> 2. `resume=UUID=<SWAP_UUID>` — tham số kernel để tìm swap khi dậy từ hibernate.
-> Quên chỗ nào là hibernate không dậy được.
-
-### 7.4 Chống `swapDevices` trùng
-
-Nếu `hardware-configuration.nix` vừa copy vẫn chứa `p3` trong `swapDevices`,
-hãy đổi thành rỗng để không trùng với `laptop.nix` (trùng → lỗi unit systemd):
-
-```nix
-  swapDevices = [ ];   # laptop.nix đã lo swap
-```
+> 🖥️ Thay `044520bf-...` bằng **`SWAP_UUID`** lấy ở Bước 5. Đây là tham số kernel
+> báo swap nào chứa image hibernate — sai là hibernate không dậy được.
+>
+> **Tóm tắt mỗi lần sang máy mới (chỉ 2 việc về swap):**
+> 1. `hosts/laptop/hardware-configuration.nix` → **thay nguyên file** bằng file mới sinh (7.2) → swap tự khớp.
+> 2. `modules/nixos/laptop.nix` → **sửa `resume=UUID=`** (7.4).
 
 ### 7.5 (Tuỳ chọn) Đặt mật khẩu user trước khi reboot
 
@@ -291,8 +293,8 @@ nixos-generate-config --root /mnt
 # clone repo + đồng bộ UUID
 git clone https://github.com/doxuantuyen/nix-config.git /tmp/nix-config
 cp /mnt/etc/nixos/hardware-configuration.nix /tmp/nix-config/hosts/laptop/
-# → sửa modules/nixos/laptop.nix cho SWAP_UUID (swapDevices + resume=UUID=)
-# → sửa hardware-configuration.nix: swapDevices = [ ]
+# → hardware-configuration.nix đã tự sinh đúng swap (không sửa)
+# → sửa modules/nixos/laptop.nix: resume=UUID=<SWAP_UUID>
 
 # cài
 cd /tmp/nix-config
@@ -308,9 +310,9 @@ reboot
 | Triệu chứng | Nguyên nhân | Cách xử lý |
 |---|---|---|
 | Boot không thấy menu / không vào NixOS | Quên phân vùng EFI, hoặc bảng `dos` thay `gpt` | Làm lại Bước 4: bảng **GPT**, `p1` loại `EFI System` |
-| `nixos-install` báo lỗi unit swap | `swapDevices` trùng ở 2 file | Làm Bước 7.4: `swapDevices = [ ]` trong `hardware-configuration.nix` |
+| `nixos-install` báo lỗi unit swap | `swapDevices` khai sai / trùng | Chỉ khai swap trong `hardware-configuration.nix` (file mới sinh tự đúng) |
 | `nixos-generate-config` không thấy swap | Chưa `swapon` | Chạy `swapon /dev/nvme0n1p3` rồi sinh lại |
-| Hibernate không dậy được | `resume=UUID=` sai/thiếu | Kiểm tra `blkid`, sửa `boot.kernelParams` trong `laptop.nix`, rebuild |
+| Hibernate không dậy được | `resume=UUID=` sai/thiếu | Kiểm tra `blkid`, sửa `resume=UUID=` trong `laptop.nix`, rebuild |
 | Swap nhỏ hơn RAM → hibernate lỗi | Vi phạm quy tắc vàng | Tăng swap ≥ RAM (Bước 4) |
 | Không đăng nhập được user | Chưa đặt mật khẩu `doxuantuyen` | Login root ở TTY (`Ctrl+Alt+F2`) → `passwd doxuantuyen` |
 | Quên copy `hardware-configuration.nix` | UUID root/boot cũ → lỗi boot | Copy file mới vào `hosts/laptop/` rồi rebuild |

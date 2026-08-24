@@ -51,9 +51,9 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 
 Cách dùng: chạy `systemctl hibernate` (hoặc dùng menu nguồn `power-menu`) — máy nén toàn bộ RAM vào **swap 10G**, tắt nguồn; khi bật lại khôi phục nguyên trạng.
 
-Điều kiện hoạt động (đã cấu hình sẵn trong `modules/nixos/laptop.nix`):
-- Phân vùng swap **≥ RAM**: máy này 10G ≥ 7.4G ✓.
-- Kernel có tham số `resume=UUID=...` để biết swap nào chứa image khôi phục.
+Điều kiện hoạt động (đã cấu hình sẵn):
+- Phân vùng swap **≥ RAM**: máy này 10G ≥ 7.4G ✓. Swap khai trong `hosts/laptop/hardware-configuration.nix` (file tự sinh).
+- Kernel có tham số `resume=UUID=...` (trong `modules/nixos/laptop.nix`) để biết swap nào chứa image khôi phục.
 
 ## Sự cố thường gặp
 
