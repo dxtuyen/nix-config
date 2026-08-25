@@ -1,5 +1,9 @@
 { pkgs, ... }:
 
+let
+  # Danh sách tên workspace dùng chung ở home/workspaces.nix
+  ws = import ./workspaces.nix;
+in
 {
   wayland.windowManager.sway = {
     enable = true;
@@ -116,36 +120,36 @@
       bindsym $mod+Shift+Up move up
       bindsym $mod+Shift+Right move right
 
-      # Workspaces
-      # Định nghĩa tên workspace — CHỈ SỬA Ở ĐÂY khi muốn đổi tên
-      set $ws1 "1.study"
-      set $ws2 "2.AI"
-      set $ws3 "3.code"
-      set $ws4 "4.others"
-      workspace number $ws1
-      workspace number $ws2
-      workspace number $ws3
-      workspace number $ws4
-      bindsym $mod+1 workspace number $ws1
-      bindsym $mod+2 workspace number $ws2
-      bindsym $mod+3 workspace number $ws3
-      bindsym $mod+4 workspace number $ws4
-      bindsym $mod+5 workspace number 5
-      bindsym $mod+6 workspace number 6
-      bindsym $mod+7 workspace number 7
-      bindsym $mod+8 workspace number 8
-      bindsym $mod+9 workspace number 9
-      bindsym $mod+0 workspace number 10
-      bindsym $mod+Shift+1 move container to workspace number $ws1
-      bindsym $mod+Shift+2 move container to workspace number $ws2
-      bindsym $mod+Shift+3 move container to workspace number $ws3
-      bindsym $mod+Shift+4 move container to workspace number $ws4
-      bindsym $mod+Shift+5 move container to workspace number 5
-      bindsym $mod+Shift+6 move container to workspace number 6
-      bindsym $mod+Shift+7 move container to workspace number 7
-      bindsym $mod+Shift+8 move container to workspace number 8
-      bindsym $mod+Shift+9 move container to workspace number 9
-      bindsym $mod+Shift+0 move container to workspace number 10
+      # Workspaces — tên tập trung ở home/workspaces.nix (sửa một chỗ).
+      # Mỗi tên ở vị trí thứ N tự sinh: biến $wsN + phím $mod+N / $mod+Shift+N
+      # (vd tên đầu danh sách → $mod+1, thứ hai → $mod+2...).
+      # Các số còn lại đến 10 tự sinh phím trỏ tới workspace số tương ứng
+      # (phím 0 = workspace 10).
+      ${builtins.concatStringsSep "\n" (
+        pkgs.lib.imap1 (
+          i: name:
+          let
+            n = toString i;
+            key = if i == 10 then "0" else n;
+          in
+          ''
+            set $ws${n} "${name}"
+            bindsym $mod+${key} workspace number ${name}
+            bindsym $mod+Shift+${key} move container to workspace number ${name}''
+        ) ws
+      )}
+      ${builtins.concatStringsSep "\n" (
+        map (
+          i:
+          let
+            n = toString i;
+            key = if i == 10 then "0" else n;
+          in
+          ''
+            bindsym $mod+${key} workspace number ${n}
+            bindsym $mod+Shift+${key} move container to workspace number ${n}''
+        ) (pkgs.lib.range (builtins.length ws + 1) 10)
+      )}
       bindsym $mod+u workspace prev
       bindsym $mod+i workspace next
 

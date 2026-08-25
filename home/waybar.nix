@@ -1,5 +1,10 @@
 { config, ... }:
 
+let
+  # Danh sách tên workspace dùng chung ở home/workspaces.nix
+  ws = import ./workspaces.nix;
+in
+
 {
   programs.waybar = {
     enable = true;
@@ -33,6 +38,16 @@
         "disable-scroll" = true;
         "warp-on-scroll" = false;
         format = "{name}";
+        # Ghim sẵn workspace theo danh sách home/workspaces.nix:
+        # luôn hiện trên bar kể cả khi trống.
+        # LƯU Ý: key phải là "persistent-workspaces" (gạch nối) —
+        # viết gạch dưới thì Waybar bỏ qua im lặng!
+        "persistent-workspaces" = builtins.listToAttrs (
+          map (name: {
+            inherit name;
+            value = [ ];
+          }) ws
+        );
       };
       "sway/window" = {
         format = "{title}";
@@ -95,12 +110,11 @@
       };
       backlight = {
         format = "{icon} {percent}%";
+        # Font Awesome: moon -> adjust -> sun (thong nhat voi cac module khac)
         "format-icons" = [
-          "🌑"
-          "🌘"
-          "🌗"
-          "🌖"
-          "🌕"
+          ""
+          ""
+          ""
         ];
       };
       battery = {
@@ -141,9 +155,13 @@
       @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
       window#waybar { background: rgba(0, 0, 0, 0); color: #c0caf5; }
       #workspaces { background: #24283b; border: 1px solid #414868; border-radius: 10px; margin: 4px 0 4px 4px; padding: 0 10px; }
-      #workspaces button { padding: 0 7px; color: #565f89; font-size: 15px; }
-      #workspaces button.focused, #workspaces button.active { color: #7aa2f7; font-weight: bold; }
-      #workspaces button.urgent { color: #f7768e; font-weight: bold; }
+      #workspaces button { padding: 0 7px; color: #a9b1d6; font-size: 15px; border-bottom: 2px solid transparent;
+        background-color: rgba(0, 0, 0, 0); }
+      #workspaces button:hover, #workspaces button:active {
+        background-color: rgba(0, 0, 0, 0); box-shadow: none; }
+      #workspaces button.focused, #workspaces button.active { color: #c0caf5; border-bottom: 2px solid #7aa2f7; }
+      #workspaces button.urgent { color: #f7768e; border-bottom-color: #f7768e; }
+      #workspaces button.persistent.empty { color: #565f89; }
       #window { background: #364a82; border: 1px solid #7aa2f7; border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: #c0caf5; font-weight: bold; }
       #idle_inhibitor, #pulseaudio, #backlight, #temperature, #battery, #power-profiles-daemon, #cpu, #memory, #tray, #mode, #scratchpad { background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 0; }
       #mode { color: #7aa2f7; background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; }
