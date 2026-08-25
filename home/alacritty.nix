@@ -25,6 +25,10 @@
         decorations = "None";
       };
 
+      # Chỉ định family để khớp font với Waybar (JetBrains Mono);
+      # size/bold/italic để mặc định của Alacritty
+      font.normal.family = "JetBrainsMono Nerd Font";
+
       # Beam (thanh dọc) nhấp nháy — hiện đại, gọn gàng
       cursor = {
         style = {
