@@ -159,7 +159,7 @@ in
         background-color: rgba(0, 0, 0, 0); }
       #workspaces button:hover, #workspaces button:active {
         background-color: rgba(0, 0, 0, 0); box-shadow: none; }
-      #workspaces button.focused, #workspaces button.active { color: #c0caf5; border-bottom: 2px solid #7aa2f7; }
+      #workspaces button.focused, #workspaces button.active { color: #7aa2f7; border-bottom: 2px solid #7aa2f7; }
       #workspaces button.urgent { color: #f7768e; border-bottom-color: #f7768e; }
       #workspaces button.persistent.empty { color: #565f89; }
       #window { background: #364a82; border: 1px solid #7aa2f7; border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: #c0caf5; font-weight: bold; }
