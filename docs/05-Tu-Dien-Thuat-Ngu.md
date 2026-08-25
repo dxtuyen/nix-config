@@ -33,7 +33,8 @@
 | **Sway** | Tiling window manager cho Wayland (`home/sway.nix`) |
 | **Greetd / Tuigreet** | Display manager nhẹ + màn hình đăng nhập TUI |
 | **Waybar / Mako** | Thanh trạng thái / daemon thông báo |
-| **Foot** | Terminal mặc định (theme Tokyo Night) |
+| **Alacritty** | Terminal mặc định (theme Tokyo Night) |
+| **Starship** | Prompt shell tối giản (directory + git, không user@hostname) |
 | **Rofi** | Launcher ứng dụng + chuyển cửa sổ |
 | **PipeWire** | Máy chủ âm thanh/video (thay PulseAudio) |
 | **grim / slurp** | Chụp màn hình / chọn vùng |

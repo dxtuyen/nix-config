@@ -2,7 +2,7 @@
 
 ## Máy này là gì
 
-- **NixOS 26.05** (x86_64) chạy **Sway** (Wayland) + **Waybar** + **Mako** (thông báo) + **Foot** (terminal), theme **Tokyo Night** đồng bộ toàn hệ thống.
+- **NixOS 26.05** (x86_64) chạy **Sway** (Wayland) + **Waybar** + **Mako** (thông báo) + **Alacritty** (terminal) + **Starship** (prompt), theme **Tokyo Night** đồng bộ toàn hệ thống.
 - Toàn bộ cấu hình nằm trong repo `nix-config` (được version bằng git) — không cài "theo kiểu Ubuntu" mà **khai báo rồi build** ra hệ thống.
 
 ## Hai tầng cấu hình
@@ -10,7 +10,7 @@
 | Tầng | Thư mục | Quản lý bởi | Gồm |
 |---|---|---|---|
 | Hệ điều hành | `modules/nixos/` | NixOS (cần root) | boot, mạng, Sway/greetd, âm thanh, bộ gõ, user, swap + hibernate |
-| Người dùng | `home/` | Home-Manager | config Sway, Waybar, Foot, script cá nhân, gói user |
+| Người dùng | `home/` | Home-Manager | config Sway, Waybar, Alacritty, script cá nhân, gói user |
 
 - Entry point: `flake.nix` → `hosts/laptop/default.nix` → import các module NixOS + gắn home-manager cho user `doxuantuyen`.
 - Một lệnh `sudo nixos-rebuild switch --flake .#laptop` cập nhật **cả hai tầng**.
@@ -32,12 +32,12 @@
 | `default.nix` | Entry point: import tất cả, bật `xdg`, PATH `~/.local/bin` |
 | `packages.nix` | Gói user: rofi, grim, slurp, swaylock, swayidle, google-chrome, obsidian, anki, calibre, sioyek, ticktick... |
 | `sway.nix` | Cửa sổ, layout, idle/lock/sleep (swayidle), phím tắt (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)) |
-| `waybar.nix` / `foot.nix` / `gtk.nix` / `mako.nix` | Thanh trạng thái / terminal / theme / thông báo |
+| `waybar.nix` / `alacritty.nix` + `starship.nix` / `gtk.nix` / `mako.nix` | Thanh trạng thái / terminal / theme / thông báo |
 | `fcitx5.nix` | Bộ gõ tiếng Việt |
 | `scripts.nix` | Script `~/.local/bin`: lock-screen, power-menu, quick-lang, screenshot-menu, cycle-wallpaper... |
 | `pomodoro.nix` | Pomodoro timer + menu |
 | `remnote.nix` | RemNote AppImage (khung cài + script `update-remnote`) |
-| `thunar.nix` | File manager + mở terminal bằng Foot |
+| `thunar.nix` | File manager + mở terminal bằng Alacritty |
 
 ## Dòng chảy khởi động
 
