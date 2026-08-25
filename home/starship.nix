@@ -11,8 +11,9 @@
     enableBashIntegration = true;
 
     settings = {
-      # Không chèn dòng trống giữa các prompt (giữ terminal gọn)
-      add_newline = false;
+      # 1 dòng trống giữa các prompt — đây là MẶC ĐỊNH của Starship,
+      # cần cho prompt 2 dòng để có khoảng thở giữa các lần gõ lệnh
+      add_newline = true;
 
       # Prompt 2 dòng kiểu rice cộng đồng:
       # dòng 1 — đường dẫn + branch + git status + thời gian lệnh

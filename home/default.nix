@@ -44,6 +44,18 @@
     enable = true;
     initExtra = ''
       export PATH="$HOME/.local/bin:$PATH"
+
+      # Đặt tiêu đề cửa sổ theo thư mục hiện tại (Waybar + rofi đọc từ đây).
+      # Starship không tự set terminal title như PROMPT_COMMAND mặc định
+      # của bash, nên cần tự phát OSC 2 mỗi lần hiện prompt.
+      __set_window_title() {
+        # Tách 2 bước để né tilde expansion: nếu viết trực tiếp
+        # PWD/#HOME/~ trong replacement thì ký tự ~ bị bash mở rộng
+        # ngược thành $HOME, làm title vẫn hiện đường dẫn đầy đủ.
+        local dir="''${PWD/#$HOME/}"
+        printf '\033]2;~%s\007' "$dir"
+      }
+      PROMPT_COMMAND="__set_window_title''${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
     '';
   };
 }
