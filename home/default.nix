@@ -20,7 +20,8 @@
 
   imports = [
     ./packages.nix # Các gói cài qua home.packages
-    ./foot.nix # Terminal foot (theme Tokyo Night)
+    ./alacritty.nix # Terminal Alacritty (theme Tokyo Night)
+    ./starship.nix # Prompt tối giản không user@hostname
     ./gtk.nix # Cấu hình GTK: icon Papirus-Dark + dark theme mặc định
     ./sway.nix # Cấu hình Sway (window manager)
     ./waybar.nix # Thanh trạng thái Waybar
@@ -29,7 +30,7 @@
     ./scripts.nix # Các script thủ công trong ~/.local/bin
     ./pomodoro.nix # Pomodoro timer + menu (tách riêng cho gọn)
     ./remnote.nix # Tích hợp RemNote AppImage (appimage-run + desktop entry + update-remnote)
-    ./thunar.nix # Đăng ký Foot làm terminal mặc định cho Thunar
+    ./thunar.nix # Đăng ký Alacritty làm terminal mặc định cho Thunar
   ];
 
   # Quản lý profile home-manager (cho phép lệnh home-manager switch)

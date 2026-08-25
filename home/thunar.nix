@@ -1,23 +1,23 @@
 { ... }:
 
-# Dang ky Foot lam terminal mac dinh cho Thunar va tao entry Neovim
-# mo truc tiep trong Foot (khong phu thuoc Terminal=true cua nvim.desktop).
+# Dang ky Alacritty lam terminal mac dinh cho Thunar va tao entry Neovim
+# mo truc tiep trong Alacritty (khong phu thuoc Terminal=true cua nvim.desktop).
 
 {
-  # 1. Ghi ~/.config/xfce4/helpers.rc de libexo biet terminal la foot
+  # 1. Ghi ~/.config/xfce4/helpers.rc de libexo biet terminal la alacritty
   xdg.configFile."xfce4/helpers.rc" = {
     text = ''
-      TerminalEmulator=foot
+      TerminalEmulator=alacritty
     '';
   };
 
-  # 2. Tao desktop entry "Neovim" rieng: Exec = foot -e nvim,
+  # 2. Tao desktop entry "Neovim" rieng: Exec = alacritty -e nvim,
   # Terminal = false de Thunar mo truc tiep khong qua exo helper.
   xdg.desktopEntries.nvim = {
-    name = "Neovim (Foot)";
-    comment = "Open in neovim inside foot";
+    name = "Neovim";
+    comment = "Open in neovim inside alacritty";
     icon = "nvim";
-    exec = "foot -e nvim %F";
+    exec = "alacritty -e nvim %F";
     terminal = false;
     type = "Application";
     categories = [
@@ -43,6 +43,6 @@
     ];
   };
 
-  # 3. Dat mac dinh text/plain cho entry Neovim (Foot)
+  # 3. Dat mac dinh text/plain cho entry Neovim (Alacritty)
   xdg.mimeApps.defaultApplications."text/plain" = [ "nvim.desktop" ];
 }
