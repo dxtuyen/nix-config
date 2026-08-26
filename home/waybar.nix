@@ -161,7 +161,7 @@ in
         background-color: rgba(0, 0, 0, 0); box-shadow: none; }
       #workspaces button.focused, #workspaces button.active { color: #7aa2f7; border-bottom: 2px solid #7aa2f7; }
       #workspaces button.urgent { color: #f7768e; border-bottom-color: #f7768e; }
-      #workspaces button.persistent.empty { color: #565f89; }
+      #workspaces button.persistent.empty { color: #737aa2; }  /* TN dark5 — sát tone #a9b1d6 để bug nháy #3865 gần như vô hình */
       #window { background: #364a82; border: 1px solid #7aa2f7; border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: #c0caf5; font-weight: bold; }
       #idle_inhibitor, #pulseaudio, #backlight, #temperature, #battery, #power-profiles-daemon, #cpu, #memory, #tray, #mode, #scratchpad { background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 0; }
       #mode { color: #7aa2f7; background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; }

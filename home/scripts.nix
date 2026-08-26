@@ -173,8 +173,24 @@
 
         # Query trạng thái THỰC TẾ từ sway thay vì tin state file
         # (state file có thể lệch sau khi restart session vì sway luôn bật touchpad khi khởi động)
-        current="$(swaymsg -t get_inputs 2>/dev/null | jq -r '[.[] | select(.type == "touchpad") | (.libinput.send_events // .libinput.events)][0] // empty' 2>/dev/null)"
+        current="$(swaymsg -t get_inputs 2>/dev/null | jq -r '[.[] | select(.type == "touchpad") | .libinput.send_events][0] // empty' 2>/dev/null)"
         [ -n "$current" ] || current="enabled"
+
+        # Áp dụng lại TOÀN BỘ cấu hình touchpad (khớp 1:1 với block
+        # input type:touchpad trong sway.nix). Nếu chỉ chạy `events enabled`
+        # thì sway có thể chưa re-apply các thiết lập còn lại → cảm giác chuột
+        # sai so với cấu hình, phải đợi sway tự áp lại sau. Gọi hàm này khi
+        # bật để đảm bảo đúng cấu hình NGAY LẬP TỨC.
+        apply_touchpad_config() {
+          swaymsg input type:touchpad pointer_accel 0.6
+          swaymsg input type:touchpad accel_profile adaptive
+          swaymsg input type:touchpad natural_scroll disabled
+          swaymsg input type:touchpad scroll_method two_finger
+          swaymsg input type:touchpad tap enabled
+          swaymsg input type:touchpad drag enabled
+          # events enabled đặt CUỐI cùng để bật sau khi mọi thiết lập đã sẵn sàng
+          swaymsg input type:touchpad events enabled
+        }
 
         case "$current" in
           enabled)
@@ -184,7 +200,7 @@
             icon="input-touchpad"
             ;;
           disabled)
-            swaymsg input type:touchpad events enabled
+            apply_touchpad_config
             new_state="on"
             label="Touchpad đã bật"
             icon="input-touchpad"
