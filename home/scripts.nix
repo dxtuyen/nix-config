@@ -118,13 +118,17 @@
 
         mode="''${1:-vi-en}"
 
+        # Thông báo dịch persistent: không hết hạn (default-timeout = 0 trong mako.nix).
+        # Tag để lần dịch mới THAY THẾ thông báo cũ thay vì chồng chấn.
+        ntf() { notify-send -a quick-lang -h string:x-dunst-stack-tag:quick-lang "$@"; }
+
         # ---- Lấy API key ----
         API_KEY="''${GEMINI_API_KEY:-}"
         if [ -z "$API_KEY" ] && [ -r "''${XDG_CONFIG_HOME:-$HOME/.config}/quick-lang/api.key" ]; then
           API_KEY="$(cat "''${XDG_CONFIG_HOME:-$HOME/.config}/quick-lang/api.key" 2>/dev/null | tr -d '[:space:]')"
         fi
         if [ -z "$API_KEY" ]; then
-          notify-send -a quick-lang -u critical -t 7000 "Quick Lang" "Chưa có API key. Ghi key vào ~/.config/quick-lang/api.key hoặc đặt biến GEMINI_API_KEY."
+          ntf -u critical "Quick Lang" "Chưa có API key. Ghi key vào ~/.config/quick-lang/api.key hoặc đặt biến GEMINI_API_KEY."
           exit 1
         fi
 
@@ -132,14 +136,14 @@
         text="$(wl-paste -p 2>/dev/null || true)"
         [ -n "''${text//[[:space:]]/}" ] || text="$(wl-paste 2>/dev/null || true)"
         [ -n "''${text//[[:space:]]/}" ] || {
-          notify-send -a quick-lang -t 7000 "Quick Lang" "Không có văn bản nào được chọn hoặc copy."
+          ntf "Quick Lang" "Không có văn bản nào được chọn hoặc copy."
           exit 1
         }
 
         case "$mode" in
           vi-en) from="Vietnamese"; to="English"; label="VI → EN" ;;
           en-vi) from="English"; to="Vietnamese"; label="EN → VI" ;;
-          *) notify-send -a quick-lang -t 7000 "Quick Lang" "Mode không hợp lệ: $mode"; exit 1 ;;
+          *) ntf "Quick Lang" "Mode không hợp lệ: $mode"; exit 1 ;;
         esac
 
         # ---- Gọi Gemini Flash ----
@@ -154,12 +158,12 @@
         result="$(printf '%s' "$result" | sed -e 's/^```[a-zA-Z]*//' -e 's/```$//' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
 
         if [ -z "''${result//[[:space:]]/}" ]; then
-          notify-send -a quick-lang -u critical -t 7000 "Quick Lang" "Dịch thất bại. Kiểm tra API key hoặc kết nối mạng."
+          ntf -u critical "Quick Lang" "Dịch thất bại. Kiểm tra API key hoặc kết nối mạng."
           exit 1
         fi
 
         printf %s "$result" | wl-copy
-        notify-send -a quick-lang -t 7000 "$label" "$result"
+        ntf "$label" "$result"
       '';
     };
 
