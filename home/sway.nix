@@ -12,10 +12,6 @@ in
     systemd.enable = true;
 
     extraConfig = ''
-      # 0. Dọn swayidle cũ trước khi chạy bản mới (exec_always: chạy lại mỗi lần reload,
-      # nên không bao giờ kẹt ở bản cũ sau khi sửa config)
-      exec_always pkill -x swayidle 2>/dev/null || true
-
       # 1. Đồng bộ biến màn hình & bộ gõ từ Sway vào Systemd & DBus
       exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway SWAYSOCK XMODIFIERS QT_IM_MODULE
       exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK XMODIFIERS QT_IM_MODULE
@@ -87,6 +83,16 @@ in
       # Chrome Picture-in-Picture
       for_window [title="Picture in picture"] floating enable, sticky enable, resize set width 350 px height 197 px, move position 1530 px 800 px
 
+      # RemNote luôn mở vào workspace 1.study (và view nhảy sang workspace đó)
+      # (?i) = không phân biệt hoa/thường, bắt cả class "RemNote" lẫn app_id "remnote"
+      for_window [class="(?i)remnote"] move container to workspace number 1.study, workspace number 1.study
+      for_window [app_id="(?i)remnote"] move container to workspace number 1.study, workspace number 1.study
+
+      # VS Code luôn mở vào workspace 3.code (và view nhảy sang workspace đó)
+      # neo ^code$ để không nhầm với app khác có chữ "code" trong tên
+      for_window [class="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
+      for_window [app_id="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
+
       # Inhibit idle
       for_window [class="google-chrome"] inhibit_idle fullscreen
 
@@ -97,7 +103,6 @@ in
       bindsym $mod+Tab exec rofi -show window
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
-      bindsym $mod+Shift+s exec ~/.local/bin/open-study-apps
       bindsym $mod+Shift+n exec ~/.local/bin/toggle-wlsunset
 
       # Focus movement
@@ -121,7 +126,7 @@ in
       bindsym $mod+Shift+Right move right
 
       # Workspaces — tên tập trung ở home/workspaces.nix (sửa một chỗ).
-      # Mỗi tên ở vị trí thứ N tự sinh: biến $wsN + phím $mod+N / $mod+Shift+N
+      # Mỗi tên ở vị trí thứ N tự sinh: phím $mod+N / $mod+Shift+N
       # (vd tên đầu danh sách → $mod+1, thứ hai → $mod+2...).
       # Các số còn lại đến 10 tự sinh phím trỏ tới workspace số tương ứng
       # (phím 0 = workspace 10).
@@ -133,7 +138,6 @@ in
             key = if i == 10 then "0" else n;
           in
           ''
-            set $ws${n} "${name}"
             bindsym $mod+${key} workspace number ${name}
             bindsym $mod+Shift+${key} move container to workspace number ${name}''
         ) ws
@@ -152,6 +156,12 @@ in
       )}
       bindsym $mod+u workspace prev
       bindsym $mod+i workspace next
+
+      # Khởi động phiên ở workspace số 5 (trần, không tên): giữ 1.study..4.work
+      # trống sẵn cho đúng ngữ cảnh; workspace 5 là "bàn nháp" lúc vừa đăng nhập.
+      # Bọc trong exec (chỉ chạy lúc khởi động) thay vì lệnh trần, để không bị
+      # kéo về 5 mỗi lần `swaymsg reload`.
+      exec swaymsg workspace number 5
 
       # Layout & Window State
       bindsym $mod+b splith
@@ -198,9 +208,9 @@ in
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
-      # Idle management — 1 swayidle duy nhất quản lý toàn bộ chuỗi (chuẩn sway wiki + swayidle(1)).
-      # exec_always: đảm bảo mỗi lần swaymsg reload, swayidle bản mới được chạy lại
-      # (exec thường chỉ chạy 1 lần lúc khởi động → kẹt bản cũ như từng gặp).
+      # Idle management — đã chuyển swayidle sang chạy như một systemd user
+      # service (`systemd.user.services.swayidle`, khai ở cuối file này).
+      # Chuỗi hành vi giữ nguyên:
       #   300s idle       → khóa màn hình (lock-screen dùng `swaylock -f`, trả về ngay)
       #   310s idle       → tắt màn (power off); có thao tác → bật lại nhưng vẫn khóa
       #   900s idle       → sleep (suspend) — màn đã tắt & khóa nên an toàn
@@ -208,15 +218,51 @@ in
       #   after-resume    → bật màn lại sau khi máy dậy
       #   lock / unlock   → logind báo khóa/mở khóa phiên (vd: loginctl lock-session, đóng nắp đã cấu hình suspend)
       # (swayidle tự reset khi có bất kỳ thao tác nào nên không bao giờ suspend khi đang dùng)
-      exec_always swayidle -w \
-        timeout 300 '~/.local/bin/lock-screen' \
-        timeout 310 'swaymsg "output * power off"' \
-        resume 'swaymsg "output * power on"' \
-        timeout 900 'systemctl suspend' \
-        before-sleep '~/.local/bin/lock-screen' \
-        after-resume 'swaymsg "output * power on"' \
-        lock '~/.local/bin/lock-screen' \
-        unlock 'swaymsg "output * power on"'
     '';
+  };
+
+  # swayidle chạy như một systemd user service thay vì `exec_always` trong Sway.
+  # Lý do: exec_always từng để tiến trình chết lặng lẽ mà không hồi sinh và không
+  # có log → cả chuỗi khóa/tắt màn/ngủ im lặng "tử vong" trong phiên chạy dài.
+  # Chạy qua systemd cho ta:
+  #   - Restart=on-failure: process crash là tự hồi sinh sau vài giây
+  #   - Log vào journald: xem lỗi bằng `journalctl --user -u swayidle`
+  #   - Vòng đời gắn với phiên Sway: target dừng → service tự dừng, không còn
+  #     cần mẹo `pkill -x swayidle` mỗi lần reload như trước đây.
+  systemd.user.services.swayidle = {
+    Unit = {
+      Description = "Idle manager for Wayland (lock → screen off → suspend)";
+      After = [ "sway-session.target" ];
+      PartOf = [ "sway-session.target" ];
+      StartLimitIntervalSec = 60;
+    };
+    Service = {
+      Type = "simple";
+      # Đảm bảo chỉ một swayidle duy nhất: diệt instance lạc loài (nếu có) trước
+      # khi bật bản mới — tránh cảnh hai tiến trình cùng đếm idle → khóa chồng.
+      # Dấu "-" phía trước: coi fail là thành công (khi không có gì để diệt).
+      ExecStartPre = "-${pkgs.procps}/bin/pkill -x swayidle";
+      # PATH đầy đủ cho các lệnh con mà swayidle spawn qua shell:
+      #   swaymsg + systemctl (/run/current-system/sw/bin), lock-screen (~/.local/bin)
+      Environment = [
+        "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
+      ];
+      Restart = "on-failure";
+      RestartSec = 3;
+      ExecStart = ''
+        ${pkgs.swayidle}/bin/swayidle -w \
+          timeout 300 '%h/.local/bin/lock-screen' \
+          timeout 310 'swaymsg "output * power off"' \
+          resume 'swaymsg "output * power on"' \
+          timeout 900 'systemctl suspend' \
+          before-sleep '%h/.local/bin/lock-screen' \
+          after-resume 'swaymsg "output * power on"' \
+          lock '%h/.local/bin/lock-screen' \
+          unlock 'swaymsg "output * power on"'
+      '';
+    };
+    Install = {
+      WantedBy = [ "sway-session.target" ];
+    };
   };
 }

@@ -398,24 +398,6 @@
       '';
     };
 
-    ".local/bin/open-study-apps" = {
-      executable = true;
-      text = ''
-        #! /usr/bin/env bash
-        # Mở RemNote và Calibre (không tự chuyển workspace)
-        set -u
-
-        notify-send -a open-study-apps -i "view-refresh" -t 3000 -u normal \
-          "Mở app Study" "Đang mở RemNote, Calibre..."
-
-        swaymsg "exec appimage-run $HOME/Apps/RemNote/RemNote.AppImage" >/dev/null 2>&1 || true
-        swaymsg "exec calibre" >/dev/null 2>&1 || true
-
-        notify-send -a open-study-apps -i "document-open-recent" -t 3000 \
-          "Mở app Study" "Đã mở: RemNote, Calibre."
-      '';
-    };
-
     ".local/bin/power-menu" = {
       executable = true;
       text = ''

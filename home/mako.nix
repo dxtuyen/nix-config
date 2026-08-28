@@ -34,7 +34,6 @@
       "app-name=power-profiles".default-timeout = 2000;
       "app-name=toggle-touchpad".default-timeout = 2000;
       "app-name=pomodoro".default-timeout = 5000;
-      "app-name=open-study-apps".default-timeout = 3000;
       "app-name=screenshot".default-timeout = 2000;
       "app-name=power".default-timeout = 2000;
     };
