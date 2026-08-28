@@ -22,6 +22,22 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | Dọn rác store | `nix-collect-garbage -d` (GC tự động hàng tuần theo `core.nix`) |
 | Xem log Sway | `journalctl -b -u sway` / `journalctl --user -u sway` |
 
+## Gói lấy từ nixpkgs-unstable
+
+Một số app cần bản mới hơn bản đóng gói trong nhánh stable — ví dụ **TickTick**
+phát hành bản chính thức sớm, còn gói `ticktick` trong `nixos-26.05` chậm vài
+phiên bản. Vì vậy `ticktick` được lấy riêng từ input `nixpkgs-unstable`
+(khai trong `flake.nix`, cấu hình ở `home/packages.nix`); các gói khác vẫn
+dùng stable. Để nâng gói này lên bản mới nhất trên unstable:
+
+```bash
+nix flake update nixpkgs-unstable   # cập nhật riêng input unstable
+sudo nixos-rebuild switch --flake .#laptop
+```
+
+(Có thể bỏ qua bước *update* nếu chưa muốn: cứ rebuild là dùng đúng bản
+đã lock trong `flake.lock`.)
+
 ## Scripts quan trọng (`~/.local/bin`)
 
 | Script | Chức năng |

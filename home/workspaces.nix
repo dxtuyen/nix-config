@@ -10,6 +10,4 @@
   "2.AI"
   "3.code"
   "4.work"
-  # Đang dùng trống, muốn đặt tên thì sửa vd: "5.read"
-  "5.others"
 ]

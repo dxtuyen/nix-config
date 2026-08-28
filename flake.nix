@@ -7,6 +7,11 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Phương án nixpkgs-unstable: dùng riêng cho vài gói cần phiên bản mới hơn
+    # stable (vd: ticktick thường phát hành bản chính thức sớm hơn bản được
+    # đóng gói vào nhánh nixos-26.05). Chỉ "chấm" từng gói từ đây, phần còn
+    # lại của hệ thống vẫn chạy trên nixpkgs stable.
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
   outputs =

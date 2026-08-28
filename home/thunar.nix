@@ -2,6 +2,11 @@
 
 # Dang ky Alacritty lam terminal mac dinh cho Thunar va tao entry Neovim
 # mo truc tiep trong Alacritty (khong phu thuoc Terminal=true cua nvim.desktop).
+#
+# Luu y: goi `thunar` duoc cai qua home/packages.nix. Thung rac (Move to
+# Trash) can GVFS daemon, duoc bat o NixOS level `services.gvfs.enable`
+# trong modules/nixos/desktop.nix (thieu GVFS thi Thunar xoa thang, khong
+# co Thung rac).
 
 {
   # 1. Ghi ~/.config/xfce4/helpers.rc de libexo biet terminal la alacritty

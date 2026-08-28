@@ -15,6 +15,11 @@ in
   programs.sway.enable = true;
   programs.dconf.enable = true;
 
+  # GVFS: daemon virtual-filesystem cung cap "Move to Trash" (thung rac),
+  # mount USB, reserved space v.v. cho cac file manager GTK nhu Thunar.
+  # Thieu GVFS thi Thunar se XOA THANG vi khong co cho de chuyen vao thung rac.
+  services.gvfs.enable = true;
+
   # GPU acceleration chuẩn từ NixOS 24.05 trở lên
   hardware.graphics.enable = true;
 
