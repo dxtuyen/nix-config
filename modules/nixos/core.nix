@@ -22,9 +22,17 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   networking = {
-    networkmanager.enable = true;
+    networkmanager = {
+      enable = true;
+      # Dùng systemd-resolved làm DNS backend: có cache + fallback DNS tự động
+      # (Cloudflare/Google) khi DNS router không trả lời. Trước đây resolv.conf
+      # chỉ trỏ duy nhất vào router → router DNS "đứng hình" là mọi lookup fail
+      # và phải tắt máy bật lại mới hết.
+      dns = "systemd-resolved";
+    };
     firewall.enable = true;
   };
+  services.resolved.enable = true;
   programs.nh = {
     enable = true;
     # Cho `nh os switch` / `nh clean` biết flake mặc định mà không cần gõ path
