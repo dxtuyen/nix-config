@@ -1,25 +1,10 @@
-{ pkgs, inputs, ... }:
+{ pkgs, ... }:
 
-# Ghi chú: `ticktick` được lấy từ nixpkgs-unstable (khai trong flake.nix) vì
-# TickTick phát hành bản chính thức sớm hơn; gói đóng gói vào nhánh stable
-# (nixos-26.05) thường chậm vài phiên bản. Cách dùng:
-#   nix flake update nixpkgs-unstable   # nâng input unstable lên bản mới nhất
-#   sudo nixos-rebuild switch --flake .#laptop
-# Các gói còn lại trong list này vẫn dùng nixpkgs stable (biến `pkgs`).
-
-let
-  # Instance nixpkgs-unstable có cấu hình riêng để khớp hệ thống (allowUnfree).
-  # legacyPackages thông thường sẽ chặn gói unfree (v.d. ticktick) vì không
-  # kế thừa nixpkgs.config.allowUnfree = true từ core.nix.
-  unstable = import inputs.nixpkgs-unstable {
-    inherit (pkgs) system;
-    config = {
-      allowUnfree = true;
-      permittedInsecurePackages = pkgs.config.permittedInsecurePackages or [ ];
-    };
-  };
-in
+# Ghi chú: toàn bộ gói bên dưới lấy từ nixpkgs stable (pinned nixos-26.05
+# trong flake.lock). Trước đây `ticktick` phải lấy từ nixpkgs-unstable vì
+# bản stable đóng gói chậm — hiện stable đã đuổi kịp nên không cần nữa.
 {
+
   home.packages = with pkgs; [
     rofi
     wlsunset
@@ -45,8 +30,9 @@ in
     fastfetch
     libreoffice
     unrar
-    # Lấy bản mới nhất của ticktick từ nixpkgs-unstable
-    unstable.ticktick
+    # TickTick — stable 26.05 đã đóng gói đúng bản chính thức mới nhất (8.0.10)
+    ticktick
+
     # Máy ảo — luyện tập cài máy mới theo docs/06-Luyen-Tap-VM.md
     # qemu_kvm: bản QEMU chỉ target x86_64 + KVM, nhẹ hơn meta-package qemu
     qemu_kvm

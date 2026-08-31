@@ -119,8 +119,18 @@
         mode="''${1:-vi-en}"
 
         # Thông báo dịch persistent: không hết hạn (default-timeout = 0 trong mako.nix).
-        # Tag để lần dịch mới THAY THẾ thông báo cũ thay vì chồng chấn.
-        ntf() { notify-send -a quick-lang -h string:x-dunst-stack-tag:quick-lang "$@"; }
+        # Mỗi lần dịch mới sẽ DISMISS thông báo cũ rồi gửi cái mới → hiệu ứng
+        # "nhấp nháy" giúp biết ngay là có bản dịch mới, kể cả khi nội dung giống hệt.
+        # Id của thông báo đang hiển thị lưu trong tmpfs ($XDG_RUNTIME_DIR, trên RAM).
+        NTF_ID_FILE="''${XDG_RUNTIME_DIR:-/tmp}/quick-lang-notify-id"
+        ntf() {
+          old_id="$(cat "$NTF_ID_FILE" 2>/dev/null || true)"
+          if [ -n "$old_id" ]; then
+            makoctl dismiss -n "$old_id" 2>/dev/null || true
+            sleep 0.1
+          fi
+          printf %s "$(notify-send -a quick-lang -p "$@")" > "$NTF_ID_FILE"
+        }
 
         # ---- Lấy API key ----
         API_KEY="''${GEMINI_API_KEY:-}"
