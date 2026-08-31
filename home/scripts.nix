@@ -112,8 +112,9 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Dịch nhanh bằng Gemini API — hiểu ngữ cảnh, hỗ trợ cả đoạn dài.
-        # API key đọc từ biến GEMINI_API_KEY hoặc file ~/.config/quick-lang/api.key.
+        # Dịch nhanh bằng Google Translate (endpoint miễn phí, không cần API key).
+        # Nhanh (~1s), Google đã tích hợp model AI mới nên chất lượng VI↔EN khá ổn.
+        # Lưu ý: endpoint unofficial nhưng tồn tại ổn định nhiều năm; giới hạn ~5k ký tự/lần.
         set -u
 
         mode="''${1:-vi-en}"
@@ -132,16 +133,6 @@
           printf %s "$(notify-send -a quick-lang -p "$@")" > "$NTF_ID_FILE"
         }
 
-        # ---- Lấy API key ----
-        API_KEY="''${GEMINI_API_KEY:-}"
-        if [ -z "$API_KEY" ] && [ -r "''${XDG_CONFIG_HOME:-$HOME/.config}/quick-lang/api.key" ]; then
-          API_KEY="$(cat "''${XDG_CONFIG_HOME:-$HOME/.config}/quick-lang/api.key" 2>/dev/null | tr -d '[:space:]')"
-        fi
-        if [ -z "$API_KEY" ]; then
-          ntf -u critical "Quick Lang" "Chưa có API key. Ghi key vào ~/.config/quick-lang/api.key hoặc đặt biến GEMINI_API_KEY."
-          exit 1
-        fi
-
         # ---- Lấy văn bản: ưu tiên primary selection (text đang bôi), fallback clipboard ----
         text="$(wl-paste -p 2>/dev/null || true)"
         [ -n "''${text//[[:space:]]/}" ] || text="$(wl-paste 2>/dev/null || true)"
@@ -151,29 +142,74 @@
         }
 
         case "$mode" in
-          vi-en) from="Vietnamese"; to="English"; label="VI → EN" ;;
-          en-vi) from="English"; to="Vietnamese"; label="EN → VI" ;;
+          vi-en) from="vi"; to="en"; label="VI → EN" ;;
+          en-vi) from="en"; to="vi"; label="EN → VI" ;;
           *) ntf "Quick Lang" "Mode không hợp lệ: $mode"; exit 1 ;;
         esac
 
-        # ---- Gọi Gemini Flash ----
-        prompt="$(printf 'Dịch văn bản sau từ %s sang %s. Chỉ trả về bản dịch, không thêm giải thích hay chú thích.\n\nVăn bản:\n%s' "$from" "$to" "$text")"
-        response="$(timeout 30 curl -sS \
-          -H "Content-Type: application/json" \
-          -d "$(jq -n --arg p "$prompt" '{contents:[{parts:[{text:$p}]}]}')" \
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$API_KEY" 2>/dev/null || true)"
-
-        result="$(printf '%s' "$response" | jq -r '.candidates[0].content.parts[0].text // empty' 2>/dev/null || true)"
-        # Làm sạch nếu model tự bọc markdown code fence
-        result="$(printf '%s' "$result" | sed -e 's/^```[a-zA-Z]*//' -e 's/```$//' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+        # ---- Gọi Google Translate ----
+        # --connect-timeout 5 + thử lại 1 lần: lỗi mạng/DNS thoáng qua tự phục hồi.
+        # URL-encode bằng jq @uri (jq có sẵn trong hệ thống).
+        q="$(jq -rn --arg q "$text" '$q|@uri')"
+        result=""
+        for attempt in 1 2; do
+          response="$(curl -sS --connect-timeout 5 --max-time 15 \
+            "https://translate.googleapis.com/translate_a/single?client=gtx&sl=$from&tl=$to&dt=t&q=$q" 2>/dev/null || true)"
+          result="$(printf '%s' "$response" | jq -r '.[0] | map(.[0] // "") | join("")' 2>/dev/null || true)"
+          [ -n "''${result//[[:space:]]/}" ] && break
+          sleep 1
+        done
 
         if [ -z "''${result//[[:space:]]/}" ]; then
-          ntf -u critical "Quick Lang" "Dịch thất bại. Kiểm tra API key hoặc kết nối mạng."
+          ntf -u critical "Quick Lang" "Dịch thất bại — kiểm tra kết nối mạng (hoặc bấm Super+Shift+r để reload mạng)."
           exit 1
         fi
 
         printf %s "$result" | wl-copy
         ntf "$label" "$result"
+      '';
+    };
+
+    ".local/bin/quick-net-reload" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # Reload mạng nhanh thay cho tắt máy: tắt/bật lại NetworkManager
+        # (renew DHCP + refresh DNS). Không cần sudo — polkit cho phép user
+        # đăng nhập local điều khiển NetworkManager. Dùng khi DNS/mạng
+        # "đứng hình" sau resume hoặc DNS router bị stale.
+        set -u
+
+        notify() {
+          notify-send -a quick-net-reload -i network-wireless -t 3000 "Reload mạng" "$@"
+        }
+
+        # Xoá cache DNS nếu đang dùng systemd-resolved (không bắt buộc phải thành công)
+        resolvectl flush-caches >/dev/null 2>&1 || true
+
+        if ! nmcli networking off; then
+          notify -u critical "Không tắt được mạng — kiểm tra quyền user/polkit."
+          exit 1
+        fi
+        if ! nmcli networking on; then
+          notify -u critical "Không bật lại được mạng — kiểm tra quyền user/polkit."
+          exit 1
+        fi
+
+        # Chờ kết nối trở lại (tối đa ~10s)
+        state=""
+        for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+          state="$(nmcli -t -f STATE,CONNECTIVITY general status 2>/dev/null | cut -d: -f2)"
+          [ "$state" = "full" ] && break
+          sleep 0.5
+        done
+
+        if [ "$state" = "full" ]; then
+          notify "Đã bật lại mạng — kết nối full."
+        else
+          notify -u critical "Đã bật lại mạng nhưng chưa kết nối được — kiểm tra wifi."
+          exit 1
+        fi
       '';
     };
 

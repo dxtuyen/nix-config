@@ -190,8 +190,9 @@ in
       # Custom Utilities & Screenshot
       bindsym $mod+p exec ~/.local/bin/pomodoro-menu
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
-      bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
-      bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
+      bindsym $mod+t exec ~/.local/bin/quick-lang en-vi
+      bindsym $mod+Shift+t exec ~/.local/bin/quick-lang vi-en
+      bindsym $mod+Shift+r exec ~/.local/bin/quick-net-reload
       bindsym $mod+g exec ~/.local/bin/dict-lookup
       bindsym $mod+Ctrl+t exec ~/.local/bin/toggle-touchpad
       bindsym $mod+Print exec ~/.local/bin/screenshot-menu
