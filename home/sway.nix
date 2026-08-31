@@ -190,11 +190,14 @@ in
       # Custom Utilities & Screenshot
       bindsym $mod+p exec ~/.local/bin/pomodoro-menu
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
-      bindsym $mod+t exec ~/.local/bin/quick-lang en-vi
-      bindsym $mod+Shift+t exec ~/.local/bin/quick-lang vi-en
+      bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
+      bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
+      # Engine Google Translate (nhanh, không cần key) — có Ctrl
+      bindsym $mod+Ctrl+t exec ~/.local/bin/quick-lang en-vi gt
+      bindsym $mod+Ctrl+Shift+t exec ~/.local/bin/quick-lang vi-en gt
       bindsym $mod+Shift+r exec ~/.local/bin/quick-net-reload
       bindsym $mod+g exec ~/.local/bin/dict-lookup
-      bindsym $mod+Ctrl+t exec ~/.local/bin/toggle-touchpad
+      bindsym $mod+Mod1+t exec ~/.local/bin/toggle-touchpad
       bindsym $mod+Print exec ~/.local/bin/screenshot-menu
       bindsym --no-repeat Print exec ~/.local/bin/screenshot selection-clipboard
       bindsym --no-repeat Mod1+Print exec ~/.local/bin/screenshot fullscreen-clipboard

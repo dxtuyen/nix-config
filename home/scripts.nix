@@ -112,12 +112,15 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Dịch nhanh bằng Google Translate (endpoint miễn phí, không cần API key).
-        # Nhanh (~1s), Google đã tích hợp model AI mới nên chất lượng VI↔EN khá ổn.
-        # Lưu ý: endpoint unofficial nhưng tồn tại ổn định nhiều năm; giới hạn ~5k ký tự/lần.
+        # Dịch nhanh với 2 engine tuỳ chọn:
+        #   ai (mặc định) — Gemini Flash: chất lượng cao, hiểu ngữ cảnh, tốt với đoạn dài.
+        #   gt            — Google Translate: nhanh (~1s), không cần API key.
+        # Cách dùng: quick-lang <vi-en|en-vi> [ai|gt]
+        # API key Gemini đọc từ biến GEMINI_API_KEY hoặc file ~/.config/quick-lang/api.key.
         set -u
 
         mode="''${1:-vi-en}"
+        engine="''${2:-ai}"
 
         # Thông báo dịch persistent: không hết hạn (default-timeout = 0 trong mako.nix).
         # Mỗi lần dịch mới sẽ DISMISS thông báo cũ rồi gửi cái mới → hiệu ứng
@@ -142,31 +145,110 @@
         }
 
         case "$mode" in
-          vi-en) from="vi"; to="en"; label="VI → EN" ;;
-          en-vi) from="en"; to="vi"; label="EN → VI" ;;
+          vi-en)
+            from="Vietnamese"; to="English"; label="VI → EN"
+            gt_sl="vi"; gt_tl="en"
+            # Prompt hướng "naturalize": không dịch word by word, viết lại như
+            # người bản xứ viết — tránh tiếng Anh ghép từ theo cấu trúc tiếng Việt.
+            rule="Translate the Vietnamese text below into natural, idiomatic English. Do NOT translate word by word: restructure sentences the way a native English speaker would write them. Render Vietnamese idioms and fixed expressions with their closest natural English equivalents instead of literal translations. Preserve the full meaning, tone and register (formal/casual) of the original. Keep proper nouns and technical terms unchanged. Output ONLY the translation, with no explanations or notes."
+            ;;
+          en-vi)
+            from="English"; to="Vietnamese"; label="EN → VI"
+            gt_sl="en"; gt_tl="vi"
+            rule="Translate the English text below into natural Vietnamese with correct diacritics. Prefer idiomatic Vietnamese over literal renderings. Preserve the full meaning, tone and register of the original. Keep proper nouns and technical terms. Output ONLY the translation, with no explanations or notes."
+            ;;
           *) ntf "Quick Lang" "Mode không hợp lệ: $mode"; exit 1 ;;
         esac
 
-        # ---- Gọi Google Translate ----
-        # --connect-timeout 5 + thử lại 1 lần: lỗi mạng/DNS thoáng qua tự phục hồi.
-        # URL-encode bằng jq @uri (jq có sẵn trong hệ thống).
-        q="$(jq -rn --arg q "$text" '$q|@uri')"
-        result=""
-        for attempt in 1 2; do
-          response="$(curl -sS --connect-timeout 5 --max-time 15 \
-            "https://translate.googleapis.com/translate_a/single?client=gtx&sl=$from&tl=$to&dt=t&q=$q" 2>/dev/null || true)"
-          result="$(printf '%s' "$response" | jq -r '.[0] | map(.[0] // "") | join("")' 2>/dev/null || true)"
-          [ -n "''${result//[[:space:]]/}" ] && break
-          sleep 1
-        done
+        # Tiêu đề thông báo: GT thêm đuôi để phân biệt engine đang dùng
+        case "$engine" in
+          ai) title="$label" ;;
+          gt) title="$label · GT" ;;
+          *) ntf "Quick Lang" "Engine không hợp lệ: $engine (dùng 'ai' hoặc 'gt')"; exit 1 ;;
+        esac
 
-        if [ -z "''${result//[[:space:]]/}" ]; then
-          ntf -u critical "Quick Lang" "Dịch thất bại — kiểm tra kết nối mạng (hoặc bấm Super+Shift+r để reload mạng)."
-          exit 1
-        fi
+        # ---- Engine AI: Gemini Flash ----
+        # Chỉ tự thử lại khi lỗi MẠNG (không kết nối được) hoặc lỗi server 5xx.
+        # Riêng 429 (hết quota free tier) báo NGAY không retry — vì Retry-After
+        # tính bằng chục giây, và mỗi lần retry lại đốt thêm 1 request của quota.
+        translate_ai() {
+          # gemini-flash-lite-latest = alias tự trỏ tới model lite mới nhất của
+          # Google (2.5-flash-lite đã bị ngừng cấp cho key mới). Quota free tier
+          # ~1000 req/ngày. Muốn chất lượng cao hơn (quota chỉ ~250 req/ngày):
+          # đổi thành "gemini-2.5-flash" hoặc "gemini-flash-latest".
+          MODEL="gemini-flash-lite-latest"
+
+          API_KEY="''${GEMINI_API_KEY:-}"
+          if [ -z "$API_KEY" ] && [ -r "''${XDG_CONFIG_HOME:-$HOME/.config}/quick-lang/api.key" ]; then
+            API_KEY="$(cat "''${XDG_CONFIG_HOME:-$HOME/.config}/quick-lang/api.key" 2>/dev/null | tr -d '[:space:]')"
+          fi
+          if [ -z "$API_KEY" ]; then
+            ntf -u critical "Quick Lang" "Chưa có API key. Ghi key vào ~/.config/quick-lang/api.key hoặc đặt biến GEMINI_API_KEY."
+            exit 1
+          fi
+
+          prompt="$(printf '%s\n\nText:\n%s' "$rule" "$text")"
+          resp_file="''${XDG_RUNTIME_DIR:-/tmp}/quick-lang-resp.$$"
+          http_code=""
+          for attempt in 1 2 3; do
+            http_code="$(timeout 40 curl -sS \
+              --connect-timeout 5 --max-time 35 \
+              -H "Content-Type: application/json" \
+              -d "$(jq -n --arg p "$prompt" '{contents:[{parts:[{text:$p}]}], generationConfig:{temperature:0.3}}')" \
+              -o "$resp_file" -w '%{http_code}' \
+              "https://generativelanguage.googleapis.com/v1beta/models/$MODEL:generateContent?key=$API_KEY" 2>/dev/null || true)"
+            case "$http_code" in
+              000|"") [ "$attempt" -lt 3 ] && sleep 1; continue ;;  # lỗi mạng → thử lại
+              5*)     [ "$attempt" -lt 3 ] && sleep 1; continue ;;  # lỗi server tạm thời → thử lại
+            esac
+            break  # 2xx / 4xx (gồm 429) → dừng, xử lý bên dưới
+          done
+          response="$(cat "$resp_file" 2>/dev/null || true)"
+          rm -f "$resp_file"
+
+          result="$(printf '%s' "$response" | jq -r '.candidates[0].content.parts[0].text // empty' 2>/dev/null || true)"
+          # Làm sạch nếu model tự bọc markdown code fence
+          result="$(printf '%s' "$result" | sed -e 's/^```[a-zA-Z]*//' -e 's/```$//' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+
+          if [ -z "''${result//[[:space:]]/}" ]; then
+            case "$http_code" in
+              200)          msg="API trả về phản hồi rỗng, thử dịch lại." ;;
+              429)          msg="Gemini hết quota free tier (HTTP 429). Chờ ~1 phút, hoặc bấm Super+Ctrl+t để dùng Google Translate ngay." ;;
+              400|401|403)  msg="API key sai hoặc bị từ chối (HTTP ''${http_code})." ;;
+              5*)           msg="Lỗi phía Google API (HTTP ''${http_code}), thử lại sau." ;;
+              *)            msg="Mạng/DNS không truy cập được Google API. Bấm Super+Shift+r để reload mạng rồi thử lại." ;;
+            esac
+            ntf -u critical "Quick Lang" "$msg"
+            exit 1
+          fi
+        }
+
+        # ---- Engine GT: Google Translate ----
+        # Nhanh (~1s), không cần key. --connect-timeout 5 + thử lại 1 lần.
+        translate_gt() {
+          q="$(jq -rn --arg q "$text" '$q|@uri')"
+          result=""
+          for attempt in 1 2; do
+            response="$(curl -sS --connect-timeout 5 --max-time 15 \
+              "https://translate.googleapis.com/translate_a/single?client=gtx&sl=$gt_sl&tl=$gt_tl&dt=t&q=$q" 2>/dev/null || true)"
+            result="$(printf '%s' "$response" | jq -r '.[0] | map(.[0] // "") | join("")' 2>/dev/null || true)"
+            [ -n "''${result//[[:space:]]/}" ] && break
+            sleep 1
+          done
+
+          if [ -z "''${result//[[:space:]]/}" ]; then
+            ntf -u critical "Quick Lang · GT" "Dịch thất bại — kiểm tra kết nối mạng (hoặc bấm Super+Shift+r để reload mạng)."
+            exit 1
+          fi
+        }
+
+        case "$engine" in
+          ai) translate_ai ;;
+          gt) translate_gt ;;
+        esac
 
         printf %s "$result" | wl-copy
-        ntf "$label" "$result"
+        ntf "$title" "$result"
       '';
     };
 
