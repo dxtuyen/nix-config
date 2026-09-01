@@ -225,13 +225,18 @@
 
         # ---- Engine GT: Google Translate ----
         # Nhanh (~1s), không cần key. --connect-timeout 5 + thử lại 1 lần.
+        # Dùng endpoint clients5 (client=dict-chrome-ex) vì endpoint
+        # translate_a/single?client=gtx đã bị Google chặn 429 theo IP,
+        # kèm User-Agent trình duyệt để giảm khả năng bị chặn.
+        # Response có thể là ["dịch"] hoặc [["dịch","nguồn"],...] — jq xử lý cả hai.
         translate_gt() {
           q="$(jq -rn --arg q "$text" '$q|@uri')"
           result=""
           for attempt in 1 2; do
             response="$(curl -sS --connect-timeout 5 --max-time 15 \
-              "https://translate.googleapis.com/translate_a/single?client=gtx&sl=$gt_sl&tl=$gt_tl&dt=t&q=$q" 2>/dev/null || true)"
-            result="$(printf '%s' "$response" | jq -r '.[0] | map(.[0] // "") | join("")' 2>/dev/null || true)"
+              -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36' \
+              "https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=$gt_sl&tl=$gt_tl&q=$q" 2>/dev/null || true)"
+            result="$(printf '%s' "$response" | jq -r 'if (.[0]|type)=="string" then map(select(type=="string"))|join("") else map(.[0] // "")|join("") end' 2>/dev/null || true)"
             [ -n "''${result//[[:space:]]/}" ] && break
             sleep 1
           done
