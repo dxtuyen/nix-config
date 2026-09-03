@@ -3,7 +3,8 @@
 # Cấu hình Alacritty terminal (theme Tokyo Night)
 # Thay thế Foot — GPU-accelerated, TOML config chuẩn v0.13+
 # Font để mặc định của Alacritty; padding 10x8 chuẩn cộng đồng
-
+# test git
+# con cac
 {
   programs.alacritty = {
     enable = true;
