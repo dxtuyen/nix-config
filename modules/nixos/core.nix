@@ -54,6 +54,11 @@
     ];
   };
 
+  # ssh-agent: giữ passphrase của SSH key trong phiên đăng nhập
+  # → không phải gõ lại passphrase mỗi lần git push/pull qua SSH
+  # (docs/03 Bước 10).
+  programs.ssh.startAgent = true;
+
   # Gói hệ thống — áp dụng cho MỌI máy import core.nix
   environment.systemPackages = with pkgs; [
     git
