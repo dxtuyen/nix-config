@@ -19,7 +19,7 @@
 
 | Module | Trách nhiệm |
 |---|---|
-| `core.nix` | Nền tảng: Nix/flake, systemd-boot, NetworkManager, user `doxuantuyen`, gói hệ thống tối thiểu |
+| `core.nix` | Nền tảng: Nix/flake, systemd-boot, NetworkManager, user `doxuantuyen`, gói hệ thống tối thiểu, ssh-agent (giữ passphrase SSH key) |
 | `desktop.nix` | Sway + greetd (tuigreet), PipeWire, XDG portal, Fcitx5 + Unikey, fonts, power-profiles-daemon, bluetooth |
 | `development.nix` | VS Code, Python, GCC, CMake, gdb, podman, distrobox, nix-ld |
 | `laptop.nix` | **Hibernate** (`resume=UUID=`), zram 50% RAM, keyd, battery threshold 85–90%, fwupd, logind (đóng nắp → suspend) — **swap khai trong `hosts/laptop/hardware-configuration.nix`** (tự sinh) |
@@ -30,6 +30,7 @@
 | File | Nội dung |
 |---|---|
 | `default.nix` | Entry point: import tất cả, bật `xdg`, PATH `~/.local/bin` |
+| `git.nix` | Git identity toàn cục (tất cả repo): user `dxtuyen` + email, `defaultBranch=main`, `pull.rebase`, `pager=cat` |
 | `packages.nix` | Gói user: rofi, grim, slurp, swaylock, swayidle, google-chrome, obsidian, anki, calibre, sioyek, ticktick... |
 | `sway.nix` | Cửa sổ, layout, idle/lock/sleep (swayidle), phím tắt (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)) |
 | `waybar.nix` / `alacritty.nix` + `starship.nix` / `gtk.nix` / `mako.nix` | Thanh trạng thái / terminal / theme / thông báo |

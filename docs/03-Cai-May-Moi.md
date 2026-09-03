@@ -7,6 +7,27 @@
 
 ---
 
+## 🧙 Đối chiếu: wizard cài GUI ↔ file Nix của repo này
+
+> Người quen cài Ubuntu/Windows hay hỏi: "còn màn hình chọn ngôn ngữ,
+> tạo user, đặt mật khẩu đâu?". NixOS **không có wizard** — mọi lựa chọn đó
+> là **khai báo vĩnh viễn trong file Nix** dưới đây: máy mới nào chạy
+> `nixos-install` cũng ra y hệt. Chỉ **MẬT KHẨU** là phải đặt tay 1 lần
+> (Chặng 4 / Bước 7.5) vì repo public không được chứa mật khẩu.
+
+| Màn hình wizard GUI | Khai báo ở đâu | Giá trị hiện tại |
+|---|---|---|
+| Ngôn ngữ / Region | `modules/nixos/core.nix` → `i18n.defaultLocale` | `en_US.UTF-8` |
+| Múi giờ | `core.nix` → `time.timeZone` | `Asia/Ho_Chi_Minh` |
+| Bàn phím (TTY) | `core.nix` → `console.keyMap` | `us` |
+| Username + họ tên | `core.nix` → `users.users.doxuantuyen` | `doxuantuyen` / "Doxuan Tuyen" |
+| Quyền admin (sudo) | `core.nix` → `extraGroups` | `wheel` + `networkmanager` + `kvm` |
+| Màn hình đăng nhập | `modules/nixos/desktop.nix` → `services.greetd` | tuigreet → Sway (không auto-login) |
+| Bộ gõ tiếng Việt | `desktop.nix` → `i18n.inputMethod` | fcitx5 + unikey |
+| **Mật khẩu user** | ❌ không có trong config (cố ý) | **đặt tay ở Bước 7.5** |
+
+---
+
 ## 🎯 Tổng quan & sơ đồ phân vùng mục tiêu
 
 Máy mục tiêu: **laptop UEFI**, ổ **NVMe 238.5 GB**, **RAM 7.4 GB** (giống máy này).
@@ -115,6 +136,8 @@ Kiểm tra:
 
 ```bash
 lsblk      # phải thấy nvme0n1p1 / p2 / p3 đúng size
+```
+
 ---
 
 ## Bước 5 — Tạo filesystem cho từng phân vùng
@@ -181,7 +204,7 @@ Những gì file vừa sinh chứa:
 ### 7.1 Clone repo vào installer
 
 ```bash
-git clone https://github.com/doxuantuyen/nix-config.git /tmp/nix-config
+git clone https://github.com/dxtuyen/nix-config.git /tmp/nix-config
 cd /tmp/nix-config
 ```
 
@@ -265,7 +288,7 @@ Sau khi vào desktop (Sway), mở terminal và kiểm tra theo thứ tự:
 1. **Swap hoạt động**: `swapon --show` phải thấy `/dev/nvme0n1p3` (10G), và `cat /proc/swaps`.
 2. **Kernel có `resume`**: `cat /proc/cmdline` phải chứa `resume=UUID=<SWAP_UUID>`.
 3. **Phân vùng đúng**: `lsblk -f`.
-4. **Clone repo về máy** để lần sau rebuild tại chỗ: `git clone https://github.com/doxuantuyen/nix-config.git ~/nix-config`.
+4. **Clone repo về máy** để lần sau rebuild tại chỗ: `git clone https://github.com/dxtuyen/nix-config.git ~/nix-config`.
 5. **Thử hibernate**: chạy `sudo systemctl hibernate` — máy lưu tất cả cửa sổ rồi tắt nguồn; bật lại, đăng nhập, mọi thứ khôi phục nguyên trạng.
 6. **Chế độ ngủ (deep sleep)**: chạy `cat /sys/power/mem_sleep`.
    - Thấy `s2idle [deep]` → máy hỗ trợ deep (S3), giữ nguyên config. ✓
@@ -275,39 +298,207 @@ Sau khi vào desktop (Sway), mở terminal và kiểm tra theo thứ tự:
 
 ---
 
-## 🔩 Tóm tắt lệnh nhanh (cả phiên cài)
+## Bước 10 — Git & SSH: đưa repo về "nhà" mới
+
+> Mục tiêu: sau bước này, `~/nix-config` **pull/push bằng SSH** như thường.
+> Chánh đạo là **Đường B — tạo SSH key mới cho máy mới**: không cần backup key,
+> không đụng tới máy cũ, mất ~2 phút.
+
+### 10.1 Máy mới đã có sẵn gì về Git?
+
+Máy đã cài xong thì mọi thứ Git đều có sẵn (không cấu hình gì thêm):
+
+| Thứ | Nơi khai báo |
+|---|---|
+| Gói `git` | `modules/nixos/core.nix` (`environment.systemPackages`) |
+| Identity commit (user `dxtuyen`, email `tuyendoxuan05@gmail.com`) | `home/git.nix` (`programs.git`) |
+| ssh-agent (giữ passphrase, chỉ hỏi 1 lần/phiên) | `programs.ssh.startAgent` trong `core.nix` |
+
+Chỉ khi còn ở **USB installer** mà gõ `git` báo "command not found", dùng tạm:
 
 ```bash
-sudo -i
+nix-shell -p git   # git dùng tạm trong shell, không cài vào hệ thống
+```
 
-# phân vùng
-cfdisk /dev/nvme0n1                     # GPT: EFI 1G / root 227G / swap 10G
+### 10.2 Đường B — tạo SSH key mới cho máy mới (chánh đạo)
 
-# filesystem
-mkfs.fat -F 32 /dev/nvme0n1p1
+Nguyên tắc: **mỗi máy một key riêng**. Key cũ trên GitHub cứ để nguyên —
+không cần xoá, không cần backup, không đụng tới máy cũ.
+
+```bash
+ssh-keygen -t ed25519 -C "doxuantuyen-laptop"   # Enter hết để nhận mặc định
+cat ~/.ssh/id_ed25519.pub                        # copy NGUYÊN DÒNG in ra
+```
+
+Add key lên GitHub — **bước duy nhất cần giao diện web** (GitHub phải đăng nhập
+mới duyệt key; máy mới chưa push được bằng SSH nên không thể tự động hoá):
+
+1. Mở `https://github.com/settings/keys` — bằng **Chrome** (được cài sẵn bởi
+   config) hoặc làm trên **điện thoại**
+2. Bấm `New SSH key` → Title tuỳ ý (VD `laptop-moi`) → dán key → `Add SSH key`
+
+```bash
+ssh -T git@github.com      # lần đầu hỏi fingerprint → gõ yes
+# phải in ra: "Hi dxtuyen! You've successfully authenticated..."
+```
+
+### 10.3 Đổi remote sang SSH & kiểm tra tròn vòng
+
+```bash
+# Repo đã clone bằng HTTPS ở Bước 9 → chỉ cần đổi remote sang SSH:
+cd ~/nix-config
+git remote set-url origin git@github.com:dxtuyen/nix-config.git
+
+# Kiểm tra tròn vòng — cả pull lẫn push phải thành công:
+git pull --rebase && git push
+```
+
+> ⚠️ Repo nằm ở **`dxtuyen/nix-config`** (không phải `doxuantuyen`) — copy đúng URL.
+> Nếu `ssh -T` thành công mà `git pull/push` vẫn hỏi mật khẩu → remote còn là
+> HTTPS, kiểm tra bằng `git remote -v`.
+
+### 10.4 Đường A — khôi phục key cũ (nếu lỡ có backup `~/.ssh`)
+
+Hợp lý khi bạn có nhiều máy dùng chung một key, hoặc đã có sẵn file backup
+(từ [04-Sao-Luu-Phuc-Hoi](04-Sao-Luu-Phuc-Hoi.md)):
+
+```bash
+rsync -a /mnt/backup/.ssh ~/.ssh          # hoặc: tar xzf backup-personal.tar.gz -C ~
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_ed25519               # private key PHẢI 600, nếu không ssh từ chối
+chmod 644 ~/.ssh/id_ed25519.pub ~/.ssh/known_hosts
+ssh -T git@github.com                     # → nhảy tới 10.3, khỏi add key mới
+```
+
+> Key cũ vẫn nằm sẵn trong danh sách SSH keys trên GitHub → không phải add gì thêm.
+
+---
+
+## 🔩 Tóm tắt lệnh nhanh (cả phiên cài)
+
+> Bản tham khảo nhanh gồm **6 chặng**. Mỗi lệnh kèm `# ✅ KIỂM TRA:` — đầu ra
+> mong đợi để biết đang đúng đường. Sai ở chặng nào → tra bảng
+> **Sự cố thường gặp** bên dưới hoặc quay lại Bước chi tiết tương ứng
+> (ghi trong mỗi tiêu đề chặng).
+
+### Chặng 0 — Vào root + mạng (Bước 2)
+
+```bash
+sudo -i        # dấu nhắc đổi thành [root@nixos:~]# — từ đây mọi lệnh chạy với root
+
+# nếu wifi (không có dây):
+iwctl
+> station wlan0 connect "TEN_WIFI"
+> exit
+
+ping -c3 google.com
+# ✅ KIỂM TRA: "3 packets transmitted, 3 received" → mạng OK, được phép tiếp tục
+# ❌ 0 received → kiểm tra tên/mật khẩu wifi, hoặc thử dây mạng
+```
+
+### Chặng 1 — Phân vùng (Bước 4)
+
+```bash
+cfdisk /dev/nvme0n1    # chọn bảng gpt
+# Trong cfdisk: p1 = 1G (EFI System) → p2 = 227G (Linux root x86)
+#               → p3 = 10G (Linux swap) → [Write] gõ yes → [Quit]
+
+lsblk
+# ✅ KIỂM TRA: thấy đủ 3 dòng:
+#   nvme0n1p1   1G
+#   nvme0n1p2 227G    (hoặc hết phần đĩa còn lại)
+#   nvme0n1p3  10G
+# ❌ thiếu p3 / size sai → vào lại cfdisk sửa NGAY trước khi format
+```
+
+### Chặng 2 — Filesystem + lấy SWAP_UUID (Bước 5)
+
+```bash
+mkfs.fat -F 32 /dev/nvme0n1p1    # EFI — in "mkfs.fat 4.2 ..." là xong
 mkfs.ext4 -L nixos /dev/nvme0n1p2
-mkswap -L swap /dev/nvme0n1p3
-blkid /dev/nvme0n1p3                    # ghi lại SWAP_UUID
+# ✅ KIỂM TRA: khối "Creating filesystem with ... blocks" chạy xong không báo lỗi
 
-# mount + sinh config
+mkswap -L swap /dev/nvme0n1p3
+blkid /dev/nvme0n1p3
+# ✅ KIỂM TRA: in ra dòng kiểu:
+#   /dev/nvme0n1p3: LABEL="swap" UUID="044520bf-eed9-..." TYPE="swap"
+# 📝 GHI RA GIẤY chuỗi UUID trên = SWAP_UUID — Chặng 4 phải dùng đúng nó
+```
+
+### Chặng 3 — Mount + sinh config phần cứng (Bước 6)
+
+```bash
 mount /dev/nvme0n1p2 /mnt
 mount --mkdir /dev/nvme0n1p1 /mnt/boot
 swapon /dev/nvme0n1p3
+
+findmnt /mnt          # ✅ SOURCE=/dev/nvme0n1p2, FSTYPE=ext4
+findmnt /mnt/boot     # ✅ SOURCE=/dev/nvme0n1p1, FSTYPE=vfat
+swapon --show         # ✅ có /dev/nvme0n1p3, SIZE 10G
+
 nixos-generate-config --root /mnt
+# ✅ KIỂM TRA: in "writing /mnt/etc/nixos/hardware-configuration.nix" (không warning swap)
+# ❌ file không có swapDevices → quên swapon ở trên; bật lại rồi chạy generate lần nữa
+```
 
-# clone repo + đồng bộ UUID
-git clone https://github.com/doxuantuyen/nix-config.git /tmp/nix-config
+### Chặng 4 — Clone repo + đồng bộ UUID + ĐẶT MẬT KHẨU (Bước 7)
+
+```bash
+git clone https://github.com/dxtuyen/nix-config.git /tmp/nix-config
+# ❌ "git: command not found" → chạy nix-shell -p git rồi clone lại (Bước 10.1)
+
 cp /mnt/etc/nixos/hardware-configuration.nix /tmp/nix-config/hosts/laptop/
-# → hardware-configuration.nix đã tự sinh đúng swap (không sửa)
-# → sửa modules/nixos/laptop.nix: resume=UUID=<SWAP_UUID>
-# → dòng "mem_sleep_default=deep": giữ nguyên; sau reboot kiểm tra Bước 9 mục 6 —
-#   nếu máy mới không hỗ trợ (chỉ thấy [s2idle]) thì xóa dòng này đi
 
-# cài
+grep -A4 swapDevices /tmp/nix-config/hosts/laptop/hardware-configuration.nix
+# ✅ KIỂM TRA: UUID in ra TRÙNG KHỚP với SWAP_UUID đã ghi ở Chặng 2
+
+# Sửa đúng 1 dòng trong modules/nixos/laptop.nix:
+#   boot.kernelParams = [ "resume=UUID=<SWAP_UUID_của_máy_này>" ]
+# Dòng "mem_sleep_default=deep": giữ nguyên — sau reboot kiểm tra Bước 9 mục 6,
+#   máy mới không hỗ trợ S3 (chỉ thấy [s2idle]) thì xoá dòng này đi.
+
+sudo nixos-enter --root /mnt -c "passwd doxuantuyen"
+# ✅ KIỂM TRA: gõ mật khẩu 2 lần → "password updated successfully"
+# ⚠️ BỎ QUA BƯỚC NÀY = sau reboot KHÔNG đăng nhập được vào máy!
+```
+
+### Chặng 5 — Cài + reboot (Bước 8)
+
+```bash
 cd /tmp/nix-config
 sudo nixos-install --flake .#laptop
+# Máy tải nixpkgs + home-manager từ mạng (vài GB, 10–30 phút tuỳ mạng),
+# in liên tục "building '/nix/store/...'" — đó là bình thường, chờ nhé.
+# ✅ KIỂM TRA xong in: "installation finished!"
+# ❌ build fail / báo unit swap → chụp lỗi, tra bảng Sự cố thường gặp
+# (nếu chưa đặt mật khẩu root, lệnh hỏi đặt 2 lần — nhớ kỹ mật khẩu này)
 
-reboot
+reboot        # rút USB khi thấy menu systemd-boot
+```
+
+### Chặng 6 — Sau reboot: đăng nhập + Git & SSH (Bước 9 + 10)
+
+```bash
+# Màn hình tuigreet: user doxuantuyen + mật khẩu đã đặt ở Chặng 4 → vào Sway
+
+swapon --show          # ✅ có /dev/nvme0n1p3
+cat /proc/cmdline      # ✅ chứa resume=UUID=<SWAP_UUID>
+
+# Git & SSH (chi tiết ở Bước 10):
+ssh-keygen -t ed25519 -C "doxuantuyen-laptop"
+# ✅ in ra hình randomart ASCII = key đã tạo tại ~/.ssh/id_ed25519
+
+cat ~/.ssh/id_ed25519.pub
+# ✅ một dòng dài bắt đầu "ssh-ed25519 AAAA..." — copy NGUYÊN DÒNG
+#   → mở github.com/settings/keys (Chrome / điện thoại) → New SSH key → dán
+
+ssh -T git@github.com          # lần đầu hỏi fingerprint → gõ yes
+# ✅ in ra: "Hi dxtuyen! You've successfully authenticated, but GitHub does
+#    not provide shell access."  ← chữ "Hi dxtuyen!" là dấu hiệu thành công
+
+cd ~/nix-config && git remote set-url origin git@github.com:dxtuyen/nix-config.git
+git pull --rebase && git push
+# ✅ cả hai chạy xong KHÔNG hỏi mật khẩu/token → hoàn tất toàn bộ phiên cài 🎉
 ```
 
 ---
@@ -332,5 +523,5 @@ reboot
 - [01-Tong-Quan-He-Thong](01-Tong-Quan-He-Thong.md) — repo này bố trí thế nào
 - [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md) — `nixos-rebuild switch` / `nh os switch` từ máy đã cài
 - [04-Sao-Luu-Phuc-Hoi](04-Sao-Luu-Phuc-Hoi.md) — **khôi phục dữ liệu** sau khi cài xong (bước tiếp theo!)
+- Bước 10 vừa làm — Git & SSH: tạo key mới, đổi remote sang SSH
 - [05-Tu-Dien-Thuat-Ngu](05-Tu-Dien-Thuat-Ngu.md) — UUID, flake, generation là gì
-```

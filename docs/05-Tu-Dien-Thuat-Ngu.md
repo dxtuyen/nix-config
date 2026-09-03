@@ -52,17 +52,9 @@
 
 ## Scripts (`~/.local/bin`)
 
-| Script | Chức năng |
-|---|---|
-| `lock-screen` | Khóa màn hình (swaylock) |
-| `cycle-wallpaper` | Đổi hình nền theo giờ |
-| `quick-lang` | Dịch văn bản bằng Gemini |
-| `power-menu` | Menu nguồn (poweroff/reboot/suspend/**hibernate**/lock...) |
-| `power-profile-menu` | Đổi power-saver / balanced / performance |
-| `media-notify` | OSD cho phím âm lượng / độ sáng |
-| `screenshot` / `screenshot-menu` | Chụp màn hình |
-| `pomodoro` / `pomodoro-menu` | Timer học tập |
-| `update-remnote` | Cập nhật RemNote AppImage từ `~/Downloads` |
+Danh sách script + chức năng được giữ **một nguồn duy nhất** trong
+[02 — Vận hành hằng ngày → Scripts quan trọng](02-Van-Hanh-Hang-Ngay.md)
+(để không phải sửa 2 chỗ mỗi khi thêm script mới).
 
 ## Liên quan
 

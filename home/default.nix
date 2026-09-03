@@ -20,6 +20,7 @@
 
   imports = [
     ./packages.nix # Các gói cài qua home.packages
+    ./git.nix # Git identity + tuỳ chọn (máy mới tự có user.email, không gõ tay)
     ./alacritty.nix # Terminal Alacritty (theme Tokyo Night)
     ./starship.nix # Prompt tối giản không user@hostname
     ./gtk.nix # Cấu hình GTK: icon Papirus-Dark + dark theme mặc định

@@ -35,6 +35,7 @@ nix-config/
 │   └── hardware-configuration.nix  # Tự sinh khi cài máy
 ├── home/                        # Home Manager (user-level)
 │   ├── default.nix              # Entry point: imports + PATH ~/.local/bin
+│   ├── git.nix                  # Git identity toàn cục (user/email, pull.rebase…)
 │   ├── sway.nix                 # Sway: cửa sổ, phím tắt, idle/lock/sleep
 │   ├── scripts.nix              # Script ~/.local/bin (power-menu, quick-lang…)
 │   └── ...                      # waybar, alacritty, starship, gtk, mako, fcitx5, pomodoro, thunar, remnote
@@ -58,7 +59,7 @@ Bắt đầu từ hub [`docs/README.md`](docs/README.md):
 |---|---|
 | [Tổng quan hệ thống](docs/01-Tong-Quan-He-Thong.md) | Repo bố trí thế nào, Config vs Dữ liệu |
 | [Vận hành hằng ngày](docs/02-Van-Hanh-Hang-Ngay.md) | Rebuild, scripts, lock/sleep, hibernate, sự cố |
-| [Cài máy mới từ đầu](docs/03-Cai-May-Moi.md) | USB → phân vùng → install → kiểm tra hibernate |
+| [Cài máy mới từ đầu](docs/03-Cai-May-Moi.md) | USB → phân vùng → install → hibernate → **Bước 10: Git & SSH** |
 | [Sao lưu & Khôi phục](docs/04-Sao-Luu-Phuc-Hoi.md) | Backup dữ liệu trước khi cài lại |
 | [Từ điển thuật ngữ](docs/05-Tu-Dien-Thuat-Ngu.md) | Tra thuật ngữ Nix / Sway / Hibernate |
 | [Luyện VM](docs/06-Luyen-Tap-VM.md) | Tập cài máy bằng máy ảo (QEMU/KVM) |
