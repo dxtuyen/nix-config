@@ -31,7 +31,9 @@ in
   services.greetd = {
     enable = true;
     settings.default_session = {
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd sway";
+      # --user doxuantuyen: dien san username (khong auto-login, van hoi mat khau).
+      # Neu doi username trong core.nix thi phoi sua ca dong nay.
+      command = "${pkgs.tuigreet}/bin/tuigreet --time --user doxuantuyen --cmd sway";
       user = "greeter";
     };
   };
