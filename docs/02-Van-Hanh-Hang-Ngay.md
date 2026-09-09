@@ -54,7 +54,7 @@ nix eval github:NixOS/nixpkgs/nixos-unstable#ticktick.version # bản unstable
 |---|---|
 | 300s idle | khóa màn hình (`lock-screen`) |
 | 310s idle | tắt màn — có thao tác → bật lại nhưng vẫn khóa |
-| 900s idle | suspend (ngủ) — màn đã khóa nên an toàn |
+| 900s idle | suspend (ngủ) — **chỉ khi đang dùng pin**; cắm sạc → thức tiếp (màn vẫn tắt & khóa) |
 | before-sleep | luôn khóa lại trước khi ngủ |
 | lock / unlock | logind khóa → khóa ngay; unlock → bật màn |
 
