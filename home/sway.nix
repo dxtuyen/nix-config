@@ -190,11 +190,18 @@ in
       # Custom Utilities & Screenshot
       bindsym $mod+p exec ~/.local/bin/pomodoro-menu
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
+      # quick-lang — bộ phím chữ "t" (xem docs/02):
+      #   t            → English sạch (smart: VI/EN/trộn tự nhận dạng; EN đã đúng
+      #                  → nguyên văn, có lỗi → sửa)
+      #   Shift+t      → tiếng Việt tự nhiên
+      #   Ctrl+t       → phân tích ngữ pháp + mẫu câu (cửa sổ rofi)
+      #   Ctrl+Shift+t → ép sửa English (không auto-detect)
+      # Tag ngữ cảnh [phi]/[sci]/[lit]/[cas]/[lĩnh vực] đặt ở ĐẦU văn bản bôi.
+      # Gemini hết quota → script tự fallback Google Translate (không cần phím).
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
-      # Engine Google Translate (nhanh, không cần key) — có Ctrl
-      bindsym $mod+Ctrl+t exec ~/.local/bin/quick-lang en-vi gt
-      bindsym $mod+Ctrl+Shift+t exec ~/.local/bin/quick-lang vi-en gt
+      bindsym $mod+Ctrl+t exec ~/.local/bin/quick-lang grammar
+      bindsym $mod+Ctrl+Shift+t exec ~/.local/bin/quick-lang fix
       bindsym $mod+Shift+r exec ~/.local/bin/quick-net-reload
       bindsym $mod+g exec ~/.local/bin/dict-lookup
       bindsym $mod+Mod1+t exec ~/.local/bin/toggle-touchpad
