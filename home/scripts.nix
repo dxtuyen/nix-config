@@ -132,15 +132,23 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Dịch nhanh với 2 engine tuỳ chọn:
-        #   ai (mặc định) — Gemini Flash: chất lượng cao, hiểu ngữ cảnh, tốt với đoạn dài.
-        #   gt            — Google Translate: nhanh (~1s), không cần API key.
-        # Cách dùng: quick-lang <vi-en|en-vi> [ai|gt]
+        # quick-lang — trợ lý English cho văn bản đang bôi đen (primary selection,
+        # fallback clipboard). 4 mode:
+        #   vi-en   (smart, mặc định) → English sạch. Model TỰ nhận dạng input là
+        #           tiếng Việt (có/không dấu), tiếng Anh, hay trộn cả hai rồi xử lý.
+        #           Input thuần tiếng Anh: đã đúng → trả nguyên văn; có lỗi → sửa.
+        #   en-vi   → tiếng Việt tự nhiên (cùng logic hợp nhất, chiều ngược).
+        #   fix     → ÉP coi input là tiếng Anh, chỉ sửa lỗi, không dịch.
+        #   grammar → mổ xẻ cấu trúc ngữ pháp + dòng "Pattern:" (mẫu câu tái sử
+        #             dụng). Kết quả dài → hiển thị bằng cửa sổ rofi -e.
+        # Ngữ cảnh: tag [xxx] ở ĐẦU văn bản — phi/sci/lit/cas = register cài sẵn,
+        # tag khác = domain hint tự do (vd [math]); không tag → tự suy luận.
         # API key Gemini đọc từ biến GEMINI_API_KEY hoặc file ~/.config/quick-lang/api.key.
+        # Gemini hết quota (429) ở mode có chiều dịch → TỰ fallback Google Translate.
         set -u
 
         mode="''${1:-vi-en}"
-        engine="''${2:-ai}"
+        FALLBACK_GT=0
 
         # Thông báo dịch persistent: không hết hạn (default-timeout = 0 trong mako.nix).
         # Mỗi lần dịch mới sẽ DISMISS thông báo cũ rồi gửi cái mới → hiệu ứng
@@ -164,27 +172,40 @@
           exit 1
         }
 
+        # ---- Tag ngữ cảnh [xxx] ở ĐẦU văn bản (bash thuần, 0 tiến trình) ----
+        # phi/sci/lit/cas = register cài sẵn; tag khác = domain hint tự do (vd [math]);
+        # không tag → model tự suy luận register. Tag bị CẮT khỏi văn bản trước khi
+        # gửi đi nên không bao giờ lọt vào kết quả.
+        CTX_LABEL=""
+        CTX_RULE="Infer the domain and register from the text itself, then write the way an educated native speaker in that domain would naturally write."
+        if [[ $text =~ ^\[[[:space:]]*([A-Za-z]+)[[:space:]]*\] ]]; then
+          tag="''${BASH_REMATCH[1],,}"
+          text="''${text#*\]}"
+          text="''${text#"''${text%%[![:space:]]*}"}"
+          case "$tag" in
+            phi) CTX_LABEL="phi"; CTX_RULE="Register: philosophical writing. Use precise abstract terminology, preserve hedging (perhaps, seems, may), and phrase it the way a careful philosopher would." ;;
+            sci) CTX_LABEL="sci"; CTX_RULE="Register: academic/scientific writing. Formal and precise, with standard scientific hedging (suggest, indicate) and academic conventions." ;;
+            lit) CTX_LABEL="lit"; CTX_RULE="Register: literary prose. Preserve imagery, voice, rhythm and figurative language; favor evocative, idiomatic phrasing over literal accuracy." ;;
+            cas) CTX_LABEL="cas"; CTX_RULE="Register: casual natural conversation, the way a native speaker chats informally." ;;
+            *)   CTX_LABEL="$tag"; CTX_RULE="Domain: $tag. Write it the way an expert in this field would naturally express the idea." ;;
+          esac
+        fi
+
+        # ---- Prompt theo mode (hợp nhất VI/EN/trộn; English thuần áp luật 2 trạng thái) ----
         case "$mode" in
           vi-en)
-            from="Vietnamese"; to="English"; label="VI → EN"
-            gt_sl="vi"; gt_tl="en"
-            # Prompt hướng "naturalize": không dịch word by word, viết lại như
-            # người bản xứ viết — tránh tiếng Anh ghép từ theo cấu trúc tiếng Việt.
-            rule="Translate the Vietnamese text below into natural, idiomatic English. Do NOT translate word by word: restructure sentences the way a native English speaker would write them. Render Vietnamese idioms and fixed expressions with their closest natural English equivalents instead of literal translations. Preserve the full meaning, tone and register (formal/casual) of the original. Keep proper nouns and technical terms unchanged. Output ONLY the translation, with no explanations or notes."
-            ;;
+            rule="Convert the text below into polished, natural English. The text may be entirely Vietnamese (with or without diacritics), entirely English, or a mix of both. If it contains any Vietnamese, translate it and render the whole meaning as one coherent English text, integrating any already-English parts naturally. If it is entirely English, proofread it: when it is already correct and natural, output it EXACTLY unchanged; when it has real errors (grammar, word choice, collocation), output only the corrected text. $CTX_RULE Preserve the full meaning and tone of the original. Keep proper nouns and technical terms. Output ONLY the resulting English text, with no explanations or notes."
+            gt_tl="en" ;;
           en-vi)
-            from="English"; to="Vietnamese"; label="EN → VI"
-            gt_sl="en"; gt_tl="vi"
-            rule="Translate the English text below into natural Vietnamese with correct diacritics. Prefer idiomatic Vietnamese over literal renderings. Preserve the full meaning, tone and register of the original. Keep proper nouns and technical terms. Output ONLY the translation, with no explanations or notes."
-            ;;
-          *) ntf "Quick Lang" "Mode không hợp lệ: $mode"; exit 1 ;;
-        esac
-
-        # Tiêu đề thông báo: GT thêm đuôi để phân biệt engine đang dùng
-        case "$engine" in
-          ai) title="$label" ;;
-          gt) title="$label · GT" ;;
-          *) ntf "Quick Lang" "Engine không hợp lệ: $engine (dùng 'ai' hoặc 'gt')"; exit 1 ;;
+            rule="Convert the text below into natural Vietnamese with correct diacritics. The text may be entirely English, entirely Vietnamese, or a mix of both; render the whole meaning as one coherent Vietnamese text, integrating all parts naturally. $CTX_RULE Preserve the full meaning and tone of the original. Keep proper nouns and technical terms. Output ONLY the resulting Vietnamese text, with no explanations or notes."
+            gt_tl="vi" ;;
+          fix)
+            rule="The text below is English written by a learner. Proofread it. If it is already correct and natural, output it EXACTLY unchanged. If it has real errors (grammar, word choice, collocation, unnatural phrasing), output only the corrected version, changing as little as possible. $CTX_RULE Preserve the author's meaning and voice. Keep proper nouns and technical terms. Output ONLY the resulting text, with no explanations or notes."
+            gt_tl="" ;;
+          grammar)
+            rule="Analyse the grammar of the English text below (usually one sentence). Dissect its structure: each clause and its function (subject, verb, object, complement, modifier), any notable constructions (fused relatives, clefts, 'not X, but Y' coordination, inversion...), and clarify a word only when grammatically significant. End with one final line 'Pattern:' giving a reusable template of the core construction with X/Y placeholders. $CTX_RULE Answer concisely in English, one short labeled line per point."
+            gt_tl="" ;;
+          *) ntf "Quick Lang" "Mode không hợp lệ: $mode (dùng vi-en | en-vi | fix | grammar)"; exit 1 ;;
         esac
 
         # ---- Engine AI: Gemini Flash ----
@@ -214,7 +235,7 @@
             http_code="$(timeout 40 curl -sS \
               --connect-timeout 5 --max-time 35 \
               -H "Content-Type: application/json" \
-              -d "$(jq -n --arg p "$prompt" '{contents:[{parts:[{text:$p}]}], generationConfig:{temperature:0.3}}')" \
+              -d "$(jq -n --arg p "$prompt" '{contents:[{parts:[{text:$p}]}], generationConfig:{temperature:0.2}}')" \
               -o "$resp_file" -w '%{http_code}' \
               "https://generativelanguage.googleapis.com/v1beta/models/$MODEL:generateContent?key=$API_KEY" 2>/dev/null || true)"
             case "$http_code" in
@@ -231,9 +252,15 @@
           result="$(printf '%s' "$result" | sed -e 's/^```[a-zA-Z]*//' -e 's/```$//' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
 
           if [ -z "''${result//[[:space:]]/}" ]; then
+            # 429 = hết quota free tier: nếu mode có chiều "dịch" (gt_tl khác rỗng)
+            # thì trả cờ để caller fallback sang Google Translate, không báo lỗi.
+            if [ "$http_code" = 429 ] && [ -n "$gt_tl" ]; then
+              FALLBACK_GT=1
+              return
+            fi
             case "$http_code" in
-              200)          msg="API trả về phản hồi rỗng, thử dịch lại." ;;
-              429)          msg="Gemini hết quota free tier (HTTP 429). Chờ ~1 phút, hoặc bấm Super+Ctrl+t để dùng Google Translate ngay." ;;
+              200)          msg="API trả về phản hồi rỗng, thử lại." ;;
+              429)          msg="Gemini hết quota free tier (HTTP 429). Chờ ~1 phút rồi thử lại." ;;
               400|401|403)  msg="API key sai hoặc bị từ chối (HTTP ''${http_code})." ;;
               5*)           msg="Lỗi phía Google API (HTTP ''${http_code}), thử lại sau." ;;
               *)            msg="Mạng/DNS không truy cập được Google API. Bấm Super+Shift+r để reload mạng rồi thử lại." ;;
@@ -243,11 +270,12 @@
           fi
         }
 
-        # ---- Engine GT: Google Translate ----
+        # ---- Engine GT: Google Translate (chỉ dùng làm fallback khi Gemini 429) ----
         # Nhanh (~1s), không cần key. --connect-timeout 5 + thử lại 1 lần.
         # Dùng endpoint clients5 (client=dict-chrome-ex) vì endpoint
         # translate_a/single?client=gtx đã bị Google chặn 429 theo IP,
         # kèm User-Agent trình duyệt để giảm khả năng bị chặn.
+        # sl=auto để tự nhận nguồn (input có thể trộn VI/EN).
         # Response có thể là ["dịch"] hoặc [["dịch","nguồn"],...] — jq xử lý cả hai.
         translate_gt() {
           q="$(jq -rn --arg q "$text" '$q|@uri')"
@@ -255,7 +283,7 @@
           for attempt in 1 2; do
             response="$(curl -sS --connect-timeout 5 --max-time 15 \
               -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36' \
-              "https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=$gt_sl&tl=$gt_tl&q=$q" 2>/dev/null || true)"
+              "https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=$gt_tl&q=$q" 2>/dev/null || true)"
             result="$(printf '%s' "$response" | jq -r 'if (.[0]|type)=="string" then map(select(type=="string"))|join("") else map(.[0] // "")|join("") end' 2>/dev/null || true)"
             [ -n "''${result//[[:space:]]/}" ] && break
             sleep 1
@@ -267,12 +295,34 @@
           fi
         }
 
-        case "$engine" in
-          ai) translate_ai ;;
-          gt) translate_gt ;;
-        esac
+        translate_ai
+
+        # Fallback tự động khi Gemini hết quota (chỉ mode có chiều dịch)
+        if [ "''${FALLBACK_GT:-0}" = 1 ]; then
+          ntf "Quick Lang · GT" "Gemini hết quota (429) → dùng Google Translate."
+          translate_gt
+        fi
 
         printf %s "$result" | wl-copy
+
+        # ---- Hiển thị kết quả ----
+        if [ "$mode" = grammar ]; then
+          # Phân tích dài → cửa sổ rofi -e (đọc thoải mái, Esc để đóng);
+          # nội dung đã được copy clipboard ở trên.
+          exec rofi -e "$result" -theme-str 'window { width: 700px; }'
+        fi
+
+        # Tiêu đề: script tự SO SÁNH đầu ra với đầu vào (tất định, không tin
+        # lời model báo cáo) — nguyên văn = đã tự nhiên, khác = đã sửa.
+        case "$mode" in
+          vi-en)
+            if [ "$result" = "$text" ]; then title="✓ EN đã tự nhiên"; else title="→ EN"; fi ;;
+          fix)
+            if [ "$result" = "$text" ]; then title="✓ EN đã tự nhiên"; else title="✍️ EN đã sửa"; fi ;;
+          en-vi) title="→ VI" ;;
+        esac
+        [ -n "$CTX_LABEL" ] && title="$title · $CTX_LABEL"
+
         ntf "$title" "$result"
       '';
     };
