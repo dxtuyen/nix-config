@@ -39,7 +39,7 @@ nix eval github:NixOS/nixpkgs/nixos-unstable#ticktick.version # bản unstable
 |---|---|
 | `power-menu` | Menu nguồn: Poweroff / Reboot / Suspend / **Hibernate** / Lock / Power Profile / Reload |
 | `power-profile-menu` | Đổi battery-saver / balanced / performance |
-| `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi (`fix`), phân tích ngữ pháp (`grammar`). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key ở `~/.config/quick-lang/api.key` |
+| `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key ở `~/.config/quick-lang/api.key` |
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
 | `cycle-wallpaper` | Đổi hình nền sáng/tối theo giờ (06:00 / 18:00) |
 | `refresh-session` | Reload Sway + wallpaper + wlsunset |

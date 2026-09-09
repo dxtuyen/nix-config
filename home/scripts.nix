@@ -133,14 +133,12 @@
       text = ''
         #! /usr/bin/env bash
         # quick-lang — trợ lý English cho văn bản đang bôi đen (primary selection,
-        # fallback clipboard). 4 mode:
+        # fallback clipboard). 3 mode:
         #   vi-en   (smart, mặc định) → English sạch. Model TỰ nhận dạng input là
         #           tiếng Việt (có/không dấu), tiếng Anh, hay trộn cả hai rồi xử lý.
         #           Input thuần tiếng Anh: đã đúng → trả nguyên văn; có lỗi → sửa.
         #   en-vi   → tiếng Việt tự nhiên (cùng logic hợp nhất, chiều ngược).
         #   fix     → ÉP coi input là tiếng Anh, chỉ sửa lỗi, không dịch.
-        #   grammar → mổ xẻ cấu trúc ngữ pháp + dòng "Pattern:" (mẫu câu tái sử
-        #             dụng). Kết quả dài → hiển thị bằng cửa sổ rofi -e.
         # Ngữ cảnh: tag [xxx] ở ĐẦU văn bản — phi/sci/lit/cas = register cài sẵn,
         # tag khác = domain hint tự do (vd [math]); không tag → tự suy luận.
         # API key Gemini đọc từ biến GEMINI_API_KEY hoặc file ~/.config/quick-lang/api.key.
@@ -202,10 +200,7 @@
           fix)
             rule="The text below is English written by a learner. Proofread it. If it is already correct and natural, output it EXACTLY unchanged. If it has real errors (grammar, word choice, collocation, unnatural phrasing), output only the corrected version, changing as little as possible. $CTX_RULE Preserve the author's meaning and voice. Keep proper nouns and technical terms. Output ONLY the resulting text, with no explanations or notes."
             gt_tl="" ;;
-          grammar)
-            rule="Analyse the grammar of the English text below (usually one sentence). Dissect its structure: each clause and its function (subject, verb, object, complement, modifier), any notable constructions (fused relatives, clefts, 'not X, but Y' coordination, inversion...), and clarify a word only when grammatically significant. End with one final line 'Pattern:' giving a reusable template of the core construction with X/Y placeholders. $CTX_RULE Answer concisely in English, one short labeled line per point."
-            gt_tl="" ;;
-          *) ntf "Quick Lang" "Mode không hợp lệ: $mode (dùng vi-en | en-vi | fix | grammar)"; exit 1 ;;
+          *) ntf "Quick Lang" "Mode không hợp lệ: $mode (dùng vi-en | en-vi | fix)"; exit 1 ;;
         esac
 
         # ---- Engine AI: Gemini Flash ----
@@ -213,11 +208,18 @@
         # Riêng 429 (hết quota free tier) báo NGAY không retry — vì Retry-After
         # tính bằng chục giây, và mỗi lần retry lại đốt thêm 1 request của quota.
         translate_ai() {
-          # gemini-flash-lite-latest = alias tự trỏ tới model lite mới nhất của
-          # Google (2.5-flash-lite đã bị ngừng cấp cho key mới). Quota free tier
-          # ~1000 req/ngày. Muốn chất lượng cao hơn (quota chỉ ~250 req/ngày):
-          # đổi thành "gemini-2.5-flash" hoặc "gemini-flash-latest".
-          MODEL="gemini-flash-lite-latest"
+          # Routing model theo mode (script biết chắc ý định từ phím bấm, không
+          # cần auto-router ngoài):
+          #   vi-en/en-vi (tần suất cao, trong guồng) → flash-lite: nhanh nhất,
+          #     quota free ~1000 req/ngày. Alias tự trỏ tới model lite mới nhất
+          #     (2.5-flash-lite đã ngừng cấp cho key mới).
+          #   fix (chất lượng là sản phẩm, tần suất thấp) → flash đầy đủ: judging
+          #     "đã đúng → giữ nguyên văn" và sửa lỗi chính xác hơn hẳn; quota
+          #     ~250 req/ngày vẫn dư cho vài chục lần fix mỗi ngày.
+          case "$mode" in
+            vi-en|en-vi) MODEL="gemini-flash-lite-latest" ;;
+            *)           MODEL="gemini-flash-latest" ;;
+          esac
 
           API_KEY="''${GEMINI_API_KEY:-}"
           if [ -z "$API_KEY" ] && [ -r "''${XDG_CONFIG_HOME:-$HOME/.config}/quick-lang/api.key" ]; then
@@ -304,13 +306,6 @@
         fi
 
         printf %s "$result" | wl-copy
-
-        # ---- Hiển thị kết quả ----
-        if [ "$mode" = grammar ]; then
-          # Phân tích dài → cửa sổ rofi -e (đọc thoải mái, Esc để đóng);
-          # nội dung đã được copy clipboard ở trên.
-          exec rofi -e "$result" -theme-str 'window { width: 700px; }'
-        fi
 
         # Tiêu đề: script tự SO SÁNH đầu ra với đầu vào (tất định, không tin
         # lời model báo cáo) — nguyên văn = đã tự nhiên, khác = đã sửa.

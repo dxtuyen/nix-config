@@ -194,13 +194,11 @@ in
       #   t            → English sạch (smart: VI/EN/trộn tự nhận dạng; EN đã đúng
       #                  → nguyên văn, có lỗi → sửa)
       #   Shift+t      → tiếng Việt tự nhiên
-      #   Ctrl+t       → phân tích ngữ pháp + mẫu câu (cửa sổ rofi)
       #   Ctrl+Shift+t → ép sửa English (không auto-detect)
       # Tag ngữ cảnh [phi]/[sci]/[lit]/[cas]/[lĩnh vực] đặt ở ĐẦU văn bản bôi.
       # Gemini hết quota → script tự fallback Google Translate (không cần phím).
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
-      bindsym $mod+Ctrl+t exec ~/.local/bin/quick-lang grammar
       bindsym $mod+Ctrl+Shift+t exec ~/.local/bin/quick-lang fix
       bindsym $mod+Shift+r exec ~/.local/bin/quick-net-reload
       bindsym $mod+g exec ~/.local/bin/dict-lookup
