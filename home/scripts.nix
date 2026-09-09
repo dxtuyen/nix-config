@@ -19,6 +19,26 @@
       '';
     };
 
+    ".local/bin/idle-suspend" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # Suspend do IDLE (swayidle timeout 900s) — chỉ ngủ khi đang DÙNG PIN.
+        # Cắm sạc (pin ở trạng thái Charging / Full / Not charging) → thoát 0:
+        # máy thức tiếp, màn hình vẫn tắt & khóa từ các timeout 300s/310s trước.
+        # Lưu ý: đường đóng nắp và power-menu → Suspend vẫn ngủ như cũ vì chúng
+        # gọi `systemctl suspend` trực tiếp (hoặc qua logind), không qua script này.
+        # Phát hiện "dùng pin" bằng status của pin — đúng hơn là check cổng sạc,
+        # vì máy này sạc có thể đến từ cả jack AC lẫn USB-C (USB PD).
+        for bat in /sys/class/power_supply/BAT*; do
+          [ -e "$bat/status" ] || continue
+          if [ "$(cat "$bat/status")" = Discharging ]; then
+            exec ${pkgs.systemd}/bin/systemctl suspend
+          fi
+        done
+      '';
+    };
+
     ".local/bin/cycle-wallpaper" = {
       executable = true;
       text = ''

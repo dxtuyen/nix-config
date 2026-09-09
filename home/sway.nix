@@ -217,7 +217,9 @@ in
       # Chuỗi hành vi giữ nguyên:
       #   300s idle       → khóa màn hình (lock-screen dùng `swaylock -f`, trả về ngay)
       #   310s idle       → tắt màn (power off); có thao tác → bật lại nhưng vẫn khóa
-      #   900s idle       → sleep (suspend) — màn đã tắt & khóa nên an toàn
+      #   900s idle       → sleep (suspend) — chỉ khi đang DÙNG PIN (idle-suspend
+      #                     check status pin); cắm sạc → thức tiếp nhưng vẫn tắt màn
+      #                     & khóa nên an toàn
       #   before-sleep    → luôn khóa lại trước khi ngủ (chuẩn swayidle(1))
       #   after-resume    → bật màn lại sau khi máy dậy
       #   lock / unlock   → logind báo khóa/mở khóa phiên (vd: loginctl lock-session, đóng nắp đã cấu hình suspend)
@@ -258,7 +260,7 @@ in
           timeout 300 '%h/.local/bin/lock-screen' \
           timeout 310 'swaymsg "output * power off"' \
           resume 'swaymsg "output * power on"' \
-          timeout 900 'systemctl suspend' \
+          timeout 900 '%h/.local/bin/idle-suspend' \
           before-sleep '%h/.local/bin/lock-screen' \
           after-resume 'swaymsg "output * power on"' \
           lock '%h/.local/bin/lock-screen' \
