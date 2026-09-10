@@ -42,6 +42,57 @@
             exec ${pkgs.systemd}/bin/systemctl suspend
           fi
         done
+        # Không pin nào Discharging → đang cắm sạc (Charging / Full / Not
+        # charging khi pin ở ngưỡng 85-90%). KHÔNG thoát dead-end ở đây:
+        # swayidle chỉ chạy lệnh `timeout 900` MỘT LẦN mỗi chu kỳ idle — nếu
+        # chỉ exit 0 thì rút sạc sau đó (màn vẫn tắt, vẫn khóa, không thao tác)
+        # sẽ không ai kiểm tra lại pin → máy thức suốt đến khi chạm vào.
+        # Trồng watcher nền: rút sạc khi vẫn idle → tự khóa + suspend.
+        if ! pgrep -f idle-suspend-ac-watch >/dev/null 2>&1; then
+          ${pkgs.bash}/bin/bash "$HOME/.local/bin/idle-suspend-ac-watch" >/dev/null 2>&1 &
+        fi
+      '';
+    };
+
+    ".local/bin/idle-suspend-ac-watch" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # idle-suspend-ac-watch — được idle-suspend "trồng" khi 900s idle mà
+        # đang CẮM SẠC. Fix bug: swayidle chỉ chạy lệnh `timeout 900` MỘT LẦN
+        # mỗi chu kỳ idle, nên trước đây khi cắm sạc script chỉ `exit 0` —
+        # rút sạc sau đó (màn vẫn tắt, vẫn khóa, không thao tác) sẽ không ai
+        # kiểm tra lại pin → máy thức suốt đến khi có người chạm vào.
+        # Vòng đời:
+        #   - Poll pin mỗi 30s.
+        #   - Màn hình bật lại (có thao tác) → thoát: swayidle tự chạy chu kỳ
+        #     idle mới và mọi thứ về như cũ.
+        #   - Study/Burst (pomodoro) bật giữa chừng → thoát: không được ngủ
+        #     (phiên Study đếm wall-clock, máy ngủ sẽ "ăn mất" thời gian).
+        #   - Mất kết nối sway (sway chết / đang ở TTY) → thoát: không ngủ oan
+        #     khi không còn biết được trạng thái idle.
+        #   - Pin chuyển sang Discharging (rút sạc) → khóa + suspend luôn
+        #     (màn đã tắt & đã khóa từ timeout 300s/310s trước đó).
+        while true; do
+          out="$(swaymsg -t get_outputs 2>/dev/null)" || exit 0
+          [ -n "$out" ] || exit 0
+          if printf '%s' "$out" | grep -q '"power": true'; then
+            exit 0
+          fi
+          if pgrep -f "study daemon" >/dev/null 2>&1 || pgrep -f "burst daemon" >/dev/null 2>&1; then
+            exit 0
+          fi
+          for bat in /sys/class/power_supply/BAT*; do
+            [ -e "$bat/status" ] || continue
+            if [ "$(cat "$bat/status")" = Discharging ]; then
+              # Khóa lại cho chắc (lock-screen tự thoát nếu swaylock đang
+              # chạy) rồi ngủ.
+              "$HOME/.local/bin/lock-screen" >/dev/null 2>&1
+              exec ${pkgs.systemd}/bin/systemctl suspend
+            fi
+          done
+          sleep 30
+        done
       '';
     };
 

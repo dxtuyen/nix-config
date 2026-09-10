@@ -84,7 +84,7 @@ study toggle       # pause/resume study (burst: burst toggle)
 |---|---|
 | 300s idle | khóa màn hình (`lock-screen`) |
 | 310s idle | tắt màn — có thao tác → bật lại nhưng vẫn khóa |
-| 900s idle | suspend (ngủ) — **chỉ khi đang dùng pin**; cắm sạc → thức tiếp (màn vẫn tắt & khóa); **bỏ qua khi Study/Burst đang chạy** |
+| 900s idle | suspend (ngủ) — **chỉ khi đang dùng pin**; cắm sạc → thức tiếp (màn vẫn tắt & khóa) nhưng watcher nền chờ sẵn: **rút sạc khi vẫn idle → tự ngủ sau tối đa ~30s**; **bỏ qua khi Study/Burst đang chạy** |
 | before-sleep | luôn khóa lại trước khi ngủ |
 | lock / unlock | logind khóa → khóa ngay; unlock → bật màn |
 
