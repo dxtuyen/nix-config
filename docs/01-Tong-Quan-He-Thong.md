@@ -36,7 +36,7 @@
 | `waybar.nix` / `alacritty.nix` + `starship.nix` / `gtk.nix` / `mako.nix` | Thanh trạng thái / terminal / theme / thông báo |
 | `fcitx5.nix` | Bộ gõ tiếng Việt |
 | `scripts.nix` | Script `~/.local/bin`: lock-screen, power-menu, quick-lang, screenshot-menu, cycle-wallpaper... |
-| `pomodoro.nix` | Pomodoro timer + menu |
+| `pomodoro.nix` | 2 chế độ song song: `burst` (cố định 10 phút) + `study` (phiên thuần 60/90/120, không break); menu `$mod+p` có Pause/Resume/Reset dùng chung |
 | `remnote.nix` | RemNote AppImage (khung cài + script `update-remnote`) |
 | `thunar.nix` | File manager + mở terminal bằng Alacritty |
 

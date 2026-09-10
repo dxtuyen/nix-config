@@ -33,7 +33,11 @@
       "app-name=wlsunset".default-timeout = 2000;
       "app-name=power-profiles".default-timeout = 2000;
       "app-name=toggle-touchpad".default-timeout = 2000;
-      "app-name=pomodoro".default-timeout = 5000;
+      # Study/Burst (pomodoro): viền màu theo màu đồng hồ trên Waybar
+      "app-name=study".border-color = "#7aa2f7";
+      "app-name=study".default-timeout = 5000;
+      "app-name=burst".border-color = "#ff9e64";
+      "app-name=burst".default-timeout = 5000;
       "app-name=screenshot".default-timeout = 2000;
       "app-name=power".default-timeout = 2000;
     };
