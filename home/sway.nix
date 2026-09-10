@@ -224,7 +224,10 @@ in
       #   310s idle       → tắt màn (power off); có thao tác → bật lại nhưng vẫn khóa
       #   900s idle       → sleep (suspend) — chỉ khi đang DÙNG PIN (idle-suspend
       #                     check status pin); cắm sạc → thức tiếp nhưng vẫn tắt màn
-      #                     & khóa nên an toàn
+      #                     & khóa, đồng thời trồng idle-suspend-ac-watch:
+      #                     rút sạc khi vẫn idle → tự ngủ sau tối đa ~30s
+      #                     (swayidle chỉ chạy timeout 900 MỘT LẦN mỗi chu kỳ,
+      #                     không watcher thì rút sạc sẽ chẳng ai kiểm tra lại)
       #   before-sleep    → luôn khóa lại trước khi ngủ (chuẩn swayidle(1))
       #   after-resume    → bật màn lại sau khi máy dậy
       #   lock / unlock   → logind báo khóa/mở khóa phiên (vd: loginctl lock-session, đóng nắp đã cấu hình suspend)
