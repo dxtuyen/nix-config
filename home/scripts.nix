@@ -30,6 +30,12 @@
         # gọi `systemctl suspend` trực tiếp (hoặc qua logind), không qua script này.
         # Phát hiện "dùng pin" bằng status của pin — đúng hơn là check cổng sạc,
         # vì máy này sạc có thể đến từ cả jack AC lẫn USB-C (USB PD).
+        # Đang có phiên Study/Burst (pomodoro) chạy → KHÔNG suspend:
+        # END_TIME đếm theo wall-clock, máy ngủ sẽ "ăn mất" thời gian phiên
+        # (điển hình là phiên Output recall: khóa màn ngồi nghĩ, không gõ gì).
+        if pgrep -f "study daemon" >/dev/null 2>&1 || pgrep -f "burst daemon" >/dev/null 2>&1; then
+          exit 0
+        fi
         for bat in /sys/class/power_supply/BAT*; do
           [ -e "$bat/status" ] || continue
           if [ "$(cat "$bat/status")" = Discharging ]; then

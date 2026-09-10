@@ -20,7 +20,8 @@ in
         "sway/scratchpad"
       ];
       "modules-center" = [
-        "custom/pomodoro"
+        "custom/study"
+        "custom/burst"
         "clock"
       ];
       "modules-right" = [
@@ -133,9 +134,17 @@ in
           ""
         ];
       };
-      "custom/pomodoro" = {
-        exec = "~/.local/bin/pomodoro status";
+      # Study = phiên học tổng chạy ngầm (đồng hồ 1)
+      "custom/study" = {
+        exec = "~/.local/bin/study status";
         signal = 8;
+        return-type = "json";
+        "on-click" = "~/.local/bin/pomodoro-menu";
+      };
+      # Burst = phiên siêu tập trung cố định 10 phút, song song với study (đồng hồ 2)
+      "custom/burst" = {
+        exec = "~/.local/bin/burst status";
+        signal = 7;
         return-type = "json";
         "on-click" = "~/.local/bin/pomodoro-menu";
       };
@@ -167,11 +176,14 @@ in
       #mode { color: #7aa2f7; background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; }
       #scratchpad { color: #a9b1d6; margin: 4px 5px; }
       #clock { color: #7aa2f7; font-weight: bold; background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 10px 4px 5px; }
-      #custom-pomodoro { background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; font-weight: bold; }
-      #custom-pomodoro.running { color: #f7768e; }
-      #custom-pomodoro.idle { color: #565f89; }
-      #custom-pomodoro.break { color: #9ece6a; }
-      #custom-pomodoro.custom { color: #7aa2f7; }
+      #custom-study { background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; font-weight: bold; }
+      #custom-study.running { color: #7aa2f7; }
+      #custom-study.paused { color: #e0af68; }
+      #custom-study.idle { color: #565f89; }
+      #custom-burst { background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; font-weight: bold; }
+      #custom-burst.running { color: #f7768e; }
+      #custom-burst.paused { color: #e0af68; }
+      #custom-burst.idle { color: #565f89; }
       #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: #e0af68; }
       #battery.critical { color: #f7768e; }
       #temperature.critical, #cpu.critical, #memory.critical { color: #f7768e; animation: blink 1s linear infinite; }

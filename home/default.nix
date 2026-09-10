@@ -29,7 +29,7 @@
     ./mako.nix # Trình thông báo Mako
     ./fcitx5.nix # Bộ gõ tiếng Việt Fcitx5
     ./scripts.nix # Các script thủ công trong ~/.local/bin
-    ./pomodoro.nix # Pomodoro timer + menu (tách riêng cho gọn)
+    ./pomodoro.nix # 2 chế độ song song: Burst (cố định 10 phút) + Study phiên thuần 60/90/120 (không break)
     ./remnote.nix # Tích hợp RemNote AppImage (appimage-run + desktop entry + update-remnote)
     ./thunar.nix # Đăng ký Alacritty làm terminal mặc định cho Thunar
   ];

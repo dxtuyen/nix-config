@@ -43,10 +43,40 @@ nix eval github:NixOS/nixpkgs/nixos-unstable#ticktick.version # bản unstable
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
 | `cycle-wallpaper` | Đổi hình nền sáng/tối theo giờ (06:00 / 18:00) |
 | `refresh-session` | Reload Sway + wallpaper + wlsunset |
-| `pomodoro` / `pomodoro-menu` | Timer học tập + menu |
+| `study` / `burst` / `pomodoro-menu` | 2 chế độ học song song: burst cố định 10 phút + phiên study thuần 60/90/120 (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
 
 > Các phím tắt chi tiết được khai trong `home/sway.nix` — tra cứu tại đó khi cần.
+
+## Focus — Burst & Study song song (`$mod+p`)
+
+| Chế độ | Vai trò | Cách dùng |
+|---|---|---|
+| 🔥 `burst` | **Phiên siêu tập trung** — duy nhất 1 mốc cố định **10 phút**, chạy song song | Menu → *🔥 Burst — siêu tập trung 10 phút* |
+| 📚 `study` | **Phiên học thuần** — 3 mốc cố định **60/90/120 phút**, không break | Menu → chọn *📚 Study — phiên học thuần 60 / 90 / 120 min* |
+
+Menu rofi (`$mod+p`) — Pause/Resume/Reset dùng chung ở đầu, **chỉ hiện khi có phiên**; rảnh hoàn toàn thì menu chỉ còn 4 mục khởi động:
+
+```
+⏸ Pause
+▶ Resume
+↺ Reset
+🔥 Burst · còn 09:23 ▶
+📚 Study · còn 87:12 ▶
+```
+
+(Đang có phiên — 3 dòng điều khiển + 2 dòng trạng thái. Khi rảnh: chỉ `🔥 Burst — siêu tập trung 10 phút` và 3 dòng `📚 Study — phiên học thuần 60/90/120 min`.)
+
+- **⏸ Pause / ▶ Resume / ↺ Reset** ở đầu menu tác động **cả 2 đồng hồ cùng lúc** (không cần ghi chú — tự hiểu): Pause dừng mọi thứ đang chạy, Resume tiếp mọi thứ đang tạm dừng, Reset xoá cả 2 phiên.
+- Đang chạy/pause thì dòng chế độ chỉ **hiển thị trạng thái** (còn bao lâu); muốn đổi mốc → **↺ Reset** rồi chọn lại.
+- 2 đồng hồ **độc lập hoàn toàn** khi chạy: start/pause một bên không cản trở bên kia — burst 10 phút có thể bật giữa chừng phiên study.
+- Hết giờ: chuông + thông báo. Lịch sử phiên học ghi tại `~/.local/state/pomodoro-history.log` (mỗi dòng: thời điểm · nhãn · số phút).
+
+```bash
+burst start        # 10 phút siêu tập trung (song song với study)
+study start 90     # phiên học thuần 90 phút (chỉ nhận 60/90/120)
+study toggle       # pause/resume study (burst: burst toggle)
+```
 
 ## Khóa màn hình • Idle • Sleep (swayidle)
 
@@ -54,7 +84,7 @@ nix eval github:NixOS/nixpkgs/nixos-unstable#ticktick.version # bản unstable
 |---|---|
 | 300s idle | khóa màn hình (`lock-screen`) |
 | 310s idle | tắt màn — có thao tác → bật lại nhưng vẫn khóa |
-| 900s idle | suspend (ngủ) — **chỉ khi đang dùng pin**; cắm sạc → thức tiếp (màn vẫn tắt & khóa) |
+| 900s idle | suspend (ngủ) — **chỉ khi đang dùng pin**; cắm sạc → thức tiếp (màn vẫn tắt & khóa); **bỏ qua khi Study/Burst đang chạy** |
 | before-sleep | luôn khóa lại trước khi ngủ |
 | lock / unlock | logind khóa → khóa ngay; unlock → bật màn |
 
