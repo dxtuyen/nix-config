@@ -43,7 +43,7 @@ nix eval github:NixOS/nixpkgs/nixos-unstable#ticktick.version # bản unstable
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
 | `cycle-wallpaper` | Đổi hình nền sáng/tối theo giờ (06:00 / 18:00) |
 | `refresh-session` | Reload Sway + wallpaper + wlsunset |
-| `study` / `burst` / `pomodoro-menu` | 2 chế độ học song song: burst cố định 10 phút + phiên study thuần 60/90/120 (xem mục bên dưới) |
+| `study` / `burst` / `pomodoro-menu` | 2 chế độ học song song: burst mặc định 10 phút (tự nhập 1–480) + phiên study thuần preset 60/90/120 hoặc tự nhập 1–480 (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
 
 > Các phím tắt chi tiết được khai trong `home/sway.nix` — tra cứu tại đó khi cần.
@@ -52,29 +52,39 @@ nix eval github:NixOS/nixpkgs/nixos-unstable#ticktick.version # bản unstable
 
 | Chế độ | Vai trò | Cách dùng |
 |---|---|---|
-| 🔥 `burst` | **Phiên siêu tập trung** — duy nhất 1 mốc cố định **10 phút**, chạy song song | Menu → *🔥 Burst — siêu tập trung 10 phút* |
-| 📚 `study` | **Phiên học thuần** — 3 mốc cố định **60/90/120 phút**, không break | Menu → chọn *📚 Study — phiên học thuần 60 / 90 / 120 min* |
+| 🔥 `burst` | **Phiên siêu tập trung** — mặc định **10 phút** (tự nhập được 1–480), chạy song song | Menu → *🔥 Burst — mặc định 10 phút* hoặc *🔥 Burst — tự nhập số phút* |
+| 📚 `study` | **Phiên học thuần** — preset **60/90/120** hoặc tự nhập **1–480 phút**, không break | Menu → chọn preset hoặc *📚 Study — tự nhập số phút* |
 
-Menu rofi (`$mod+p`) — Pause/Resume/Reset dùng chung ở đầu, **chỉ hiện khi có phiên**; rảnh hoàn toàn thì menu chỉ còn 4 mục khởi động:
+Menu rofi (`$mod+p`) — **KHÔNG có điều khiển chung**: mỗi dòng là 1 hành động trực tiếp cho chính đồng hồ đó. Rảnh hoàn toàn → 6 dòng khởi động:
 
 ```
-⏸ Pause
-▶ Resume
-↺ Reset
-🔥 Burst · còn 09:23 ▶
-📚 Study · còn 87:12 ▶
+🔥 Burst — mặc định 10 phút
+🔥 Burst — tự nhập số phút (1–480)...
+📚 Study — phiên học thuần 60 min
+📚 Study — phiên học thuần 90 min
+📚 Study — phiên học thuần 120 min
+📚 Study — tự nhập số phút (1–480)...
 ```
 
-(Đang có phiên — 3 dòng điều khiển + 2 dòng trạng thái. Khi rảnh: chỉ `🔥 Burst — siêu tập trung 10 phút` và 3 dòng `📚 Study — phiên học thuần 60/90/120 min`.)
+Đang có phiên → mỗi đồng hồ hiện 2 dòng (toggle + Reset riêng):
 
-- **⏸ Pause / ▶ Resume / ↺ Reset** ở đầu menu tác động **cả 2 đồng hồ cùng lúc** (không cần ghi chú — tự hiểu): Pause dừng mọi thứ đang chạy, Resume tiếp mọi thứ đang tạm dừng, Reset xoá cả 2 phiên.
-- Đang chạy/pause thì dòng chế độ chỉ **hiển thị trạng thái** (còn bao lâu); muốn đổi mốc → **↺ Reset** rồi chọn lại.
-- 2 đồng hồ **độc lập hoàn toàn** khi chạy: start/pause một bên không cản trở bên kia — burst 10 phút có thể bật giữa chừng phiên study.
+```
+⏸ Burst · còn 09:23    ← bấm để pause (khi pause: ▶ bấm để resume)
+↺ Reset Burst
+⏸ Study · còn 87:12
+↺ Reset Study
+```
+
+- **Mỗi dòng tự giải thích**: rảnh → dòng khởi động; đang chạy → `⏸` bấm để pause; tạm dừng → `▶` bấm để resume; `↺ Reset` chỉ xoá đồng hồ của chính nó và chỉ hiện khi đồng hồ đó có phiên. Muốn đổi mốc → Reset rồi chọn lại.
+- 2 đồng hồ **độc lập hoàn toàn**: start/pause/reset một bên không cản trở bên kia — burst có thể bật giữa chừng phiên study.
+- **Tự phục hồi**: daemon chết giữa chừng → lần mở menu tiếp theo (hoặc waybar refresh) tự finalize phiên đã hết hạn (chuông/thông báo/lịch sử) hoặc hồi sinh daemon — không bao giờ kẹt đồng hồ "còn 00:00".
 - Hết giờ: chuông + thông báo. Lịch sử phiên học ghi tại `~/.local/state/pomodoro-history.log` (mỗi dòng: thời điểm · nhãn · số phút).
 
 ```bash
-burst start        # 10 phút siêu tập trung (song song với study)
-study start 90     # phiên học thuần 90 phút (chỉ nhận 60/90/120)
+burst start        # 10 phút mặc định (song song với study)
+burst start 25     # burst tự nhập 25 phút (1–480)
+study start 90     # phiên học thuần 90 phút (preset)
+study start 45     # phiên học thuần tự nhập 45 phút (1–480)
 study toggle       # pause/resume study (burst: burst toggle)
 ```
 
