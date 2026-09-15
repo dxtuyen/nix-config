@@ -175,13 +175,124 @@
         ~/.local/bin/cycle-wallpaper
       '';
     };
-    ".local/bin/dict-lookup" = {
+    ".local/bin/dict-toggle" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Mở GoldenDict để tra từ điển (hiển thị đẹp, có IPA).
-        # GoldenDict tự đọc bộ từ điển StarDict trong ~/.stardict/dic.
-        exec ${pkgs.goldendict-ng}/bin/goldendict
+        # dict-toggle — bật/tắt GoldenDict (mod+g), KÈM tra từ đang bôi đen:
+        #   chưa có cửa sổ → mở (kèm tra selection nếu có; app đang ẩn trong tray
+        #                     → single-instance đánh thức cửa sổ + tra luôn)
+        #   đang focus     → đóng cửa sổ (goldendict-ng ẩn về tray, tiến trình
+        #                     GIỮ NGUYÊN nên lần mở sau gần như tức thời)
+        #   mở, mất focus  → kéo về workspace hiện tại + focus (kèm tra selection)
+        # Từ cần tra: primary selection (bôi đen) → fallback clipboard (Ctrl+C);
+        # chỉ nhận ≤ 3 từ & ≤ 40 ký tự (từ đơn/cụm ngắn); quá dài hoặc URL →
+        # chỉ mở dict, không tự điền. Luôn float nhờ rule for_window trong
+        # sway.nix. One-shot, < 50 ms mỗi lần bấm, không chạy nền.
+        set -u
+        APP_ID="io.github.xiaoyifang.goldendict_ng"
+
+        # Ưu tiên cửa sổ chính (floating_con); fallback node bất kỳ phòng khi
+        # chưa reload rule float — tránh bắt nhầm dialog (About/Preferences)
+        # vốn cùng app_id với cửa sổ chính.
+        node="$(swaymsg -t get_tree | jq -c --arg id "$APP_ID" '
+          ([.. | objects | select(.app_id? == $id and .type? == "floating_con")][0]
+           // [.. | objects | select(.app_id? == $id)][0]) // empty')"
+
+        # ---- Lấy từ cần tra: primary selection → fallback clipboard ----
+        word="$(wl-paste -p 2>/dev/null || true)"
+        [ -n "''${word//[[:space:]]/}" ] || word="$(wl-paste 2>/dev/null || true)"
+        # Lấy 1 dòng đầu, trim 2 đầu
+        word="$(printf %s "$word" | head -n1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+        case "$word" in "" | http* | www.*) word="" ;; esac
+        if [ -n "$word" ]; then
+          # Chỉ tra từ đơn/cụm ngắn: ≤ 3 từ và ≤ 40 ký tự; dài hơn → bỏ qua
+          nw="$(printf %s "$word" | wc -w)"
+          [ "$nw" -ge 1 ] && [ "$nw" -le 3 ] || word=""
+          [ "''${#word}" -le 40 ] || word=""
+        fi
+
+        if [ -z "$node" ]; then
+          if [ -n "$word" ]; then
+            exec ${pkgs.goldendict-ng}/bin/goldendict "$word"
+          fi
+          exec ${pkgs.goldendict-ng}/bin/goldendict
+        fi
+
+        cid="$(jq -rn --argjson n "$node" '$n.id')"
+        focused="$(jq -rn --argjson n "$node" '$n.focused // false')"
+
+        if [ "$focused" = "true" ]; then
+          # Đang ở trước mặt → đóng cửa sổ (graceful close, không giết tiến trình)
+          swaymsg "[con_id=$cid] kill"
+        else
+          # Đang mở ở workspace khác → kéo về workspace hiện tại & focus
+          swaymsg "[con_id=$cid] move container to workspace current"
+          swaymsg "[con_id=$cid] focus"
+          if [ -n "$word" ]; then
+            # Bắn từ vào instance đang chạy (tiến trình gọi forward xong tự thoát)
+            ( ${pkgs.goldendict-ng}/bin/goldendict "$word" >/dev/null 2>&1 & )
+          fi
+        fi
+      '';
+    };
+
+    ".local/bin/sioyek-open" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # sioyek-open — mở file PDF qua sioyek; nếu file ĐÃ mở trong một cửa sổ
+        # sioyek ở workspace khác → kéo cửa sổ đó về workspace hiện tại.
+        #
+        # Vì sao cần script: sioyek 2.0 là single-instance — mở lại file đã mở
+        # chỉ gửi IPC "focus cửa sổ cũ", nhưng Wayland CẤM app tự nhảy workspace
+        # hay tự focus khi đang nền → đứng ở workspace khác sẽ thấy "không có gì
+        # xảy ra". Cách duy nhất đúng: để sway (compositor — thực thể duy nhất
+        # được phép dịch chuyển cửa sổ) kéo cửa sổ về, y hệt cơ chế dict-toggle
+        # cho GoldenDict.
+        #
+        # Được gọi từ:
+        #   - desktop entry đè trong home/sioyek.nix (Thunar/xdg-open/rofi)
+        #   - shadow wrapper ~/.local/bin/sioyek (gõ `sioyek file.pdf` terminal)
+        #
+        # Edge case (chấp nhận): mở cùng file bằng 2 cửa sổ → kéo cửa sổ đầu tiên.
+        # LƯU Ý: jq & swaymsg gọi bằng đường dẫn tuyệt đối — script có thể
+        # được desktop entry khởi chạy trong môi trường PATH tối thiểu
+        # (không có /etc/profiles hay ~/.local/bin), không được dựa vào PATH.
+        set -u
+        JQ="${pkgs.jq}/bin/jq"
+        SWAYMSG="${pkgs.sway}/bin/swaymsg"
+
+        if [ $# -ge 1 ]; then
+          base="$(basename -- "$1")"
+          # Tìm cửa sổ sioyek có title chứa tên file (match app_id lẫn class)
+          cid="$($SWAYMSG -t get_tree | $JQ -r --arg b "$base" '
+            [.. | objects
+             | select(((.app_id? // "") == "sioyek")
+                      or (((.window_properties.class? // "") | test("^sioyek$"; "i"))))
+             | select((.name // "") | contains($b))
+             | .id][0] // empty')"
+          if [ -n "$cid" ]; then
+            $SWAYMSG "[con_id=$cid] move container to workspace current"
+            $SWAYMSG "[con_id=$cid] focus"
+            exit 0
+          fi
+        fi
+
+        exec ${pkgs.sioyek}/bin/sioyek "$@"
+      '';
+    };
+
+    ".local/bin/sioyek" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # sioyek — shadow binary thật trong ~/.local/bin (đứng đầu PATH của
+        # programs.bash): mọi lần gõ `sioyek` đều qua sioyek-open để có hành vi
+        # "kéo cửa sổ đã mở về workspace hiện tại". Binary gốc trong nix store
+        # không bị đụng — sioyek-open gọi ${pkgs.sioyek} absolute nên wrapper
+        # này không bao giờ đệ quy.
+        exec "$HOME/.local/bin/sioyek-open" "$@"
       '';
     };
 

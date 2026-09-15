@@ -29,6 +29,7 @@
     ./mako.nix # Trình thông báo Mako
     ./fcitx5.nix # Bộ gõ tiếng Việt Fcitx5
     ./scripts.nix # Các script thủ công trong ~/.local/bin
+    ./sioyek.nix # Sioyek PDF reader (file mới = cửa sổ riêng thay vì nhét vào cửa sổ cũ)
     ./pomodoro.nix # 2 chế độ song song: Burst (mặc định 10 phút, tự nhập 1–480) + Study phiên thuần preset 60/90/120 hoặc tự nhập 1–480 (không break)
     ./remnote.nix # Tích hợp RemNote AppImage (appimage-run + desktop entry + update-remnote)
     ./thunar.nix # Đăng ký Alacritty làm terminal mặc định cho Thunar
