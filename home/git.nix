@@ -12,13 +12,15 @@
   programs.git = {
     enable = true;
 
-    # Identity commit — khớp với tài khoản GitHub `dxtuyen`
-    settings.user = {
-      name = "dxtuyen";
-      email = "tuyendoxuan05@gmail.com";
-    };
+    # settings (thay cho extraConfig — đã deprecation ở HM mới) merge
+    # trực tiếp vào ~/.config/git/config
+    settings = {
+      # Identity commit — khớp với tài khoản GitHub `dxtuyen`
+      user = {
+        name = "dxtuyen";
+        email = "tuyendoxuan05@gmail.com";
+      };
 
-    extraConfig = {
       init.defaultBranch = "main"; # nhánh mặc định khi git init
       pull.rebase = true; # git pull luôn rebase — lịch sử phẳng
       core = {
