@@ -70,6 +70,23 @@ in
       for_window [app_id="file-roller"] floating enable
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
+      # GoldenDict: luôn float như popup từ điển (KHÔNG sticky — gọi từ workspace
+      # nào thì dict-toggle tự kéo nó về workspace đó). Bật/tắt bằng mod+g:
+      # lần nữa khi đang focus → đóng (app ẩn về tray, tiến trình giữ nguyên);
+      # đang bôi đen từ (≤ 3 từ) → tự tra luôn.
+      for_window [app_id="io.github.xiaoyifang.goldendict_ng"] floating enable, resize set width 50 ppt height 65 ppt
+
+      # Sioyek: file mở ở workspace nào thì cửa sổ (mới) hiện ngay workspace đó —
+      # không nhảy về workspace của cửa sổ sioyek cũ. Match cả class (XWayland)
+      # và app_id (Wayland) — cùng pattern với rule RemNote/VS Code ở trên.
+      for_window [class="(?i)^sioyek$"] move container to workspace current
+      for_window [app_id="(?i)^sioyek$"] move container to workspace current
+
+      # Thunar: float dạng popup chọn file (50x85 ppt) — không phá layout tiling
+      # đang có; nếu cần tiled lại (so sánh 2 thư mục...) thì mod+Shift+space
+      for_window [class="(?i)^thunar$"] floating enable, resize set width 50 ppt height 85 ppt
+      for_window [app_id="(?i)^thunar$"] floating enable, resize set width 50 ppt height 85 ppt
+
       # Dialog/popup rules
       for_window [window_role="pop-up"] floating enable
       for_window [window_role="bubble"] floating enable
@@ -201,7 +218,8 @@ in
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
       bindsym $mod+Ctrl+Shift+t exec ~/.local/bin/quick-lang fix
       bindsym $mod+Shift+r exec ~/.local/bin/quick-net-reload
-      bindsym $mod+g exec ~/.local/bin/dict-lookup
+      # dict-toggle: bật/tắt GoldenDict float + tự tra từ đang bôi (≤ 3 từ); đóng = ẩn về tray
+      bindsym $mod+g exec ~/.local/bin/dict-toggle
       bindsym $mod+Mod1+t exec ~/.local/bin/toggle-touchpad
       bindsym $mod+Print exec ~/.local/bin/screenshot-menu
       bindsym --no-repeat Print exec ~/.local/bin/screenshot selection-clipboard
