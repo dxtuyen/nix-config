@@ -179,16 +179,16 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # dict-toggle — bật/tắt GoldenDict (mod+g), KÈM tra từ đang bôi đen:
-        #   chưa có cửa sổ → mở (kèm tra selection nếu có; app đang ẩn trong tray
-        #                     → single-instance đánh thức cửa sổ + tra luôn)
+        # dict-toggle — bật/tắt GoldenDict (mod+g), hành vi gốc của app:
+        #   chưa có cửa sổ → mở goldendict (app ẩn trong tray → single-instance
+        #                     đánh thức cửa sổ)
         #   đang focus     → đóng cửa sổ (goldendict-ng ẩn về tray, tiến trình
         #                     GIỮ NGUYÊN nên lần mở sau gần như tức thời)
-        #   mở, mất focus  → kéo về workspace hiện tại + focus (kèm tra selection)
-        # Từ cần tra: primary selection (bôi đen) → fallback clipboard (Ctrl+C);
-        # chỉ nhận ≤ 3 từ & ≤ 40 ký tự (từ đơn/cụm ngắn); quá dài hoặc URL →
-        # chỉ mở dict, không tự điền. Luôn float nhờ rule for_window trong
-        # sway.nix. One-shot, < 50 ms mỗi lần bấm, không chạy nền.
+        #   mở, mất focus  → kéo về workspace hiện tại + focus
+        # Vì sao cần script: Wayland CẤM app tự nhảy workspace hay tự focus
+        # khi đang nền → sway (compositor) là thực thể duy nhất được phép
+        # dịch chuyển cửa sổ. Luôn float nhờ rule for_window trong sway.nix.
+        # One-shot, < 50 ms mỗi lần bấm, không chạy nền.
         set -u
         APP_ID="io.github.xiaoyifang.goldendict_ng"
 
@@ -199,23 +199,7 @@
           ([.. | objects | select(.app_id? == $id and .type? == "floating_con")][0]
            // [.. | objects | select(.app_id? == $id)][0]) // empty')"
 
-        # ---- Lấy từ cần tra: primary selection → fallback clipboard ----
-        word="$(wl-paste -p 2>/dev/null || true)"
-        [ -n "''${word//[[:space:]]/}" ] || word="$(wl-paste 2>/dev/null || true)"
-        # Lấy 1 dòng đầu, trim 2 đầu
-        word="$(printf %s "$word" | head -n1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
-        case "$word" in "" | http* | www.*) word="" ;; esac
-        if [ -n "$word" ]; then
-          # Chỉ tra từ đơn/cụm ngắn: ≤ 3 từ và ≤ 40 ký tự; dài hơn → bỏ qua
-          nw="$(printf %s "$word" | wc -w)"
-          [ "$nw" -ge 1 ] && [ "$nw" -le 3 ] || word=""
-          [ "''${#word}" -le 40 ] || word=""
-        fi
-
         if [ -z "$node" ]; then
-          if [ -n "$word" ]; then
-            exec ${pkgs.goldendict-ng}/bin/goldendict "$word"
-          fi
           exec ${pkgs.goldendict-ng}/bin/goldendict
         fi
 
@@ -229,10 +213,6 @@
           # Đang mở ở workspace khác → kéo về workspace hiện tại & focus
           swaymsg "[con_id=$cid] move container to workspace current"
           swaymsg "[con_id=$cid] focus"
-          if [ -n "$word" ]; then
-            # Bắn từ vào instance đang chạy (tiến trình gọi forward xong tự thoát)
-            ( ${pkgs.goldendict-ng}/bin/goldendict "$word" >/dev/null 2>&1 & )
-          fi
         fi
       '';
     };
