@@ -72,8 +72,7 @@ in
 
       # GoldenDict: luôn float như popup từ điển (KHÔNG sticky — gọi từ workspace
       # nào thì dict-toggle tự kéo nó về workspace đó). Bật/tắt bằng mod+g:
-      # lần nữa khi đang focus → đóng (app ẩn về tray, tiến trình giữ nguyên);
-      # đang bôi đen từ (≤ 3 từ) → tự tra luôn.
+      # bấm lần nữa khi đang focus → đóng (app ẩn về tray, tiến trình giữ nguyên).
       for_window [app_id="io.github.xiaoyifang.goldendict_ng"] floating enable, resize set width 50 ppt height 65 ppt
 
       # Sioyek: file mở ở workspace nào thì cửa sổ (mới) hiện ngay workspace đó —
@@ -109,6 +108,12 @@ in
       # neo ^code$ để không nhầm với app khác có chữ "code" trong tên
       for_window [class="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
       for_window [app_id="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
+
+      # Anki: luôn mở vào workspace 7 VÀ chuyển focus tới luôn (y hệt pattern
+      # RemNote/VS Code ở trên). Match cả app_id (Wayland) lẫn class (XWayland)
+      # để bắt mọi cửa sổ: chính, Browse, Add...
+      for_window [class="(?i)^anki$"] move container to workspace number 7, workspace number 7
+      for_window [app_id="(?i)^anki$"] move container to workspace number 7, workspace number 7
 
       # Inhibit idle
       for_window [class="google-chrome"] inhibit_idle fullscreen
@@ -218,7 +223,7 @@ in
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
       bindsym $mod+Ctrl+Shift+t exec ~/.local/bin/quick-lang fix
       bindsym $mod+Shift+r exec ~/.local/bin/quick-net-reload
-      # dict-toggle: bật/tắt GoldenDict float + tự tra từ đang bôi (≤ 3 từ); đóng = ẩn về tray
+      # dict-toggle: bật/tắt GoldenDict float; đóng = ẩn về tray
       bindsym $mod+g exec ~/.local/bin/dict-toggle
       bindsym $mod+Mod1+t exec ~/.local/bin/toggle-touchpad
       bindsym $mod+Print exec ~/.local/bin/screenshot-menu
