@@ -74,6 +74,12 @@ in
       # nào thì dict-toggle tự kéo nó về workspace đó). Bật/tắt bằng mod+g:
       # bấm lần nữa khi đang focus → đóng (app ẩn về tray, tiến trình giữ nguyên).
       for_window [app_id="io.github.xiaoyifang.goldendict_ng"] floating enable, resize set width 50 ppt height 65 ppt
+      # TickTick: mở là hiện float popup (45x70 ppt) ngay trên workspace hiện
+      # tại — KHÔNG tự vào scratchpad. App KHÔNG có tray: đóng cửa sổ bằng nút
+      # X là chết tiến trình (lần mở sau cold start chậm của Electron), nên
+      # ẩn đi luôn bằng mod+Shift+minus (move scratchpad, giữ tiến trình
+      # sống) và recall lại bằng mod+minus.
+      for_window [app_id="(?i)^ticktick$"] floating enable, resize set width 45 ppt height 70 ppt
 
       # Sioyek: file mở ở workspace nào thì cửa sổ (mới) hiện ngay workspace đó —
       # không nhảy về workspace của cửa sổ sioyek cũ. Match cả class (XWayland)
@@ -178,12 +184,6 @@ in
       )}
       bindsym $mod+u workspace prev
       bindsym $mod+i workspace next
-
-      # Khởi động phiên ở workspace số 5 (trần, không tên): giữ 1.study..4.work
-      # trống sẵn cho đúng ngữ cảnh; workspace 5 là "bàn nháp" lúc vừa đăng nhập.
-      # Bọc trong exec (chỉ chạy lúc khởi động) thay vì lệnh trần, để không bị
-      # kéo về 5 mỗi lần `swaymsg reload`.
-      exec swaymsg workspace number 5
 
       # Layout & Window State
       bindsym $mod+b splith
