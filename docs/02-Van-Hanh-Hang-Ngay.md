@@ -32,6 +32,25 @@ Nếu nghi ngờ stable tụt phiên bản, so nhanh:
 nix eval github:NixOS/nixpkgs/nixos-26.05#ticktick.version    # bản stable
 nix eval github:NixOS/nixpkgs/nixos-unstable#ticktick.version # bản unstable
 ```
+### TickTick — float popup, ẩn bằng tay qua scratchpad
+
+TickTick (Electron) **không có tray** — đóng cửa sổ bằng nút X là chết tiến
+trình (không ẩn được về tray như GoldenDict/mod+g). Rule `for_window` trong
+`home/sway.nix` chỉ làm 2 việc: mở là hiện ngay dạng **float** (45×70 ppt)
+trên workspace hiện tại — không tự nhảy vào scratchpad.
+
+| Việc | Phím |
+|---|---|
+| Mở | `mod+d` → gõ `tick` → Enter (hiện float luôn) |
+| Ẩn đi (giữ tiến trình sống) | `mod+Shift+minus` |
+| Gọi lại (tức thời, không cold start) | `mod+minus` |
+
+- **KHÔNG đóng TickTick bằng nút X trong app** — tiến trình chết, lần mở sau
+  bị cold start chậm; luôn ẩn bằng `mod+Shift+minus`.
+- Lưu ý: nếu trong scratchpad còn cửa sổ khác, `mod+minus` sẽ cycle qua từng
+  cái (hành vi chuẩn của sway — bấm tiếp đến khi hiện TickTick).
+
+## Scripts quan trọng (`~/.local/bin`)
 
 ## Scripts quan trọng (`~/.local/bin`)
 
