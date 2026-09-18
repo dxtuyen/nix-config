@@ -9,5 +9,5 @@
   "1.study"
   "2.AI"
   "3.code"
-  "4.work"
+  "4.browser"
 ]
