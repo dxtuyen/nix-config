@@ -39,7 +39,7 @@ in
       input type:touchpad {
         pointer_accel 0.6
         accel_profile adaptive
-        natural_scroll disabled
+        natural_scroll enabled
         scroll_method two_finger
         tap enabled
         drag enabled
@@ -54,6 +54,15 @@ in
       gaps top 0
       default_border pixel 2
       default_floating_border pixel 2
+      # Giữ $mod (Super) + kéo chuột TRÁI = di chuyển cửa sổ float
+      # Giữ $mod + kéo chuột PHẢI = resize cửa sổ float
+      # (sway chỉ cho phép MỘT modifier cho floating_modifier — không đặt được
+      # "Super+trái = move, Alt+phải = resize" như ý định ban đầu; chọn $mod
+      # vì Alt bị nhiều app chiếm và $mod chuẩn của sway mặc định. Move bằng
+      # bàn phím: mod+Shift+hjkl vẫn hoạt động trên cửa sổ float)
+      # (chỉ can thiệp chuột khi cửa sổ đang FLOAT và đang GIỮ $mod; cửa sổ
+      # tiling và thao tác chuột trong app khi không giữ $mod không bị ảnh hưởng)
+      floating_modifier $mod normal
       focus_follows_mouse yes
       smart_borders off
 
@@ -87,10 +96,10 @@ in
       for_window [class="(?i)^sioyek$"] move container to workspace current
       for_window [app_id="(?i)^sioyek$"] move container to workspace current
 
-      # Thunar: float dạng popup chọn file (50x85 ppt) — không phá layout tiling
+      # Thunar: float dạng popup chọn file (40x65 ppt) — không phá layout tiling
       # đang có; nếu cần tiled lại (so sánh 2 thư mục...) thì mod+Shift+space
-      for_window [class="(?i)^thunar$"] floating enable, resize set width 50 ppt height 85 ppt
-      for_window [app_id="(?i)^thunar$"] floating enable, resize set width 50 ppt height 85 ppt
+      for_window [class="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
+      for_window [app_id="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
 
       # Dialog/popup rules
       for_window [window_role="pop-up"] floating enable
@@ -200,10 +209,10 @@ in
       bindsym $mod+minus scratchpad show
 
       mode "resize" {
-        bindsym $left resize shrink width 10px
-        bindsym $down resize grow height 10px
-        bindsym $up resize shrink height 10px
-        bindsym $right resize grow width 10px
+        bindsym $left resize shrink width 20px
+        bindsym $down resize grow height 20px
+        bindsym $up resize shrink height 20px
+        bindsym $right resize grow width 20px
         bindsym Escape mode "default"
         bindsym Return mode "default"
       }
