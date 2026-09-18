@@ -6,7 +6,7 @@
 # - Các số còn thiếu đến 10 vẫn có phím mặc định trỏ tới workspace số đó
 #   (vd: list có 5 tên thì $mod+6..0 vẫn sang workspace 6..10).
 [
-  "1.study"
+  "1.main"
   "2.AI"
   "3.code"
   "4.browser"
