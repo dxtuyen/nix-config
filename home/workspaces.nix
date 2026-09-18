@@ -9,5 +9,5 @@
   "1.main"
   "2.AI"
   "3.code"
-  "4.browser"
+  "4.others"
 ]
