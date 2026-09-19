@@ -23,8 +23,8 @@
       border-radius = 8;
       # Riêng timeout từng app — background-color đã trùng mặc định nên không
       # cần khai lại từng app nữa.
-      # timeout = 0 → không tự tắt, chỉ mất khi click hoặc bị thông báo dịch mới thay thế
-      "app-name=quick-lang".default-timeout = 0;
+      # Thông báo dịch tự biến mất sau ~2 phút (120000ms); bấm chuột trái tắt sớm
+      "app-name=quick-lang".default-timeout = 120000;
       "app-name=quick-lang".border-color = "#bb9af7";
       # Chuột trái click để tắt thông báo dịch (mặc định là invoke-default-action, không có tác dụng vì app không có action)
       "app-name=quick-lang".on-button-left = "dismiss";
