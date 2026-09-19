@@ -83,13 +83,6 @@ in
       # nào thì dict-toggle tự kéo nó về workspace đó). Bật/tắt bằng mod+g:
       # bấm lần nữa khi đang focus → đóng (app ẩn về tray, tiến trình giữ nguyên).
       for_window [app_id="io.github.xiaoyifang.goldendict_ng"] floating enable, resize set width 50 ppt height 65 ppt
-      # TickTick: mở là hiện float popup (45x70 ppt) ngay trên workspace hiện
-      # tại — KHÔNG tự vào scratchpad. App KHÔNG có tray: đóng cửa sổ bằng nút
-      # X là chết tiến trình (lần mở sau cold start chậm của Electron), nên
-      # ẩn đi luôn bằng mod+Shift+minus (move scratchpad, giữ tiến trình
-      # sống) và recall lại bằng mod+minus.
-      for_window [app_id="(?i)^ticktick$"] floating enable, resize set width 45 ppt height 70 ppt
-
       # Sioyek: file mở ở workspace nào thì cửa sổ (mới) hiện ngay workspace đó —
       # không nhảy về workspace của cửa sổ sioyek cũ. Match cả class (XWayland)
       # và app_id (Wayland) — cùng pattern với rule RemNote/VS Code ở trên.

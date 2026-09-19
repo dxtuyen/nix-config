@@ -1,8 +1,8 @@
 { pkgs, ... }:
 
 # Ghi chú: toàn bộ gói bên dưới lấy từ nixpkgs stable (pinned nixos-26.05
-# trong flake.lock). Trước đây `ticktick` phải lấy từ nixpkgs-unstable vì
-# bản stable đóng gói chậm — hiện stable đã đuổi kịp nên không cần nữa.
+# trong flake.lock). App closed-source đóng gói chậm (ticktick) đã bị GỠ —
+# dùng bản web/PWA qua Chrome thay thế (xem docs/02).
 {
 
   home.packages = with pkgs; [
@@ -30,9 +30,6 @@
     fastfetch
     libreoffice
     unrar
-    # TickTick — stable 26.05 đã đóng gói đúng bản chính thức mới nhất (8.0.10)
-    ticktick
-
     # Máy ảo — luyện tập cài máy mới theo docs/06-Luyen-Tap-VM.md
     # qemu_kvm: bản QEMU chỉ target x86_64 + KVM, nhẹ hơn meta-package qemu
     qemu_kvm

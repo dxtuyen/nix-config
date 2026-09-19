@@ -22,33 +22,20 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | Dọn rác store | `nix-collect-garbage -d` (GC tự động hàng tuần theo `core.nix`) |
 | Xem log Sway | `journalctl -b -u sway` / `journalctl --user -u sway` |
 
-## TickTick — bản stable đã theo kịp
+## TickTick — đã gỡ app desktop, dùng bản web
 
-`ticktick` trong `home/packages.nix` dùng bản **nixpkgs stable** (cùng bản
-8.0.10 với unstable; input `nixpkgs-unstable` đã bị xoá khỏi `flake.nix`).
-Nếu nghi ngờ stable tụt phiên bản, so nhanh:
+App desktop đã bị gỡ khỏi `home/packages.nix` (cộng đồng Nix đóng gói chậm:
+bump mới nằm chờ ở nixpkgs-unstable, stable không được backport — không đáng
+giữ gói unfree để rồi phải đeo input unstable). Dùng bản web thay thế:
 
-```bash
-nix eval github:NixOS/nixpkgs/nixos-26.05#ticktick.version    # bản stable
-nix eval github:NixOS/nixpkgs/nixos-unstable#ticktick.version # bản unstable
-```
-### TickTick — float popup, ẩn bằng tay qua scratchpad
-
-TickTick (Electron) **không có tray** — đóng cửa sổ bằng nút X là chết tiến
-trình (không ẩn được về tray như GoldenDict/mod+g). Rule `for_window` trong
-`home/sway.nix` chỉ làm 2 việc: mở là hiện ngay dạng **float** (45×70 ppt)
-trên workspace hiện tại — không tự nhảy vào scratchpad.
-
-| Việc | Phím |
-|---|---|
-| Mở | `mod+d` → gõ `tick` → Enter (hiện float luôn) |
-| Ẩn đi (giữ tiến trình sống) | `mod+Shift+minus` |
-| Gọi lại (tức thời, không cold start) | `mod+minus` |
-
-- **KHÔNG đóng TickTick bằng nút X trong app** — tiến trình chết, lần mở sau
-  bị cold start chậm; luôn ẩn bằng `mod+Shift+minus`.
-- Lưu ý: nếu trong scratchpad còn cửa sổ khác, `mod+minus` sẽ cycle qua từng
-  cái (hành vi chuẩn của sway — bấm tiếp đến khi hiện TickTick).
+- **Cách dùng**: `mod+d` → mở Chrome → ticktick.com. Muốn dạng cửa sổ riêng
+  (không thanh địa chỉ, có icon riêng trong Rofi): trên ticktick.com → menu
+  Chrome → *Cast, save and share → Install page as app* (PWA).
+- **Không mất dữ liệu**: task nằm trên cloud TickTick, gỡ app không mất gì.
+- **Mất gì**: thông báo đẩy nền (web chỉ báo khi mở tab, trừ khi bật Chrome
+  notifications cho ticktick.com) — app desktop vốn cũng không có tray nên
+  chênh lệch rất nhỏ.
+- **Muốn cài lại**: thêm 1 dòng `ticktick` vào `home/packages.nix` + rebuild.
 
 ## Scripts quan trọng (`~/.local/bin`)
 
