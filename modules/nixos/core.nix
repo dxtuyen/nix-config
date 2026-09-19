@@ -5,21 +5,35 @@
 }:
 
 {
+  # Dọn dẹp theo chuẩn cộng đồng NixOS:
+  # - gc hàng tuần: xoá các generation cũ hơn 7 ngày (cả hệ thống lẫn user) +
+  #   store path không còn dùng. Giữ 1 tuần để còn bản dự phòng quay lại khi
+  #   bản mới hỏng. Xem lần chạy gần nhất: journalctl -u nix-gc.service
+  # - configurationLimit (dưới cuối file): chặn số entry menu boot lúc rebuild
+  # Xoá tay MỌI generation cũ bất kỳ lúc nào: sudo nix-collect-garbage -d
+  # (hoặc `nh clean all` — nh đã bật trong file này)
   nix = {
     settings.experimental-features = [
       "nix-command"
       "flakes"
     ];
+    optimise.automatic = true;
     gc = {
       automatic = true;
       dates = "weekly";
-      options = "--delete-older-than 14d";
+      options = "--delete-older-than 7d";
     };
-    optimise.automatic = true;
   };
   nixpkgs.config.allowUnfree = true;
 
-  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot = {
+    enable = true;
+    # Chỉ giữ tối đa 10 entry mới nhất trong menu boot (mặc định không giới hạn
+    # → menu phình to sau nhiều lần rebuild). Kết hợp gc 7d ở trên: mỗi lần
+    # rebuild, systemd-boot tự xoá entry cũ vượt ngưỡng trong /boot luôn —
+    # không phải dọn tay.
+    configurationLimit = 10;
+  };
   boot.loader.efi.canTouchEfiVariables = true;
   networking = {
     networkmanager = {

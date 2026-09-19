@@ -31,7 +31,7 @@
     ./scripts.nix # Các script thủ công trong ~/.local/bin
     ./sioyek.nix # Sioyek PDF reader (file mới = cửa sổ riêng thay vì nhét vào cửa sổ cũ)
     ./pomodoro.nix # 2 chế độ song song: Burst (mặc định 10 phút, tự nhập 1–480) + Study phiên thuần preset 60/90/120 hoặc tự nhập 1–480 (không break)
-    ./remnote.nix # Tích hợp RemNote AppImage (appimage-run + desktop entry + update-remnote)
+    ./remnote.nix # Tích hợp RemNote AppImage (appimage-run + desktop entry + setup-remnote)
     ./thunar.nix # Đăng ký Alacritty làm terminal mặc định cho Thunar
   ];
 
@@ -40,7 +40,7 @@
 
   # Kích hoạt bash + tạo file ~/.bashrc.
   # Đây là NƠI DUY NHẤT quản lý PATH cho ~/.local/bin (nơi các script thủ công
-  # như update-remnote, lock-screen, quick-lang... được cài vào).
+  # như setup-remnote, lock-screen, quick-lang... được cài vào).
   # NixOS mặc định không có ~/.bashrc, nên cần programs.bash để tạo ra nó.
   programs.bash = {
     enable = true;
