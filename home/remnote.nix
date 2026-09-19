@@ -6,11 +6,12 @@
 # build để tránh làm chậm rebuild. Nix chỉ quản lý phần khung:
 #   - appimage-run  : công cụ chạy AppImage (cài như gói)
 #   - desktop entry : để Rofi/WOFI quét thấy "RemNote"
-#   - update-remnote: script cập nhật AppImage từ file tải tay trong ~/Downloads
+#   - setup-remnote : script cài AppImage từ file tải tay trong ~/Downloads
 #
-# Cách dùng:
+# Cách dùng (máy mới HOẶC khi có bản mới — y hệt nhau):
 #   - Tải RemNote-*.AppImage về ~/Downloads (tự tải từ trang chủ RemNote)
-#   - Gõ `update-remnote` để cài/cập nhật
+#   - Gõ `setup-remnote` — script luôn ĐÈ bản cũ bằng file trong Downloads
+#     (không so sánh hash; cập nhật nội dung note là việc của app)
 #   - Mở app: tìm "RemNote" trong Rofi/WOFI
 
 {
@@ -35,8 +36,8 @@
     ];
   };
 
-  # Tạo script ~/.local/bin/update-remnote (thêm vào PATH ở home/default.nix)
-  home.file.".local/bin/update-remnote" = {
+  # Tạo script ~/.local/bin/setup-remnote (thêm vào PATH ở home/default.nix)
+  home.file.".local/bin/setup-remnote" = {
     executable = true;
     text = ''
       #! /usr/bin/env bash
@@ -63,21 +64,12 @@
         exit 1
       fi
 
-      # Nếu đã có bản cài, so hash hai file:
-      #   giống nhau -> bản mới trùng bản cũ -> xóa file mới, không làm gì
-      if [ -f "$target" ]; then
-        hashes="$(sha256sum "$latest" "$target" | awk '{print $1}' | sort -u | wc -l)"
-        if [ "$hashes" -eq 1 ]; then
-          rm -f "$latest"
-          echo "RemNote đã là phiên bản mới nhất, không cần cập nhật."
-          exit 0
-        fi
-      fi
-
-      # Khác nhau -> đè file cũ bằng file mới + cấp quyền thực thi
+      # Luôn đè bản cũ bằng file trong Downloads (không so sánh hash — đơn giản,
+      # ai muốn giữ bản cũ thì tự copy trước). mv giữ nguyên file tải về,
+      # chmod +x để chạy được.
       mv -f "$latest" "$target"
       chmod +x "$target"
-      echo "Đã cập nhật RemNote: $target"
+      echo "Đã cài RemNote: $target"
     '';
   };
 }

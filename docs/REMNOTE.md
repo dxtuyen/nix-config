@@ -1,6 +1,6 @@
 # 📝 RemNote (AppImage) — Hướng dẫn chi tiết
 
-RemNote được cài dưới dạng **AppImage** (file "ngoài Nix") để **không làm chậm rebuild** — Nix chỉ quản lý phần khung (công cụ chạy + desktop entry + script), còn file AppImage nằm ở `~/Apps/RemNote/` và được cập nhật thủ công.
+RemNote được cài dưới dạng **AppImage** (file "ngoài Nix") để **không làm chậm rebuild** — Nix chỉ quản lý phần khung (công cụ chạy + desktop entry + script), còn file AppImage nằm ở `~/Apps/RemNote/` và được quản lý thủ công.
 
 ## Cấu trúc
 
@@ -8,55 +8,44 @@ RemNote được cài dưới dạng **AppImage** (file "ngoài Nix") để **kh
 |---|---|
 | Module Nix | `home/remnote.nix` (import trong `home/default.nix`) |
 | File AppImage | `~/Apps/RemNote/RemNote.AppImage` |
-| Script cập nhật | `~/.local/bin/update-remnote` |
+| Script cài đặt | `~/.local/bin/setup-remnote` |
 | Desktop entry | `remnote` — Rofi/WOFI tự quét thấy |
 
-## Lần đầu / Sang máy mới
+## Máy mới / Cài mới / Cập nhật — một lệnh duy nhất
+
+Quy trình **giống hệt nhau** cho cả 3 tình huống:
 
 1. **Áp dụng config** (chỉ cài khung, **không tải AppImage**):
    ```bash
    sudo nixos-rebuild switch --flake .#laptop
    ```
 2. **Tải file** `RemNote-*.AppImage` từ trang chủ RemNote về `~/Downloads/`.
-3. **Cài RemNote**:
+3. **Chạy lệnh**:
    ```bash
-   update-remnote
+   setup-remnote
    ```
 4. **Mở app**: tìm "RemNote" trong Rofi/WOFI.
 
-> **Lưu ý:** Nếu chạy `update-remnote` mà chưa có file trong `~/Downloads/`, script sẽ báo:
+> **Lưu ý:** Nếu chạy `setup-remnote` mà chưa có file trong `~/Downloads/`, script sẽ báo:
 > ```
 > Không tìm thấy file RemNote-*.AppImage trong ~/Downloads.
 > Hãy tải RemNote về ~/Downloads rồi chạy lại lệnh này.
 > ```
 > Chỉ cần tải file về rồi chạy lại lệnh là được.
 
-## Cập nhật hàng ngày
-
-1. **Tải file mới** `RemNote-*.AppImage` từ trang chủ RemNote về `~/Downloads/`.
-2. **Chạy lệnh**:
-   ```bash
-   update-remnote
-   ```
-
-Script xử lý:
+Script làm gì (đơn giản tối đa, **KHÔNG so sánh hash**):
 - Tìm file `RemNote-*.AppImage` mới nhất trong `~/Downloads/` (theo thời gian sửa).
-- **Không có file** → báo "Không tìm thấy... Hãy tải về..." và thoát.
-- **Có file** → so sánh hash (sha256sum) với bản đang cài:
-  - **Giống nhau** → xóa file mới, báo "RemNote đã là phiên bản mới nhất, không cần cập nhật."
-  - **Khác nhau** → cài bản mới (mv + chmod +x), báo "Đã cập nhật RemNote."
+- Không có file → báo lỗi và thoát.
+- Có file → **đè thẳng** lên `~/Apps/RemNote/RemNote.AppImage` (bản cũ bị thay) + `chmod +x`.
+- Dữ liệu note/kiến thức **không bị ảnh hưởng** — RemNote lưu riêng trong thư mục dữ liệu của app; thay file AppImage chỉ thay "vỏ" chương trình.
 
 ## Cài thủ công (không dùng script)
-
-Nếu muốn tự cài file AppImage mà không dùng script:
 
 ```bash
 mkdir -p ~/Apps/RemNote
 cp ~/Downloads/RemNote-*.AppImage ~/Apps/RemNote/RemNote.AppImage
 chmod +x ~/Apps/RemNote/RemNote.AppImage
 ```
-
-Sau đó mở app bằng cách tìm "RemNote" trong Rofi/WOFI.
 
 ## Khi file bị lỗi / không chạy được
 
@@ -67,7 +56,7 @@ Sau đó mở app bằng cách tìm "RemNote" trong Rofi/WOFI.
 2. **Tải lại file mới** từ trang chủ RemNote về `~/Downloads/`.
 3. **Cài lại**:
    ```bash
-   update-remnote
+   setup-remnote
    ```
    Hoặc cài thủ công (xem phần trên).
 
@@ -79,16 +68,16 @@ Chạy `sudo nixos-rebuild switch --flake .#laptop` — **không ảnh hưởng*
 
 | Tình huống | Thao tác |
 |---|---|
-| Máy mới | `nixos-rebuild switch` → tải file về `~/Downloads/` → `update-remnote` |
-| Cập nhật RemNote | tải file mới về `~/Downloads/` → `update-remnote` |
-| Đã mới nhất | báo ngay, không cần làm gì |
+| Máy mới (lần đầu) | rebuild → tải file về `~/Downloads/` → `setup-remnote` |
+| Có bản mới | tải file mới về `~/Downloads/` → `setup-remnote` (tự đè bản cũ) |
+| File lỗi | xóa file cũ → tải lại → `setup-remnote` |
 | Cài thủ công | `cp` + `chmod +x` (xem ở trên) |
-| File lỗi | xóa file cũ → tải lại → `update-remnote` |
 | Cập nhật config Nix | `nixos-rebuild switch` (không ảnh hưởng AppImage) |
 
 ## Điểm mấu chốt
 
+- **Một lệnh cho mọi tình huống**: máy mới, cài mới hay cập nhật bản mới đều là `setup-remnote`
+- **Không so hash, không hỏi gì**: file trong Downloads luôn thắng — hành vi đoán được ngay
 - **Không làm chậm rebuild**: không tải file lớn trong build/activation
-- **Đơn giản**: script chỉ lo tìm file + so sánh hash + cài đặt
 - **Bạn tự tải**: không phụ thuộc link tải của RemNote, không lo link đổi
-- **Không file rác**: dùng `mv` + xóa file trùng checksum
+- **Dữ liệu tách rời vỏ app**: thay AppImage không mất gì
