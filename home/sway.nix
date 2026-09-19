@@ -114,11 +114,6 @@ in
       # Chrome Picture-in-Picture
       for_window [title="Picture in picture"] floating enable, sticky enable, resize set width 350 px height 197 px, move position 1530 px 800 px
 
-      # RemNote luôn mở vào workspace 1.study (và view nhảy sang workspace đó)
-      # (?i) = không phân biệt hoa/thường, bắt cả class "RemNote" lẫn app_id "remnote"
-      for_window [class="(?i)remnote"] move container to workspace number 1.study, workspace number 1.study
-      for_window [app_id="(?i)remnote"] move container to workspace number 1.study, workspace number 1.study
-
       # VS Code luôn mở vào workspace 3.code (và view nhảy sang workspace đó)
       # neo ^code$ để không nhầm với app khác có chữ "code" trong tên
       for_window [class="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code

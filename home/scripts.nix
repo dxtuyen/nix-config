@@ -296,7 +296,10 @@
         mode="''${1:-vi-en}"
         FALLBACK_GT=0
 
-        # Thông báo dịch persistent: không hết hạn (default-timeout = 0 trong mako.nix).
+        # Thông báo dịch tự hết hạn sau ~2 phút (mako: default-timeout = 120000ms
+        # cho app quick-lang, xem mako.nix). Cờ -p của notify-send là --print-id
+        # (KHÔNG phải persistent) — bắt buộc phải có để ntf() lấy ID lưu vào
+        # NTF_ID_FILE, từ đó dismiss thông báo cũ mỗi lần dịch mới.
         # Mỗi lần dịch mới sẽ DISMISS thông báo cũ rồi gửi cái mới → hiệu ứng
         # "nhấp nháy" giúp biết ngay là có bản dịch mới, kể cả khi nội dung giống hệt.
         # Id của thông báo đang hiển thị lưu trong tmpfs ($XDG_RUNTIME_DIR, trên RAM).
