@@ -28,25 +28,16 @@ let
   };
 in
 {
-  # zram — compressed swap inside RAM (zstd). Much faster than SSD swap and
-  # reduces SSD wear. Ubuntu/Fedora/ChromeOS enable it by default.
-  # Minimal "set and forget" safety net: kernel keeps default swappiness (60),
-  # so ZRAM is only touched when RAM is genuinely under pressure.
+  # Swap nén trong RAM (zstd): nhanh hơn swap SSD, đỡ mòn ổ.
   zramSwap = {
     enable = true;
     algorithm = "zstd";
-    memoryPercent = 50; # 50% RAM as compressed swap (Fedora default)
+    memoryPercent = 50;
   };
 
-  # --- Hibernation ---
-  # swapDevices được khai trong hosts/laptop/hardware-configuration.nix (file tự sinh
-  # bởi nixos-generate-config) — mỗi máy sẽ tự điền đúng UUID swap của máy đó.
-  # Điều kiện hibernate: phân vùng swap phải ≥ RAM (máy này 10G ≥ 7.4G).
-  # resume=UUID=... báo kernel swap nào chứa image hibernate khi dậy — khi sang
-  # máy mới, nhớ sửa UUID này cho khớp với swap mới (xem docs/03-Cai-May-Moi.md Bước 7).
-  # mem_sleep_default=deep → ngủ "deep" (S3, ACPI S3 sleep) thay vì s2idle
-  # (modern standby). Kiểm tra máy có hỗ trợ không: cat /sys/power/mem_sleep
-  # sẽ hiện [s2idle] deep — chọn deep để tiết kiệm pin hơn khi gập máy/ngủ.
+  # Hibernate: swap khai trong hardware-configuration.nix (file tự sinh).
+  # Điều kiện: swap ≥ RAM. Sang máy mới sửa UUID resume cho khớp swap mới
+  # (docs/03 Bước 7). deep sleep tiết kiệm pin hơn s2idle.
   boot.kernelParams = [
     "resume=UUID=044520bf-eed9-498c-a382-97615c111b1f"
     "mem_sleep_default=deep"
@@ -54,9 +45,8 @@ in
 
   services.fwupd.enable = true;
 
-  # Ngủ/suspend chuẩn logind cho laptop: đóng nắp (dù có hay không cắm sạc) → suspend;
-  # gắn dock → giữ nguyên không suspend. swayidle sẽ tự khóa màn hình trước khi ngủ
-  # nhờ before-sleep, nên khi dậy từ suspend màn hình luôn khóa (chuẩn sway wiki).
+  # Đóng nắp → suspend; gắn dock → giữ nguyên. Màn hình luôn khóa khi dậy
+  # nhờ before-sleep của swayidle.
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend";
     HandleLidSwitchExternalPower = "suspend";

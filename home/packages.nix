@@ -1,8 +1,6 @@
 { pkgs, ... }:
 
-# Ghi chú: toàn bộ gói bên dưới lấy từ nixpkgs stable (pinned nixos-26.05
-# trong flake.lock). App closed-source đóng gói chậm (ticktick) đã bị GỠ —
-# dùng bản web/PWA qua Chrome thay thế (xem docs/02).
+# Gói user: stable (pinned trong flake.lock). TickTick dùng bản web/PWA (xem docs/02).
 {
 
   home.packages = with pkgs; [
@@ -30,8 +28,16 @@
     fastfetch
     libreoffice
     unrar
-    # Máy ảo — luyện tập cài máy mới theo docs/06-Luyen-Tap-VM.md
-    # qemu_kvm: bản QEMU chỉ target x86_64 + KVM, nhẹ hơn meta-package qemu
+    # Dev: thư viện để per-project (venv / `nix develop`), không cài global.
+    vscode
+    python3
+    python3Packages.virtualenv
+    gcc
+    gnumake
+    cmake
+    gdb
+    distrobox
+    # Máy ảo — luyện cài máy mới (docs/06).
     qemu_kvm
     qemu-utils
     OVMF

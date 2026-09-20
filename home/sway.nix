@@ -1,22 +1,20 @@
 { pkgs, ... }:
 
 let
-  # Danh sách tên workspace dùng chung ở home/workspaces.nix
-  ws = import ./workspaces.nix;
+  ws = import ./workspaces.nix; # tên workspace dùng chung với Waybar
 in
 {
   wayland.windowManager.sway = {
     enable = true;
-    package = null; # Dùng sway từ NixOS module
-    config = null; # Dùng hoàn toàn raw string trong extraConfig
+    package = null; # dùng sway từ NixOS module
+    config = null; # cấu hình hoàn toàn bằng extraConfig
     systemd.enable = true;
 
     extraConfig = ''
-      # 1. Đồng bộ biến màn hình & bộ gõ từ Sway vào Systemd & DBus
+      # Đồng bộ biến Sway vào systemd/DBus trước khi start session.
       exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway SWAYSOCK XMODIFIERS QT_IM_MODULE
       exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK XMODIFIERS QT_IM_MODULE
 
-      # 2. Bắt đầu phiên làm việc (Waybar sẽ đợi 2 lệnh trên xong mới chạy)
       exec systemctl --user start sway-session.target
 
       set $mod Mod4
@@ -54,14 +52,7 @@ in
       gaps top 0
       default_border pixel 2
       default_floating_border pixel 2
-      # Giữ $mod (Super) + kéo chuột TRÁI = di chuyển cửa sổ float
-      # Giữ $mod + kéo chuột PHẢI = resize cửa sổ float
-      # (sway chỉ cho phép MỘT modifier cho floating_modifier — không đặt được
-      # "Super+trái = move, Alt+phải = resize" như ý định ban đầu; chọn $mod
-      # vì Alt bị nhiều app chiếm và $mod chuẩn của sway mặc định. Move bằng
-      # bàn phím: mod+Shift+hjkl vẫn hoạt động trên cửa sổ float)
-      # (chỉ can thiệp chuột khi cửa sổ đang FLOAT và đang GIỮ $mod; cửa sổ
-      # tiling và thao tác chuột trong app khi không giữ $mod không bị ảnh hưởng)
+      # $mod + chuột trái/phải = move/resize cửa sổ float.
       floating_modifier $mod normal
       focus_follows_mouse yes
       smart_borders off
@@ -79,18 +70,13 @@ in
       for_window [app_id="file-roller"] floating enable
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
-      # GoldenDict: luôn float như popup từ điển (KHÔNG sticky — gọi từ workspace
-      # nào thì dict-toggle tự kéo nó về workspace đó). Bật/tắt bằng mod+g:
-      # bấm lần nữa khi đang focus → đóng (app ẩn về tray, tiến trình giữ nguyên).
+      # GoldenDict float như popup (mod+g bật/tắt; đóng = ẩn về tray).
       for_window [app_id="io.github.xiaoyifang.goldendict_ng"] floating enable, resize set width 50 ppt height 65 ppt
-      # Sioyek: file mở ở workspace nào thì cửa sổ (mới) hiện ngay workspace đó —
-      # không nhảy về workspace của cửa sổ sioyek cũ. Match cả class (XWayland)
-      # và app_id (Wayland) — cùng pattern với rule RemNote/VS Code ở trên.
+      # Sioyek: cửa sổ mới hiện ở workspace đang focus.
       for_window [class="(?i)^sioyek$"] move container to workspace current
       for_window [app_id="(?i)^sioyek$"] move container to workspace current
 
-      # Thunar: float dạng popup chọn file (40x65 ppt) — không phá layout tiling
-      # đang có; nếu cần tiled lại (so sánh 2 thư mục...) thì mod+Shift+space
+      # Thunar float kiểu popup (mod+Shift+space để tiled lại).
       for_window [class="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
       for_window [app_id="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
 
@@ -107,14 +93,11 @@ in
       # Chrome Picture-in-Picture
       for_window [title="Picture in picture"] floating enable, sticky enable, resize set width 350 px height 197 px, move position 1530 px 800 px
 
-      # VS Code luôn mở vào workspace 3.code (và view nhảy sang workspace đó)
-      # neo ^code$ để không nhầm với app khác có chữ "code" trong tên
+      # VS Code luôn mở vào workspace 3.code.
       for_window [class="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
       for_window [app_id="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
 
-      # Anki: luôn mở vào workspace 7 VÀ chuyển focus tới luôn (y hệt pattern
-      # RemNote/VS Code ở trên). Match cả app_id (Wayland) lẫn class (XWayland)
-      # để bắt mọi cửa sổ: chính, Browse, Add...
+      # Anki luôn mở vào workspace 7.
       for_window [class="(?i)^anki$"] move container to workspace number 7, workspace number 7
       for_window [app_id="(?i)^anki$"] move container to workspace number 7, workspace number 7
 
@@ -237,32 +220,12 @@ in
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
-      # Idle management — đã chuyển swayidle sang chạy như một systemd user
-      # service (`systemd.user.services.swayidle`, khai ở cuối file này).
-      # Chuỗi hành vi giữ nguyên:
-      #   300s idle       → khóa màn hình (lock-screen dùng `swaylock -f`, trả về ngay)
-      #   310s idle       → tắt màn (power off); có thao tác → bật lại nhưng vẫn khóa
-      #   900s idle       → sleep (suspend) — chỉ khi đang DÙNG PIN (idle-suspend
-      #                     check status pin); cắm sạc → thức tiếp nhưng vẫn tắt màn
-      #                     & khóa, đồng thời trồng idle-suspend-ac-watch:
-      #                     rút sạc khi vẫn idle → tự ngủ sau tối đa ~30s
-      #                     (swayidle chỉ chạy timeout 900 MỘT LẦN mỗi chu kỳ,
-      #                     không watcher thì rút sạc sẽ chẳng ai kiểm tra lại)
-      #   before-sleep    → luôn khóa lại trước khi ngủ (chuẩn swayidle(1))
-      #   after-resume    → bật màn lại sau khi máy dậy
-      #   lock / unlock   → logind báo khóa/mở khóa phiên (vd: loginctl lock-session, đóng nắp đã cấu hình suspend)
-      # (swayidle tự reset khi có bất kỳ thao tác nào nên không bao giờ suspend khi đang dùng)
+      # swayidle chạy qua systemd (khóa 300s → tắt màn 310s → ngủ 900s khi
+      # dùng pin). Phiên Focus chạy → study stop service này, xong tự start lại.
     '';
   };
 
-  # swayidle chạy như một systemd user service thay vì `exec_always` trong Sway.
-  # Lý do: exec_always từng để tiến trình chết lặng lẽ mà không hồi sinh và không
-  # có log → cả chuỗi khóa/tắt màn/ngủ im lặng "tử vong" trong phiên chạy dài.
-  # Chạy qua systemd cho ta:
-  #   - Restart=on-failure: process crash là tự hồi sinh sau vài giây
-  #   - Log vào journald: xem lỗi bằng `journalctl --user -u swayidle`
-  #   - Vòng đời gắn với phiên Sway: target dừng → service tự dừng, không còn
-  #     cần mẹo `pkill -x swayidle` mỗi lần reload như trước đây.
+  # systemd cho log journald + tự hồi sinh khi crash + dừng theo phiên Sway.
   systemd.user.services.swayidle = {
     Unit = {
       Description = "Idle manager for Wayland (lock → screen off → suspend)";
@@ -272,12 +235,9 @@ in
     };
     Service = {
       Type = "simple";
-      # Đảm bảo chỉ một swayidle duy nhất: diệt instance lạc loài (nếu có) trước
-      # khi bật bản mới — tránh cảnh hai tiến trình cùng đếm idle → khóa chồng.
-      # Dấu "-" phía trước: coi fail là thành công (khi không có gì để diệt).
+      # Diệt instance cũ trước khi start (dấu "-" = không có gì để diệt vẫn OK).
       ExecStartPre = "-${pkgs.procps}/bin/pkill -x swayidle";
-      # PATH đầy đủ cho các lệnh con mà swayidle spawn qua shell:
-      #   swaymsg + systemctl (/run/current-system/sw/bin), lock-screen (~/.local/bin)
+      # PATH cho lệnh con swayidle spawn (swaymsg, systemctl, lock-screen).
       Environment = [
         "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
       ];

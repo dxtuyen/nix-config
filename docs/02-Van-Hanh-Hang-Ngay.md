@@ -22,23 +22,6 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | Dọn rác store | `nix-collect-garbage -d` (GC tự động hàng tuần theo `core.nix`) |
 | Xem log Sway | `journalctl -b -u sway` / `journalctl --user -u sway` |
 
-## TickTick — đã gỡ app desktop, dùng bản web
-
-App desktop đã bị gỡ khỏi `home/packages.nix` (cộng đồng Nix đóng gói chậm:
-bump mới nằm chờ ở nixpkgs-unstable, stable không được backport — không đáng
-giữ gói unfree để rồi phải đeo input unstable). Dùng bản web thay thế:
-
-- **Cách dùng**: `mod+d` → mở Chrome → ticktick.com. Muốn dạng cửa sổ riêng
-  (không thanh địa chỉ, có icon riêng trong Rofi): trên ticktick.com → menu
-  Chrome → *Cast, save and share → Install page as app* (PWA).
-- **Không mất dữ liệu**: task nằm trên cloud TickTick, gỡ app không mất gì.
-- **Mất gì**: thông báo đẩy nền (web chỉ báo khi mở tab, trừ khi bật Chrome
-  notifications cho ticktick.com) — app desktop vốn cũng không có tray nên
-  chênh lệch rất nhỏ.
-- **Muốn cài lại**: thêm 1 dòng `ticktick` vào `home/packages.nix` + rebuild.
-
-## Scripts quan trọng (`~/.local/bin`)
-
 ## Scripts quan trọng (`~/.local/bin`)
 
 | Script | Chức năng |
@@ -50,49 +33,41 @@ giữ gói unfree để rồi phải đeo input unstable). Dùng bản web thay 
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
 | `cycle-wallpaper` | Đổi hình nền sáng/tối theo giờ (06:00 / 18:00) |
 | `refresh-session` | Reload Sway + wallpaper + wlsunset |
-| `study` / `burst` / `pomodoro-menu` | 2 chế độ học song song: burst mặc định 10 phút (tự nhập 1–480) + phiên study thuần preset 60/90/120 hoặc tự nhập 1–480 (xem mục bên dưới) |
+| `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → chỉ ⏸/▶ + ↺; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
 
 > Các phím tắt chi tiết được khai trong `home/sway.nix` — tra cứu tại đó khi cần.
 
-## Focus — Burst & Study song song (`$mod+p`)
+## Focus — đồng hồ PHIÊN TẬP TRUNG duy nhất (`$mod+p`)
 
-| Chế độ | Vai trò | Cách dùng |
-|---|---|---|
-| 🔥 `burst` | **Phiên siêu tập trung** — mặc định **10 phút** (tự nhập được 1–480), chạy song song | Menu → *🔥 Burst — mặc định 10 phút* hoặc *🔥 Burst — tự nhập số phút* |
-| 📚 `study` | **Phiên học thuần** — preset **60/90/120** hoặc tự nhập **1–480 phút**, không break | Menu → chọn preset hoặc *📚 Study — tự nhập số phút* |
-
-Menu rofi (`$mod+p`) — **KHÔNG có điều khiển chung**: mỗi dòng là 1 hành động trực tiếp cho chính đồng hồ đó. Rảnh hoàn toàn → 6 dòng khởi động:
+Chỉ MỘT chế độ, KHÔNG break. Rảnh hoàn toàn → menu khởi động:
 
 ```
-🔥 Burst — mặc định 10 phút
-🔥 Burst — tự nhập số phút (1–480)...
-📚 Study — phiên học thuần 60 min
-📚 Study — phiên học thuần 90 min
-📚 Study — phiên học thuần 120 min
-📚 Study — tự nhập số phút (1–480)...
+⌨ Minutes (1–480)...
+🍅 30
+🍅 60
+🍅 120
 ```
 
-Đang có phiên → mỗi đồng hồ hiện 2 dòng (toggle + Reset riêng):
+Đang có phiên (đang chạy hoặc tạm dừng) → menu chỉ còn ĐÚNG 2 dòng:
 
 ```
-⏸ Burst · còn 09:23    ← bấm để pause (khi pause: ▶ bấm để resume)
-↺ Reset Burst
-⏸ Study · còn 87:12
-↺ Reset Study
+⏸ 87:12    ← bấm để pause (khi pause: ▶ bấm để resume)
+↺ Reset
 ```
 
-- **Mỗi dòng tự giải thích**: rảnh → dòng khởi động; đang chạy → `⏸` bấm để pause; tạm dừng → `▶` bấm để resume; `↺ Reset` chỉ xoá đồng hồ của chính nó và chỉ hiện khi đồng hồ đó có phiên. Muốn đổi mốc → Reset rồi chọn lại.
-- 2 đồng hồ **độc lập hoàn toàn**: start/pause/reset một bên không cản trở bên kia — burst có thể bật giữa chừng phiên study.
+- **Mỗi dòng tự giải thích**: rảnh → dòng khởi động; có phiên → menu ẩn preset, chỉ còn `⏸`/`▶` toggle + `↺ Reset`. Muốn đổi mốc → `↺ Reset` rồi mở lại menu.
+- **Không mất lịch sử**: đổi phiên giữa chừng bằng CLI (`study start …`) vẫn ghi phần đã tập trung ≥ 1 phút vào lịch sử.
+- **Tự động chống idle** (giống bật nút idle_inhibitor trên Waybar): phiên đang chạy → swayidle tạm dừng — **không khóa màn 300s, không tắt màn 310s, không ngủ 900s**; pause / reset / hết giờ → swayidle tự bật lại, mọi thứ về như bình thường. (Đóng nắp laptop vẫn ngủ như cũ.)
+- **Icon chống idle trên bar là NÚT ĐỘC LẬP** (như idle_inhibitor cũ), đồng bộ với phiên: phiên chạy → mắt mở **xanh** (tự động); bấm tay → mắt mở **vàng** (thủ công, giữ cả khi không có phiên); không nguồn nào → mắt gạch mờ (màn hình khóa/tắt/ngủ bình thường). **Bấm icon = bật/tắt chống idle thủ công**; tắt tay khi phiên đang chạy sẽ chỉ có hiệu lực sau khi phiên dừng (thông báo sẽ nhắc).
+- **Đóng nắp / máy ngủ → phiên tự TẠM DỪNG** (`focus-sleep-watch` nghe tín hiệu logind): REMAINING được tính lại đúng trước khi ngủ nên **thời gian ngủ không bị trừ vào phiên**; thức dậy → swayidle tự bật lại, phiên tự tiếp tục ▶ (hoặc finalize nếu phiên hết trong lúc ngủ). Muốn dừng hẳn thì `↺ Reset` sau khi dậy.
 - **Tự phục hồi**: daemon chết giữa chừng → lần mở menu tiếp theo (hoặc waybar refresh) tự finalize phiên đã hết hạn (chuông/thông báo/lịch sử) hoặc hồi sinh daemon — không bao giờ kẹt đồng hồ "còn 00:00".
-- Hết giờ: chuông + thông báo. Lịch sử phiên học ghi tại `~/.local/state/pomodoro-history.log` (mỗi dòng: thời điểm · nhãn · số phút).
+- Hết giờ: chuông + thông báo. Lịch sử phiên ghi tại `~/.local/state/pomodoro-history.log` (mỗi dòng: thời điểm · `focus` · số phút).
 
 ```bash
-burst start        # 10 phút mặc định (song song với study)
-burst start 25     # burst tự nhập 25 phút (1–480)
-study start 90     # phiên học thuần 90 phút (preset)
-study start 45     # phiên học thuần tự nhập 45 phút (1–480)
-study toggle       # pause/resume study (burst: burst toggle)
+study start 30     # preset 🍅 30
+study start 45     # tự nhập 45 phút (1–480)
+study toggle       # pause/resume
 ```
 
 ## Khóa màn hình • Idle • Sleep (swayidle)
@@ -101,7 +76,7 @@ study toggle       # pause/resume study (burst: burst toggle)
 |---|---|
 | 300s idle | khóa màn hình (`lock-screen`) |
 | 310s idle | tắt màn — có thao tác → bật lại nhưng vẫn khóa |
-| 900s idle | suspend (ngủ) — **chỉ khi đang dùng pin**; cắm sạc → thức tiếp (màn vẫn tắt & khóa) nhưng watcher nền chờ sẵn: **rút sạc khi vẫn idle → tự ngủ sau tối đa ~30s**; **bỏ qua khi Study/Burst đang chạy** |
+| 900s idle | suspend (ngủ) — **chỉ khi đang dùng pin**; cắm sạc → thức tiếp (màn vẫn tắt & khóa) nhưng watcher nền chờ sẵn: **rút sạc khi vẫn idle → tự ngủ sau tối đa ~30s**; **bỏ qua khi phiên Focus đang chạy** (phiên chạy → cả chuỗi 300s/310s/900s tạm dừng, pause/reset/hết giờ → tự bật lại) |
 | before-sleep | luôn khóa lại trước khi ngủ |
 | lock / unlock | logind khóa → khóa ngay; unlock → bật màn |
 

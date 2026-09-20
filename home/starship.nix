@@ -1,23 +1,18 @@
 { pkgs, ... }:
 
-# Starship prompt — phong cách rice cộng đồng:
-# chỉ hiện đường dẫn + git + thời gian lệnh chạy lâu + ký tự ❯.
-# KHÔNG có user@hostname như bash mặc định.
+# Starship: chỉ đường dẫn + git + lệnh chạy lâu + ký tự ❯.
 
 {
   programs.starship = {
     enable = true;
-    # Tự tích hợp vào programs.bash (đã bật ở default.nix)
+    # Tích hợp bash (đã bật ở default.nix).
     enableBashIntegration = true;
 
     settings = {
-      # 1 dòng trống giữa các prompt — đây là MẶC ĐỊNH của Starship,
-      # cần cho prompt 2 dòng để có khoảng thở giữa các lần gõ lệnh
+      # Dòng trống giữa các prompt (mặc định Starship).
       add_newline = true;
 
-      # Prompt 2 dòng kiểu rice cộng đồng:
-      # dòng 1 — đường dẫn + branch + git status + thời gian lệnh
-      # dòng 2 — chỉ có ❯ và chỗ gõ lệnh
+      # Dòng 1: đường dẫn + git + thời gian lệnh; dòng 2: ❯.
       format = "$directory$git_branch$git_status$cmd_duration\n$character";
 
       directory = {
@@ -36,18 +31,17 @@
         format = "[$symbol$branch]($style) ";
       };
 
-      # Git status kiểu Nerd Font icons, màu Tokyo Night
       git_status = {
         format = "([$all_status$ahead_behind]($style) )";
         style = "#565f89";
 
-        modified = "[✱](#e0af68)"; # file sửa — vàng
-        deleted = "[✖](#f7768e)"; # file xoá — đỏ
-        untracked = "[?](#7aa2f7)"; # file mới — xanh dương
-        renamed = "[»](#bb9af7)"; # đổi tên — tím
-        conflicted = "[=](#f7768e)"; # conflict khi merge — đỏ
+        modified = "[✱](#e0af68)";
+        deleted = "[✖](#f7768e)";
+        untracked = "[?](#7aa2f7)";
+        renamed = "[»](#bb9af7)";
+        conflicted = "[=](#f7768e)";
 
-        # Ẩn các trạng thái ít khi cần cho gọn prompt
+        # Ẩn trạng thái ít dùng cho gọn prompt.
         stashed = "";
         ahead = "";
         behind = "";
@@ -56,7 +50,7 @@
       };
 
       cmd_duration = {
-        min_time = 2000; # Chỉ hiện khi lệnh chạy ≥ 2s
+        min_time = 2000; # chỉ hiện khi lệnh chạy ≥ 2s
         style = "#e0af68";
         format = "[ $duration]($style) ";
       };

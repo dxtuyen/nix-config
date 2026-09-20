@@ -1,8 +1,6 @@
 { pkgs, ... }:
 
-# Cấu hình Alacritty terminal (theme Tokyo Night)
-# Thay thế Foot — GPU-accelerated, TOML config chuẩn v0.13+
-# Font để mặc định của Alacritty; padding 10x8 chuẩn cộng đồng
+# Alacritty (Tokyo Night) — GPU-accelerated, config TOML chuẩn v0.13+.
 
 {
   programs.alacritty = {
@@ -12,9 +10,7 @@
       # Tự nạp lại khi sửa ~/.config/alacritty/alacritty.toml
       general.live_config_reload = true;
 
-      # Cửa sổ: padding thoáng chuẩn cộng đồng + trong suốt 90%.
-      # dynamic_padding dàn đều khoảng trống khi cửa sổ không chia
-      # hết cho lưới ký tự (mép trên/dưới không bị lệch)
+      # dynamic_padding dàn đều khoảng trống khi cửa sổ không chia hết lưới ký tự.
       window = {
         padding = {
           x = 10;
@@ -25,11 +21,9 @@
         decorations = "None";
       };
 
-      # Chỉ định family để khớp font với Waybar (JetBrains Mono);
-      # size/bold/italic để mặc định của Alacritty
+      # Khớp font với Waybar; size/bold/italic để mặc định.
       font.normal.family = "JetBrainsMono Nerd Font";
 
-      # Beam (thanh dọc) nhấp nháy — hiện đại, gọn gàng
       cursor = {
         style = {
           shape = "Beam";

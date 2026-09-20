@@ -16,8 +16,7 @@
 
   networking.hostName = "laptop";
 
-  # Cấu hình home-manager gom về MỘT nơi duy nhất là file host này.
-  # (Trước đây useGlobalPkgs/useUserPackages bị khai trùng trong core.nix.)
+  # Home-manager cấu hình tập trung tại đây.
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;

@@ -8,52 +8,39 @@
     username = userName;
     homeDirectory = "/home/${userName}";
     stateVersion = "26.05";
-
-    # LƯU Ý: PATH cho ~/.local/bin được quản lý ở programs.bash bên dưới
-    # (không dùng sessionPath nữa để tránh quản lý 2 nơi).
   };
 
-  # Nền tảng XDG: bật MỘT LẦN duy nhất tại entry point,
-  # để module con (remnote, thunar...) chỉ khai báo nội dung
-  # qua xdg.configFile / xdg.desktopEntries mà không phải tự bật.
+  # XDG bật một lần ở đây; module con chỉ khai nội dung.
   xdg.enable = true;
 
   imports = [
-    ./packages.nix # Các gói cài qua home.packages
-    ./git.nix # Git identity + tuỳ chọn (máy mới tự có user.email, không gõ tay)
-    ./alacritty.nix # Terminal Alacritty (theme Tokyo Night)
-    ./starship.nix # Prompt tối giản không user@hostname
-    ./gtk.nix # Cấu hình GTK: icon Papirus-Dark + dark theme mặc định
-    ./sway.nix # Cấu hình Sway (window manager)
-    ./waybar.nix # Thanh trạng thái Waybar
-    ./mako.nix # Trình thông báo Mako
-    ./fcitx5.nix # Bộ gõ tiếng Việt Fcitx5
-    ./scripts.nix # Các script thủ công trong ~/.local/bin
-    ./sioyek.nix # Sioyek PDF reader (file mới = cửa sổ riêng thay vì nhét vào cửa sổ cũ)
-    ./pomodoro.nix # 2 chế độ song song: Burst (mặc định 10 phút, tự nhập 1–480) + Study phiên thuần preset 60/90/120 hoặc tự nhập 1–480 (không break)
-    ./remnote.nix # Tích hợp RemNote AppImage (appimage-run + desktop entry + setup-remnote)
-    ./thunar.nix # Đăng ký Alacritty làm terminal mặc định cho Thunar
+    ./packages.nix
+    ./git.nix
+    ./alacritty.nix
+    ./starship.nix
+    ./gtk.nix
+    ./sway.nix
+    ./waybar.nix
+    ./mako.nix
+    ./fcitx5.nix
+    ./scripts.nix
+    ./sioyek.nix
+    ./pomodoro.nix
+    ./remnote.nix
+    ./thunar.nix
   ];
 
-  # Quản lý profile home-manager (cho phép lệnh home-manager switch)
   programs.home-manager.enable = true;
 
-  # Kích hoạt bash + tạo file ~/.bashrc.
-  # Đây là NƠI DUY NHẤT quản lý PATH cho ~/.local/bin (nơi các script thủ công
-  # như setup-remnote, lock-screen, quick-lang... được cài vào).
-  # NixOS mặc định không có ~/.bashrc, nên cần programs.bash để tạo ra nó.
+  # Nơi duy nhất thêm ~/.local/bin vào PATH + tạo ~/.bashrc.
   programs.bash = {
     enable = true;
     initExtra = ''
       export PATH="$HOME/.local/bin:$PATH"
 
-      # Đặt tiêu đề cửa sổ theo thư mục hiện tại (Waybar + rofi đọc từ đây).
-      # Starship không tự set terminal title như PROMPT_COMMAND mặc định
-      # của bash, nên cần tự phát OSC 2 mỗi lần hiện prompt.
+      # Starship không set title nên tự phát OSC 2 mỗi prompt.
       __set_window_title() {
-        # Tách 2 bước để né tilde expansion: nếu viết trực tiếp
-        # PWD/#HOME/~ trong replacement thì ký tự ~ bị bash mở rộng
-        # ngược thành $HOME, làm title vẫn hiện đường dẫn đầy đủ.
+        # Tách 2 bước để né tilde expansion làm title hiện full path.
         local dir="''${PWD/#$HOME/}"
         printf '\033]2;~%s\007' "$dir"
       }

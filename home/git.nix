@@ -1,31 +1,22 @@
 { ... }:
 
-# Cấu hình Git của user — quản lý qua home-manager để máy mới
-# (sau nixos-install) TỰ CÓ identity + tuỳ chọn, không phải gõ lại
-# `git config --global` bằng tay (xem docs/03 Bước 10).
-#
-# Lưu ý: gói `git` vẫn nằm trong environment.systemPackages
-# (modules/nixos/core.nix) để dùng được ở tầng hệ thống;
-# programs.git ở đây chỉ thêm file config + lệnh git cho user.
-
+# Git identity cho máy mới (tự có sau nixos-install, khỏi `git config` tay).
 {
   programs.git = {
     enable = true;
 
-    # settings (thay cho extraConfig — đã deprecation ở HM mới) merge
-    # trực tiếp vào ~/.config/git/config
+    # Thay cho extraConfig (đã deprecated ở HM mới).
     settings = {
-      # Identity commit — khớp với tài khoản GitHub `dxtuyen`
       user = {
         name = "dxtuyen";
         email = "tuyendoxuan05@gmail.com";
       };
 
-      init.defaultBranch = "main"; # nhánh mặc định khi git init
-      pull.rebase = true; # git pull luôn rebase — lịch sử phẳng
+      init.defaultBranch = "main";
+      pull.rebase = true; # lịch sử phẳng
       core = {
-        pager = "cat"; # không mở less khi git diff/log
-        editor = "nvim"; # editor cho git commit -v, rebase...
+        pager = "cat"; # không mở less khi diff/log
+        editor = "nvim";
       };
     };
   };

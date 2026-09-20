@@ -6,15 +6,12 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Nếu swaylock đã chạy thì thoát ngay (tránh khóa chồng kép → phải mở khóa 2 lần)
+        # Tránh khóa chồng (không thì phải mở khóa 2 lần).
         if pgrep -x swaylock >/dev/null 2>&1; then
           exit 0
         fi
 
-        # -f (daemonize): swaylock tách background và thoát NGAY LẬP TỨC,
-        # nên swayidle -w không bị block chờ swaylock → fix tận gốc bug "phải mở khóa nhiều lần"
-        # và giúp before-sleep / timeout 900 (auto suspend) chạy đúng lúc.
-        # -e (ignore-empty-password): Enter không password sẽ không bị tính là nhập sai.
+        # -f để swayidle không bị block; -e để Enter trống không tính nhập sai.
         exec ${pkgs.swaylock}/bin/swaylock -f -e -i ${./../wallpapers/nixos.jpg}
       '';
     };
@@ -23,17 +20,9 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Suspend do IDLE (swayidle timeout 900s) — chỉ ngủ khi đang DÙNG PIN.
-        # Cắm sạc (pin ở trạng thái Charging / Full / Not charging) → thoát 0:
-        # máy thức tiếp, màn hình vẫn tắt & khóa từ các timeout 300s/310s trước.
-        # Lưu ý: đường đóng nắp và power-menu → Suspend vẫn ngủ như cũ vì chúng
-        # gọi `systemctl suspend` trực tiếp (hoặc qua logind), không qua script này.
-        # Phát hiện "dùng pin" bằng status của pin — đúng hơn là check cổng sạc,
-        # vì máy này sạc có thể đến từ cả jack AC lẫn USB-C (USB PD).
-        # Đang có phiên Study/Burst (pomodoro) chạy → KHÔNG suspend:
-        # END_TIME đếm theo wall-clock, máy ngủ sẽ "ăn mất" thời gian phiên
-        # (điển hình là phiên Output recall: khóa màn ngồi nghĩ, không gõ gì).
-        if pgrep -f "study daemon" >/dev/null 2>&1 || pgrep -f "burst daemon" >/dev/null 2>&1; then
+        # Chỉ ngủ khi dùng pin. Cắm sạc → thức tiếp (màn vẫn tắt & khóa).
+        # Phiên Focus chạy → không suspend (END_TIME wall-clock).
+        if pgrep -f "study daemon" >/dev/null 2>&1; then
           exit 0
         fi
         for bat in /sys/class/power_supply/BAT*; do
@@ -42,12 +31,8 @@
             exec ${pkgs.systemd}/bin/systemctl suspend
           fi
         done
-        # Không pin nào Discharging → đang cắm sạc (Charging / Full / Not
-        # charging khi pin ở ngưỡng 85-90%). KHÔNG thoát dead-end ở đây:
-        # swayidle chỉ chạy lệnh `timeout 900` MỘT LẦN mỗi chu kỳ idle — nếu
-        # chỉ exit 0 thì rút sạc sau đó (màn vẫn tắt, vẫn khóa, không thao tác)
-        # sẽ không ai kiểm tra lại pin → máy thức suốt đến khi chạm vào.
-        # Trồng watcher nền: rút sạc khi vẫn idle → tự khóa + suspend.
+        # Cắm sạc → trồng watcher: rút sạc khi vẫn idle → khóa + suspend
+        # (swayidle chỉ chạy timeout 900 một lần mỗi chu kỳ).
         if ! pgrep -f idle-suspend-ac-watch >/dev/null 2>&1; then
           ${pkgs.bash}/bin/bash "$HOME/.local/bin/idle-suspend-ac-watch" >/dev/null 2>&1 &
         fi
@@ -58,35 +43,20 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # idle-suspend-ac-watch — được idle-suspend "trồng" khi 900s idle mà
-        # đang CẮM SẠC. Fix bug: swayidle chỉ chạy lệnh `timeout 900` MỘT LẦN
-        # mỗi chu kỳ idle, nên trước đây khi cắm sạc script chỉ `exit 0` —
-        # rút sạc sau đó (màn vẫn tắt, vẫn khóa, không thao tác) sẽ không ai
-        # kiểm tra lại pin → máy thức suốt đến khi có người chạm vào.
-        # Vòng đời:
-        #   - Poll pin mỗi 30s.
-        #   - Màn hình bật lại (có thao tác) → thoát: swayidle tự chạy chu kỳ
-        #     idle mới và mọi thứ về như cũ.
-        #   - Study/Burst (pomodoro) bật giữa chừng → thoát: không được ngủ
-        #     (phiên Study đếm wall-clock, máy ngủ sẽ "ăn mất" thời gian).
-        #   - Mất kết nối sway (sway chết / đang ở TTY) → thoát: không ngủ oan
-        #     khi không còn biết được trạng thái idle.
-        #   - Pin chuyển sang Discharging (rút sạc) → khóa + suspend luôn
-        #     (màn đã tắt & đã khóa từ timeout 300s/310s trước đó).
+        # Watcher cho trường hợp idle 900s mà đang cắm sạc: poll pin mỗi 30s.
+        # Thoát khi có thao tác / phiên Focus bật / mất sway / rút sạc → suspend.
         while true; do
           out="$(swaymsg -t get_outputs 2>/dev/null)" || exit 0
           [ -n "$out" ] || exit 0
           if printf '%s' "$out" | grep -q '"power": true'; then
             exit 0
           fi
-          if pgrep -f "study daemon" >/dev/null 2>&1 || pgrep -f "burst daemon" >/dev/null 2>&1; then
+          if pgrep -f "study daemon" >/dev/null 2>&1; then
             exit 0
           fi
           for bat in /sys/class/power_supply/BAT*; do
             [ -e "$bat/status" ] || continue
             if [ "$(cat "$bat/status")" = Discharging ]; then
-              # Khóa lại cho chắc (lock-screen tự thoát nếu swaylock đang
-              # chạy) rồi ngủ.
               "$HOME/.local/bin/lock-screen" >/dev/null 2>&1
               exec ${pkgs.systemd}/bin/systemctl suspend
             fi
@@ -179,22 +149,12 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # dict-toggle — bật/tắt GoldenDict (mod+g), hành vi gốc của app:
-        #   chưa có cửa sổ → mở goldendict (app ẩn trong tray → single-instance
-        #                     đánh thức cửa sổ)
-        #   đang focus     → đóng cửa sổ (goldendict-ng ẩn về tray, tiến trình
-        #                     GIỮ NGUYÊN nên lần mở sau gần như tức thời)
-        #   mở, mất focus  → kéo về workspace hiện tại + focus
-        # Vì sao cần script: Wayland CẤM app tự nhảy workspace hay tự focus
-        # khi đang nền → sway (compositor) là thực thể duy nhất được phép
-        # dịch chuyển cửa sổ. Luôn float nhờ rule for_window trong sway.nix.
-        # One-shot, < 50 ms mỗi lần bấm, không chạy nền.
+        # Wayland cấm app tự focus/nhảy workspace → sway kéo cửa sổ về.
+        # Đóng khi đang focus = ẩn về tray (tiến trình giữ nguyên, mở lại nhanh).
         set -u
         APP_ID="io.github.xiaoyifang.goldendict_ng"
 
-        # Ưu tiên cửa sổ chính (floating_con); fallback node bất kỳ phòng khi
-        # chưa reload rule float — tránh bắt nhầm dialog (About/Preferences)
-        # vốn cùng app_id với cửa sổ chính.
+        # Ưu tiên cửa sổ chính; fallback node bất kỳ (tránh bắt nhầm dialog About).
         node="$(swaymsg -t get_tree | jq -c --arg id "$APP_ID" '
           ([.. | objects | select(.app_id? == $id and .type? == "floating_con")][0]
            // [.. | objects | select(.app_id? == $id)][0]) // empty')"
@@ -207,10 +167,9 @@
         focused="$(jq -rn --argjson n "$node" '$n.focused // false')"
 
         if [ "$focused" = "true" ]; then
-          # Đang ở trước mặt → đóng cửa sổ (graceful close, không giết tiến trình)
           swaymsg "[con_id=$cid] kill"
         else
-          # Đang mở ở workspace khác → kéo về workspace hiện tại & focus
+          # Kéo về workspace hiện tại + focus.
           swaymsg "[con_id=$cid] move container to workspace current"
           swaymsg "[con_id=$cid] focus"
         fi
@@ -221,31 +180,15 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # sioyek-open — mở file PDF qua sioyek; nếu file ĐÃ mở trong một cửa sổ
-        # sioyek ở workspace khác → kéo cửa sổ đó về workspace hiện tại.
-        #
-        # Vì sao cần script: sioyek 2.0 là single-instance — mở lại file đã mở
-        # chỉ gửi IPC "focus cửa sổ cũ", nhưng Wayland CẤM app tự nhảy workspace
-        # hay tự focus khi đang nền → đứng ở workspace khác sẽ thấy "không có gì
-        # xảy ra". Cách duy nhất đúng: để sway (compositor — thực thể duy nhất
-        # được phép dịch chuyển cửa sổ) kéo cửa sổ về, y hệt cơ chế dict-toggle
-        # cho GoldenDict.
-        #
-        # Được gọi từ:
-        #   - desktop entry đè trong home/sioyek.nix (Thunar/xdg-open/rofi)
-        #   - shadow wrapper ~/.local/bin/sioyek (gõ `sioyek file.pdf` terminal)
-        #
-        # Edge case (chấp nhận): mở cùng file bằng 2 cửa sổ → kéo cửa sổ đầu tiên.
-        # LƯU Ý: jq & swaymsg gọi bằng đường dẫn tuyệt đối — script có thể
-        # được desktop entry khởi chạy trong môi trường PATH tối thiểu
-        # (không có /etc/profiles hay ~/.local/bin), không được dựa vào PATH.
+        # Mở PDF qua sioyek; file đã mở ở workspace khác → kéo về (Wayland cấm
+        # app tự focus, phải để sway kéo — cùng cơ chế dict-toggle).
         set -u
         JQ="${pkgs.jq}/bin/jq"
         SWAYMSG="${pkgs.sway}/bin/swaymsg"
 
         if [ $# -ge 1 ]; then
           base="$(basename -- "$1")"
-          # Tìm cửa sổ sioyek có title chứa tên file (match app_id lẫn class)
+          # jq/swaymsg absolute vì desktop entry chạy với PATH tối thiểu.
           cid="$($SWAYMSG -t get_tree | $JQ -r --arg b "$base" '
             [.. | objects
              | select(((.app_id? // "") == "sioyek")
@@ -267,11 +210,8 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # sioyek — shadow binary thật trong ~/.local/bin (đứng đầu PATH của
-        # programs.bash): mọi lần gõ `sioyek` đều qua sioyek-open để có hành vi
-        # "kéo cửa sổ đã mở về workspace hiện tại". Binary gốc trong nix store
-        # không bị đụng — sioyek-open gọi ${pkgs.sioyek} absolute nên wrapper
-        # này không bao giờ đệ quy.
+        # Wrapper để gõ `sioyek` cũng qua sioyek-open (không đệ quy vì sioyek-open
+        # gọi binary bằng đường dẫn absolute).
         exec "$HOME/.local/bin/sioyek-open" "$@"
       '';
     };
@@ -280,29 +220,16 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # quick-lang — trợ lý English cho văn bản đang bôi đen (primary selection,
-        # fallback clipboard). 3 mode:
-        #   vi-en   (smart, mặc định) → English sạch. Model TỰ nhận dạng input là
-        #           tiếng Việt (có/không dấu), tiếng Anh, hay trộn cả hai rồi xử lý.
-        #           Input thuần tiếng Anh: đã đúng → trả nguyên văn; có lỗi → sửa.
-        #   en-vi   → tiếng Việt tự nhiên (cùng logic hợp nhất, chiều ngược).
-        #   fix     → ÉP coi input là tiếng Anh, chỉ sửa lỗi, không dịch.
-        # Ngữ cảnh: tag [xxx] ở ĐẦU văn bản — phi/sci/lit/cas = register cài sẵn,
-        # tag khác = domain hint tự do (vd [math]); không tag → tự suy luận.
-        # API key Gemini đọc từ biến GEMINI_API_KEY hoặc file ~/.config/quick-lang/api.key.
-        # Gemini hết quota (429) ở mode có chiều dịch → TỰ fallback Google Translate.
+        # Trợ lý dịch cho văn bản đang bôi (primary, fallback clipboard).
+        # vi-en (mặc định) / en-vi / fix. Tag [xxx] đầu văn bản = ngữ cảnh;
+        # key ở ~/.config/quick-lang/api.key; hết quota → fallback Google Translate.
         set -u
 
         mode="''${1:-vi-en}"
         FALLBACK_GT=0
 
-        # Thông báo dịch tự hết hạn sau ~2 phút (mako: default-timeout = 120000ms
-        # cho app quick-lang, xem mako.nix). Cờ -p của notify-send là --print-id
-        # (KHÔNG phải persistent) — bắt buộc phải có để ntf() lấy ID lưu vào
-        # NTF_ID_FILE, từ đó dismiss thông báo cũ mỗi lần dịch mới.
-        # Mỗi lần dịch mới sẽ DISMISS thông báo cũ rồi gửi cái mới → hiệu ứng
-        # "nhấp nháy" giúp biết ngay là có bản dịch mới, kể cả khi nội dung giống hệt.
-        # Id của thông báo đang hiển thị lưu trong tmpfs ($XDG_RUNTIME_DIR, trên RAM).
+        # -p = print-id để dismiss thông báo cũ; dịch mới đè thông báo cũ.
+        # ID lưu trong tmpfs ($XDG_RUNTIME_DIR).
         NTF_ID_FILE="''${XDG_RUNTIME_DIR:-/tmp}/quick-lang-notify-id"
         ntf() {
           old_id="$(cat "$NTF_ID_FILE" 2>/dev/null || true)"
@@ -313,7 +240,7 @@
           printf %s "$(notify-send -a quick-lang -p "$@")" > "$NTF_ID_FILE"
         }
 
-        # ---- Lấy văn bản: ưu tiên primary selection (text đang bôi), fallback clipboard ----
+        # Ưu tiên selection đang bôi, fallback clipboard.
         text="$(wl-paste -p 2>/dev/null || true)"
         [ -n "''${text//[[:space:]]/}" ] || text="$(wl-paste 2>/dev/null || true)"
         [ -n "''${text//[[:space:]]/}" ] || {
@@ -321,10 +248,7 @@
           exit 1
         }
 
-        # ---- Tag ngữ cảnh [xxx] ở ĐẦU văn bản (bash thuần, 0 tiến trình) ----
-        # phi/sci/lit/cas = register cài sẵn; tag khác = domain hint tự do (vd [math]);
-        # không tag → model tự suy luận register. Tag bị CẮT khỏi văn bản trước khi
-        # gửi đi nên không bao giờ lọt vào kết quả.
+        # Tag [xxx] đầu văn bản; tag bị cắt trước khi gửi.
         CTX_LABEL=""
         CTX_RULE="Infer the domain and register from the text itself, then write the way an educated native speaker in that domain would naturally write."
         if [[ $text =~ ^\[[[:space:]]*([A-Za-z]+)[[:space:]]*\] ]]; then
@@ -340,7 +264,7 @@
           esac
         fi
 
-        # ---- Prompt theo mode (hợp nhất VI/EN/trộn; English thuần áp luật 2 trạng thái) ----
+        # Prompt theo mode (vi-en hợp nhất VI/EN/trộn; EN thuần chỉ sửa lỗi thật).
         case "$mode" in
           vi-en)
             rule="Convert the text below into polished, natural English. The text may be entirely Vietnamese (with or without diacritics), entirely English, or a mix of both. If it contains any Vietnamese, translate it and render the whole meaning as one coherent English text, integrating any already-English parts naturally. If it is entirely English, proofread it: when it is already correct and natural, output it EXACTLY unchanged; when it has real errors (grammar, word choice, collocation), output only the corrected text. $CTX_RULE Preserve the full meaning and tone of the original. Keep proper nouns and technical terms. Output ONLY the resulting English text, with no explanations or notes."
@@ -354,19 +278,9 @@
           *) ntf "Quick Lang" "Mode không hợp lệ: $mode (dùng vi-en | en-vi | fix)"; exit 1 ;;
         esac
 
-        # ---- Engine AI: Gemini Flash ----
-        # Chỉ tự thử lại khi lỗi MẠNG (không kết nối được) hoặc lỗi server 5xx.
-        # Riêng 429 (hết quota free tier) báo NGAY không retry — vì Retry-After
-        # tính bằng chục giây, và mỗi lần retry lại đốt thêm 1 request của quota.
+        # Gemini: chỉ retry lỗi mạng/5xx; 429 (hết quota) báo ngay không retry.
         translate_ai() {
-          # Routing model theo mode (script biết chắc ý định từ phím bấm, không
-          # cần auto-router ngoài):
-          #   vi-en/en-vi (tần suất cao, trong guồng) → flash-lite: nhanh nhất,
-          #     quota free ~1000 req/ngày. Alias tự trỏ tới model lite mới nhất
-          #     (2.5-flash-lite đã ngừng cấp cho key mới).
-          #   fix (chất lượng là sản phẩm, tần suất thấp) → flash đầy đủ: judging
-          #     "đã đúng → giữ nguyên văn" và sửa lỗi chính xác hơn hẳn; quota
-          #     ~250 req/ngày vẫn dư cho vài chục lần fix mỗi ngày.
+          # vi-en/en-vi → flash-lite (nhanh, quota lớn); fix → flash (chuẩn hơn).
           case "$mode" in
             vi-en|en-vi) MODEL="gemini-flash-lite-latest" ;;
             *)           MODEL="gemini-flash-latest" ;;
@@ -395,18 +309,17 @@
               000|"") [ "$attempt" -lt 3 ] && sleep 1; continue ;;  # lỗi mạng → thử lại
               5*)     [ "$attempt" -lt 3 ] && sleep 1; continue ;;  # lỗi server tạm thời → thử lại
             esac
-            break  # 2xx / 4xx (gồm 429) → dừng, xử lý bên dưới
+            break  # 2xx / 4xx (gồm 429) → xử lý bên dưới
           done
           response="$(cat "$resp_file" 2>/dev/null || true)"
           rm -f "$resp_file"
 
           result="$(printf '%s' "$response" | jq -r '.candidates[0].content.parts[0].text // empty' 2>/dev/null || true)"
-          # Làm sạch nếu model tự bọc markdown code fence
+          # Bỏ markdown fence nếu model tự bọc.
           result="$(printf '%s' "$result" | sed -e 's/^```[a-zA-Z]*//' -e 's/```$//' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
 
           if [ -z "''${result//[[:space:]]/}" ]; then
-            # 429 = hết quota free tier: nếu mode có chiều "dịch" (gt_tl khác rỗng)
-            # thì trả cờ để caller fallback sang Google Translate, không báo lỗi.
+            # 429 ở mode có chiều dịch → cờ fallback Google Translate.
             if [ "$http_code" = 429 ] && [ -n "$gt_tl" ]; then
               FALLBACK_GT=1
               return
@@ -423,13 +336,8 @@
           fi
         }
 
-        # ---- Engine GT: Google Translate (chỉ dùng làm fallback khi Gemini 429) ----
-        # Nhanh (~1s), không cần key. --connect-timeout 5 + thử lại 1 lần.
-        # Dùng endpoint clients5 (client=dict-chrome-ex) vì endpoint
-        # translate_a/single?client=gtx đã bị Google chặn 429 theo IP,
-        # kèm User-Agent trình duyệt để giảm khả năng bị chặn.
-        # sl=auto để tự nhận nguồn (input có thể trộn VI/EN).
-        # Response có thể là ["dịch"] hoặc [["dịch","nguồn"],...] — jq xử lý cả hai.
+        # Google Translate làm fallback khi Gemini 429 (nhanh, không cần key).
+        # sl=auto tự nhận nguồn; response có 2 dạng — jq xử lý cả hai.
         translate_gt() {
           q="$(jq -rn --arg q "$text" '$q|@uri')"
           result=""
@@ -450,7 +358,6 @@
 
         translate_ai
 
-        # Fallback tự động khi Gemini hết quota (chỉ mode có chiều dịch)
         if [ "''${FALLBACK_GT:-0}" = 1 ]; then
           ntf "Quick Lang · GT" "Gemini hết quota (429) → dùng Google Translate."
           translate_gt
@@ -458,8 +365,7 @@
 
         printf %s "$result" | wl-copy
 
-        # Tiêu đề: script tự SO SÁNH đầu ra với đầu vào (tất định, không tin
-        # lời model báo cáo) — nguyên văn = đã tự nhiên, khác = đã sửa.
+        # So sánh đầu ra với đầu vào: nguyên văn = đã tự nhiên, khác = đã sửa.
         case "$mode" in
           vi-en)
             if [ "$result" = "$text" ]; then title="✓ EN đã tự nhiên"; else title="→ EN"; fi ;;
@@ -477,17 +383,15 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Reload mạng nhanh thay cho tắt máy: tắt/bật lại NetworkManager
-        # (renew DHCP + refresh DNS). Không cần sudo — polkit cho phép user
-        # đăng nhập local điều khiển NetworkManager. Dùng khi DNS/mạng
-        # "đứng hình" sau resume hoặc DNS router bị stale.
+        # Reload mạng nhanh: tắt/bật NetworkManager (renew DHCP + DNS).
+        # Không cần sudo (polkit cho user local). Dùng khi mạng "đứng hình".
         set -u
 
         notify() {
           notify-send -a quick-net-reload -i network-wireless -t 3000 "Reload mạng" "$@"
         }
 
-        # Xoá cache DNS nếu đang dùng systemd-resolved (không bắt buộc phải thành công)
+        # Xoá cache DNS (best-effort).
         resolvectl flush-caches >/dev/null 2>&1 || true
 
         if ! nmcli networking off; then
@@ -499,7 +403,7 @@
           exit 1
         fi
 
-        # Chờ kết nối trở lại (tối đa ~10s)
+        # Chờ kết nối trở lại (tối đa ~10s).
         state=""
         for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
           state="$(nmcli -t -f STATE,CONNECTIVITY general status 2>/dev/null | cut -d: -f2)"
@@ -524,16 +428,11 @@
         STATE_FILE="$STATE_DIR/touchpad-enabled"
         mkdir -p "$STATE_DIR"
 
-        # Query trạng thái THỰC TẾ từ sway thay vì tin state file
-        # (state file có thể lệch sau khi restart session vì sway luôn bật touchpad khi khởi động)
+        # Query trạng thái thực từ sway (state file có thể lệch sau restart).
         current="$(swaymsg -t get_inputs 2>/dev/null | jq -r '[.[] | select(.type == "touchpad") | .libinput.send_events][0] // empty' 2>/dev/null)"
         [ -n "$current" ] || current="enabled"
 
-        # Áp dụng lại TOÀN BỘ cấu hình touchpad (khớp 1:1 với block
-        # input type:touchpad trong sway.nix). Nếu chỉ chạy `events enabled`
-        # thì sway có thể chưa re-apply các thiết lập còn lại → cảm giác chuột
-        # sai so với cấu hình, phải đợi sway tự áp lại sau. Gọi hàm này khi
-        # bật để đảm bảo đúng cấu hình NGAY LẬP TỨC.
+        # Áp lại toàn bộ cấu hình touchpad (khớp sway.nix) để đúng ngay lập tức.
         apply_touchpad_config() {
           swaymsg input type:touchpad pointer_accel 0.6
           swaymsg input type:touchpad accel_profile adaptive
@@ -541,7 +440,7 @@
           swaymsg input type:touchpad scroll_method two_finger
           swaymsg input type:touchpad tap enabled
           swaymsg input type:touchpad drag enabled
-          # events enabled đặt CUỐI cùng để bật sau khi mọi thiết lập đã sẵn sàng
+          # events enabled cuối cùng (bật sau khi mọi thiết lập sẵn sàng).
           swaymsg input type:touchpad events enabled
         }
 
@@ -569,9 +468,8 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Toggle chế độ ánh sáng màn hình: Tự động → Vàng 4000K → Trắng 6500K → Tự động
-        # Query trạng thái THỰC TẾ từ process wlsunset thay vì tin state file
-        # (state file có thể lệch sau restart session vì sway luôn bật auto khi khởi động)
+        # Vòng lặp: Tự động → Vàng 4000K → Trắng 6500K → Tự động.
+        # Query process thực (state file có thể lệch sau restart).
 
         mode="auto"
         pid="$(pgrep -x wlsunset | head -1 2>/dev/null || true)"
@@ -614,7 +512,6 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Rofi menu to select power profile directly
         set -u
 
         current="$(powerprofilesctl get)"
@@ -656,6 +553,7 @@
         #! /usr/bin/env bash
         set -eu
 
+        # flock để bấm phím liên tục không đè thông báo nhau.
         if [ "''${MEDIA_NOTIFY_LOCKED:-}" != 1 ]; then
           exec env MEDIA_NOTIFY_LOCKED=1 ${pkgs.util-linux}/bin/flock \
             "''${XDG_RUNTIME_DIR:?}/media-notify.lock" "$0" "$@"
@@ -721,7 +619,6 @@
         }
 
         notify_brightness() {
-          # Lấy % độ sáng dạng số nguyên (bỏ ký tự %)
           bright_raw="$(brightnessctl -m | cut -d, -f4)"
           bright_val="''${bright_raw%%%}"
           notify_replace brightness -a brightness -i "display-brightness" -h "int:value:$bright_val" -t 2000 "Brightness" "''${bright_raw}"
@@ -751,7 +648,6 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Rofi menu for power & session actions
         set -u
 
         MENU="⏻ Poweroff
@@ -783,7 +679,7 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Screenshot helper: kiểm tra exit code của slurp để tránh thông báo sai khi hủy
+        # Kiểm tra exit slurp để hủy không báo sai.
         set -u
 
         mode="''${1:?missing mode}"
@@ -823,7 +719,6 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Rofi menu for screenshot actions
         set -u
 
         MENU="📷 Selection → Clipboard (Print)

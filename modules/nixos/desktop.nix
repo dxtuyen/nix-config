@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  userName,
   ...
 }:
 
@@ -15,12 +16,9 @@ in
   programs.sway.enable = true;
   programs.dconf.enable = true;
 
-  # GVFS: daemon virtual-filesystem cung cap "Move to Trash" (thung rac),
-  # mount USB, reserved space v.v. cho cac file manager GTK nhu Thunar.
-  # Thieu GVFS thi Thunar se XOA THANG vi khong co cho de chuyen vao thung rac.
+  # GVFS cung cấp "Move to Trash" cho Thunar (thiếu thì Thunar xóa thẳng).
   services.gvfs.enable = true;
 
-  # GPU acceleration chuẩn từ NixOS 24.05 trở lên
   hardware.graphics.enable = true;
 
   security = {
@@ -31,9 +29,8 @@ in
   services.greetd = {
     enable = true;
     settings.default_session = {
-      # --user doxuantuyen: dien san username (khong auto-login, van hoi mat khau).
-      # Neu doi username trong core.nix thi phoi sua ca dong nay.
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --user doxuantuyen --cmd sway";
+      # Điền sẵn username (vẫn hỏi mật khẩu, không auto-login).
+      command = "${pkgs.tuigreet}/bin/tuigreet --time --user ${userName} --cmd sway";
       user = "greeter";
     };
   };
@@ -48,7 +45,7 @@ in
   services.power-profiles-daemon.enable = true;
   hardware.bluetooth.enable = true;
 
-  # XDG Desktop Portal cho Sway / wlroots
+  # XDG portal cho Sway / wlroots.
   xdg.portal = {
     enable = true;
     wlr.enable = true;

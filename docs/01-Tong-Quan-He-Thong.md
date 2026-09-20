@@ -36,7 +36,7 @@
 | `waybar.nix` / `alacritty.nix` + `starship.nix` / `gtk.nix` / `mako.nix` | Thanh trạng thái / terminal / theme / thông báo |
 | `fcitx5.nix` | Bộ gõ tiếng Việt |
 | `scripts.nix` | Script `~/.local/bin`: lock-screen, power-menu, quick-lang, screenshot-menu, cycle-wallpaper... |
-| `pomodoro.nix` | 2 chế độ song song: `burst` (mặc định 10 phút, tự nhập được 1–480) + `study` (preset 60/90/120 hoặc tự nhập 1–480, không break); menu `$mod+p` mỗi dòng = 1 hành động cho chính đồng hồ đó (⏸/▶ toggle, ↺ Reset riêng), tự phục hồi khi daemon chết |
+| `pomodoro.nix` | Đồng hồ PHIÊN TẬP TRUNG duy nhất (focus): menu `$mod+p` — rảnh: ⌨ tự nhập 1–480 phút / preset 🍅 30/60/120; có phiên: chỉ ⏸/▶ toggle + ↺ reset; không break; phiên chạy → tự dừng swayidle (icon mắt trên bar đồng bộ); máy ngủ → tự pause phiên, thức dậy → tự tiếp tục; tự phục hồi khi daemon chết |
 | `remnote.nix` | RemNote AppImage (khung cài + script `setup-remnote`) |
 | `thunar.nix` | File manager + mở terminal bằng Alacritty |
 

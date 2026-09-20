@@ -1,8 +1,7 @@
 { pkgs, ... }:
 
+# Cursor + GTK theme (Tokyonight-Dark) + icon (Papirus-Dark).
 {
-  # Cursor theme cho Wayland/Sway — bắt buộc để cursor đổi hình dạng
-  # (resize, text, pointer...) khi hover vào viền cửa sổ.
   home.pointerCursor = {
     name = "Bibata-Modern-Classic";
     package = pkgs.bibata-cursors;
