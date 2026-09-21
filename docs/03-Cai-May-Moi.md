@@ -23,7 +23,7 @@
 | Username + họ tên | `core.nix` → `users.users.doxuantuyen` | `doxuantuyen` / "Doxuan Tuyen" |
 | Quyền admin (sudo) | `core.nix` → `extraGroups` | `wheel` + `networkmanager` + `kvm` |
 | Màn hình đăng nhập | `modules/nixos/desktop.nix` → `services.greetd` | tuigreet → Sway (không auto-login, tự điền sẵn `doxuantuyen`) |
-| Bộ gõ tiếng Việt | `desktop.nix` → `i18n.inputMethod` | fcitx5 + unikey |
+| Bộ gõ tiếng Việt | `desktop.nix` → `i18n.inputMethod` | fcitx5 + bamboo |
 | **Mật khẩu user** | ❌ không có trong config (cố ý) | **đặt tay ở Bước 7.5** |
 
 ---

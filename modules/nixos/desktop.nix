@@ -68,7 +68,7 @@ in
     enable = true;
     type = "fcitx5";
     fcitx5.addons = with pkgs; [
-      qt6Packages.fcitx5-unikey
+      fcitx5-bamboo
       fcitx5-gtk
     ];
   };
