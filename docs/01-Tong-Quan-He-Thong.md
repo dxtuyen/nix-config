@@ -35,7 +35,7 @@
 | `sway.nix` | Cửa sổ, layout, idle/lock/sleep (swayidle), phím tắt (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)) |
 | `waybar.nix` / `alacritty.nix` + `starship.nix` / `gtk.nix` / `mako.nix` | Thanh trạng thái / terminal / theme / thông báo |
 | `fcitx5.nix` | Bộ gõ tiếng Việt (Bamboo engine, Telex) |
-| `scripts.nix` | Script `~/.local/bin`: lock-screen, power-menu, quick-lang, screenshot-menu, cycle-wallpaper... |
+| `scripts.nix` | Script `~/.local/bin`: lock-screen, power-menu, quick-lang, screenshot-menu, wallpaper-set/menu... |
 | `pomodoro.nix` | Đồng hồ PHIÊN TẬP TRUNG duy nhất (focus): menu `$mod+p` — rảnh: ⌨ tự nhập 1–480 phút / preset 🍅 30/60/120; có phiên: chỉ ⏸/▶ toggle + ↺ reset; không break; phiên chạy → tự dừng swayidle (icon mắt trên bar đồng bộ); máy ngủ → tự pause phiên, thức dậy → tự tiếp tục; tự phục hồi khi daemon chết |
 | `remnote.nix` | RemNote AppImage (khung cài + script `setup-remnote`) |
 | `thunar.nix` | File manager + mở terminal bằng Alacritty |
@@ -44,7 +44,7 @@
 
 1. Boot → **systemd-boot** chọn generation.
 2. **greetd** (tuigreet) hiện màn hình đăng nhập → chạy Sway.
-3. Sway kích hoạt `sway-session.target`: Waybar, Fcitx5, nm-applet, wlsunset, cycle-wallpaper...
+3. Sway kích hoạt `sway-session.target`: Waybar, Fcitx5, nm-applet, wlsunset, awww-daemon + `wallpaper-set`...
 4. **swayidle** lo chuỗi khóa màn hình → tắt màn → suspend (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)).
 
 ## Config vs Dữ liệu (quan trọng nhất)

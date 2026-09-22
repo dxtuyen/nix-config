@@ -66,17 +66,92 @@
       '';
     };
 
-    ".local/bin/cycle-wallpaper" = {
+    ".local/bin/wallpaper-set" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Đổi wallpaper theo giờ: 6:00-17:59 sáng, 18:00-5:59 tối
-        hour="$(date +%H)"
-        if [ "$hour" -ge 6 ] && [ "$hour" -lt 18 ]; then
-          swaymsg "output * bg ${./../wallpapers/tokyonight-bright.jpg} fill"
+        # wallpaper-set [ảnh|day|night] — đặt nền bằng awww (transition fade)
+        # + sinh palette màu theo ảnh bằng wallust (alacritty/waybar/rofi/sway).
+        # Không đối số → random ảnh theo giờ (day- 06:00–17:59, night- còn lại),
+        # tránh lặp lại ảnh đang đặt. Ảnh để ở ~/Pictures/wallpapers — thêm ảnh
+        # mới với tiền tố day-/night- là dùng được ngay, không cần rebuild.
+        set -u
+
+        WALL_DIR="$HOME/Pictures/wallpapers"
+        CACHE="$HOME/.cache/wallpaper-current"
+
+        img=""
+        if [ "$#" -ge 1 ] && [ -f "$1" ]; then
+          img="$1"
         else
-          swaymsg "output * bg ${./../wallpapers/tokyonight-night.png} fill"
+          hour="$(date +%H)"
+          prefix="night-"
+          if [ "$hour" -ge 6 ] && [ "$hour" -lt 18 ]; then prefix="day-"; fi
+          case "''${1:-}" in
+            day) prefix="day-" ;;
+            night) prefix="night-" ;;
+          esac
+          mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -name "$prefix*" | sort)
+          if [ "''${#imgs[@]}" -eq 0 ]; then
+            mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
+          fi
+          n="''${#imgs[@]}"
+          if [ "$n" -eq 0 ]; then
+            notify-send -a wallpaper "wallpaper-set" "Không có ảnh nào trong $WALL_DIR" 2>/dev/null || true
+            exit 1
+          fi
+          prev="$(cat "$CACHE" 2>/dev/null || true)"
+          img="''${imgs[$((RANDOM % n))]}"
+          while [ "$n" -gt 1 ] && [ "$img" = "$prev" ]; do
+            img="''${imgs[$((RANDOM % n))]}"
+          done
         fi
+
+        # Bảo đảm daemon sống (thường đã chạy theo sway-session.target).
+        systemctl --user start awww-daemon.service 2>/dev/null || true
+        i=0
+        while ! ${pkgs.awww}/bin/awww query >/dev/null 2>&1; do
+          i=$((i + 1))
+          if [ "$i" -ge 40 ]; then
+            notify-send -a wallpaper "wallpaper-set" "awww-daemon không phản hồi" 2>/dev/null || true
+            exit 1
+          fi
+          sleep 0.25
+        done
+
+        # Đặt nền với transition fade 2s.
+        ${pkgs.awww}/bin/awww img "$img" -t fade --transition-duration 2
+        printf '%s\n' "$img" > "$CACHE"
+
+        # Palette theo ảnh → templating ra ~/.config/wallust/colors/*, waybar, rofi.
+        # Tạo sẵn thư mục đích (wallust không tự tạo và rofi cần theme tồn tại).
+        mkdir -p "$HOME/.config/wallust/colors" "$HOME/.config/rofi/themes"
+        ${pkgs.wallust}/bin/wallust run "$img" >/dev/null 2>&1
+
+        # Reload app đang sống: waybar (SIGUSR2 = nạp lại CSS), sway (re-read
+        # include màu). Alacritty tự nạp lại nhờ live_config_reload.
+        ${pkgs.procps}/bin/pkill -USR2 -x waybar 2>/dev/null || true
+        ${pkgs.sway}/bin/swaymsg reload >/dev/null 2>&1 || true
+      '';
+    };
+
+    ".local/bin/wallpaper-menu" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # wallpaper-menu — rofi chọn ảnh nền trong ~/Pictures/wallpapers.
+        set -u
+        WALL_DIR="$HOME/Pictures/wallpapers"
+
+        list="$(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -printf '%f\n' | sort)"
+        if [ -z "$list" ]; then
+          notify-send -a wallpaper "wallpaper-menu" "Không có ảnh nào trong $WALL_DIR"
+          exit 0
+        fi
+
+        choice="$(printf '%s\n' "$list" | rofi -dmenu -i -p '🖼️ Wallpaper' \
+          -mesg 'Enter: đặt ảnh này — palette màu toàn hệ thống đổi theo ảnh')"
+        [ -n "$choice" ] && exec "$HOME/.local/bin/wallpaper-set" "$WALL_DIR/$choice"
       '';
     };
 
@@ -141,8 +216,9 @@
         #! /usr/bin/env bash
         pkill wlsunset 2>/dev/null || true
         wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8 &
+        # Wallpaper giữ nguyên khi reload (awww daemon vẫn hiển thị); sway
+        # re-read include màu wallust → đồng bộ palette nếu thiếu.
         swaymsg reload
-        ~/.local/bin/cycle-wallpaper
       '';
     };
     ".local/bin/dict-toggle" = {
@@ -747,13 +823,18 @@
     };
   };
 
+  # Chạy wallpaper-set lúc 6:00 (pool day-) và 18:00 (pool night-).
   systemd.user.services.cycle-wallpaper = {
     Unit = {
-      Description = "Cycle wallpaper based on time of day";
+      Description = "Random wallpaper theo giờ + palette wallust";
     };
     Service = {
       Type = "oneshot";
-      ExecStart = "%h/.local/bin/cycle-wallpaper";
+      # PATH cho lệnh con của script (find, date, sleep, notify-send...).
+      Environment = [
+        "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
+      ];
+      ExecStart = "%h/.local/bin/wallpaper-set";
     };
     Install = {
       WantedBy = [ "default.target" ];
@@ -762,7 +843,7 @@
 
   systemd.user.timers.cycle-wallpaper = {
     Unit = {
-      Description = "Run cycle-wallpaper at 6:00 and 18:00";
+      Description = "Run wallpaper-set at 6:00 and 18:00";
     };
     Timer = {
       OnCalendar = [

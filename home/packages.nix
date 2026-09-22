@@ -11,6 +11,7 @@
     wl-clipboard
     swaylock
     swayidle
+    awww # daemon wallpaper (fork của swww) — transition hoạt ảnh, đổi nền runtime
     libnotify
     pavucontrol
     brightnessctl

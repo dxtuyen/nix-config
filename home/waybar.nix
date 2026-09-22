@@ -149,35 +149,45 @@ in
       };
     };
     style = ''
+      @import url("colors.css");  /* palette wallust theo wallpaper (cùng thư mục, phải đứng đầu) */
       * { font-family: "JetBrains Mono", "Font Awesome 6 Free", monospace; font-size: 13px; border: none; border-radius: 0; }
       @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
-      window#waybar { background: rgba(0, 0, 0, 0); color: #c0caf5; }
-      #workspaces { background: #24283b; border: 1px solid #414868; border-radius: 10px; margin: 4px 0 4px 4px; padding: 0 10px; }
-      #workspaces button { padding: 0 7px; color: #a9b1d6; font-size: 15px; border-bottom: 2px solid transparent;
+
+      /* Fallback: Tokyo Night — dùng khi colors.css chưa được wallust sinh ra
+         (trước lần chạy wallpaper-set đầu tiên). Sau đó @import ở trên đè. */
+      :root {
+        --wbg: #1a1b26; --wbg2: #24283b; --wfg: #c0caf5; --wtxt2: #a9b1d6;
+        --wdim: #414868; --wac: #7aa2f7; --wred: #f7768e; --wgrn: #9ece6a;
+        --wylw: #e0af68;
+      }
+
+      window#waybar { background: rgba(0, 0, 0, 0); color: var(--wfg); }
+      #workspaces { background: var(--wbg2); border: 1px solid var(--wdim); border-radius: 10px; margin: 4px 0 4px 4px; padding: 0 10px; }
+      #workspaces button { padding: 0 7px; color: var(--wtxt2); font-size: 15px; border-bottom: 2px solid transparent;
         background-color: rgba(0, 0, 0, 0); }
       #workspaces button:hover, #workspaces button:active {
         background-color: rgba(0, 0, 0, 0); box-shadow: none; }
-      #workspaces button.focused, #workspaces button.active { color: #7aa2f7; border-bottom: 2px solid #7aa2f7; }
-      #workspaces button.urgent { color: #f7768e; border-bottom-color: #f7768e; }
-      #workspaces button.persistent.empty { color: #737aa2; }  /* TN dark5 — sát tone #a9b1d6 để bug nháy #3865 gần như vô hình */
-      #window { background: #364a82; border: 1px solid #7aa2f7; border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: #c0caf5; font-weight: bold; }
-      #custom-inhibit, #pulseaudio, #backlight, #temperature, #battery, #power-profiles-daemon, #cpu, #memory, #tray, #mode, #scratchpad { background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 0; }
-      #mode { color: #7aa2f7; background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; }
-      #scratchpad { color: #a9b1d6; margin: 4px 5px; }
-      #clock { color: #7aa2f7; font-weight: bold; background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 10px 4px 5px; }
-      #custom-study { background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; font-weight: bold; }
-      #custom-study.running { color: #7aa2f7; }
-      #custom-study.paused { color: #e0af68; }
-      #custom-study.idle { color: #565f89; }
-      #custom-inhibit.running { color: #7aa2f7; }
-      #custom-inhibit.manual { color: #e0af68; }
-      #custom-inhibit.idle { color: #565f89; }
-      #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: #e0af68; }
-      #battery.critical { color: #f7768e; }
-      #temperature.critical, #cpu.critical, #memory.critical { color: #f7768e; animation: blink 1s linear infinite; }
-      #battery.charging { color: #9ece6a; font-weight: bold; }
-      #battery.plugged { color: #9ece6a; }
-      #pulseaudio.muted { color: #565f89; }
+      #workspaces button.focused, #workspaces button.active { color: var(--wac); border-bottom: 2px solid var(--wac); }
+      #workspaces button.urgent { color: var(--wred); border-bottom-color: var(--wred); }
+      #workspaces button.persistent.empty { color: var(--wdim); }  /* đậm hơn fallback cũ 1 nấc — chết hẳn bug nháy #3865 */
+      #window { background: var(--wbg2); border: 1px solid var(--wac); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: var(--wfg); font-weight: bold; }
+      #custom-inhibit, #pulseaudio, #backlight, #temperature, #battery, #power-profiles-daemon, #cpu, #memory, #tray, #mode, #scratchpad { background: var(--wbg2); border: 1px solid var(--wdim); border-radius: 10px; padding: 0 10px; margin: 4px 0; }
+      #mode { color: var(--wac); background: var(--wbg2); border: 1px solid var(--wdim); border-radius: 10px; padding: 0 10px; margin: 4px 5px; }
+      #scratchpad { color: var(--wtxt2); margin: 4px 5px; }
+      #clock { color: var(--wac); font-weight: bold; background: var(--wbg2); border: 1px solid var(--wdim); border-radius: 10px; padding: 0 10px; margin: 4px 10px 4px 5px; }
+      #custom-study { background: var(--wbg2); border: 1px solid var(--wdim); border-radius: 10px; padding: 0 10px; margin: 4px 5px; font-weight: bold; }
+      #custom-study.running { color: var(--wac); }
+      #custom-study.paused { color: var(--wylw); }
+      #custom-study.idle { color: var(--wdim); }
+      #custom-inhibit.running { color: var(--wac); }
+      #custom-inhibit.manual { color: var(--wylw); }
+      #custom-inhibit.idle { color: var(--wdim); }
+      #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: var(--wylw); }
+      #battery.critical { color: var(--wred); }
+      #temperature.critical, #cpu.critical, #memory.critical { color: var(--wred); animation: blink 1s linear infinite; }
+      #battery.charging { color: var(--wgrn); font-weight: bold; }
+      #battery.plugged { color: var(--wgrn); }
+      #pulseaudio.muted { color: var(--wdim); }
     '';
   };
 }
