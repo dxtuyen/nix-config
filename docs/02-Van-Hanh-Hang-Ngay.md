@@ -31,8 +31,8 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key ở `~/.config/quick-lang/api.key` |
 | `dict-toggle` | `mod+g`: bật/tắt GoldenDict float — đóng = ẩn về tray (tiến trình giữ nguyên, mở lại tức thời) |
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
-| `wallpaper-set` | Đổi nền random theo giờ (day- 06:00–17:59 / night- còn lại) qua **awww** (fork của swww, transition fade 2s). Ảnh đặt ở `~/Pictures/wallpapers` (tiền tố `day-`/`night-`), thêm ảnh không cần rebuild |
-| `wallpaper-menu` | `Alt+Shift+Tab`: menu rofi chọn ảnh nền cụ thể |
+| `wallpaper-set` | `Alt+Tab`: đổi nền random theo giờ (day- 06:00–17:59 / night- còn lại) qua **awww** (fork của swww, transition fade 2s). **Luôn loại ảnh đang hiển thị** khỏi danh sách → bấm liên tục luôn ra ảnh mới. Ảnh đặt ở `~/Pictures/wallpapers` (tiền tố `day-`/`night-`), thêm ảnh không cần rebuild |
+| `wallpaper-menu` | `Alt+Shift+Tab`: menu rofi **hiện thumbnail** từng ảnh (ảnh đang dùng đánh dấu `●`) để nhìn mà chọn |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
 | `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → chỉ ⏸/▶ + ↺; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
@@ -117,7 +117,7 @@ Cách dùng: chạy `systemctl hibernate` (hoặc dùng menu nguồn `power-menu
 | Sway không khởi động | `journalctl -b -u greetd` |
 | Mất âm thanh | `systemctl status pipewire` → `systemctl --user restart wireplumber` |
 | Bộ gõ kẹt | `fcitx5-diagnose` |
-| Wallpaper không đổi | `systemctl --user status awww-daemon` (daemon) + `cycle-wallpaper.timer` (định giờ 6h/18h); test tay: `~/.local/bin/wallpaper-set night` |
+| Wallpaper không đổi | `systemctl --user status awww-daemon` (daemon) + `cycle-wallpaper.timer` (định giờ 6h/18h); test tay: `~/.local/bin/wallpaper-set night`. `wallpaper-set` tự loại ảnh đang hiển thị, nên bấm Alt+Tab luôn ra ảnh mới; menu Alt+Shift+Tab hiện thumbnail (ảnh đang dùng có dấu `●`) |
 | Hibernate không dậy | `cat /proc/cmdline` phải có `resume=UUID=...`; `swapon --show` phải thấy `/dev/nvme0n1p3` |
 
 ## Liên quan

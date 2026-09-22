@@ -70,14 +70,36 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # wallpaper-set [ảnh|day|night] — random ảnh theo giờ qua awww
-        # (transition fade 2s). day- 06:00–17:59, night- còn lại; tránh lặp
-        # lại ảnh đang đặt. Ảnh để ở ~/Pictures/wallpapers — thêm ảnh mới
-        # với tiền tố day-/night- là dùng được ngay, không cần rebuild.
+        # wallpaper-set [ảnh|day|night] — đặt ảnh nền qua awww (transition fade 2s).
+        #   wallpaper-set                 random theo giờ (day- 06:00–17:59, night- còn lại)
+        #   wallpaper-set day|night       random trong đúng pool đó
+        #   wallpaper-set <đường dẫn ảnh> đặt ảnh chỉ định
+        # Ảnh đang hiển thị luôn bị loại khỏi danh sách random → bấm liên tục
+        # chắc chắn ra ảnh mới. Ảnh ở ~/Pictures/wallpapers; thêm ảnh mới với
+        # tiền tố day-/night- là dùng được ngay, không cần rebuild.
         set -u
 
         WALL_DIR="$HOME/Pictures/wallpapers"
         CACHE="$HOME/.cache/wallpaper-current"
+        AWWW=${pkgs.awww}/bin/awww
+
+        # Ảnh trong $WALL_DIR, lọc theo tiền tố ($1 rỗng = lấy tất cả).
+        list_pool() {
+          if [ -n "$1" ]; then
+            find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -name "$1*" | sort
+          else
+            find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort
+          fi
+        }
+
+        # realpath ảnh đang hiển thị: ưu tiên awww (chính xác), dự phòng cache.
+        current_resolved() {
+          local cur
+          cur="$($AWWW query 2>/dev/null | sed -n 's/.*currently displaying: image: //p' | head -1)"
+          [ -z "$cur" ] && cur="$(cat "$CACHE" 2>/dev/null || true)"
+          [ -n "$cur" ] && readlink -f -- "$cur" 2>/dev/null
+          return 0
+        }
 
         img=""
         if [ "$#" -ge 1 ] && [ -f "$1" ]; then
@@ -90,26 +112,36 @@
             day) prefix="day-" ;;
             night) prefix="night-" ;;
           esac
-          mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -name "$prefix*" | sort)
+          # Pool theo giờ; pool rỗng thì lấy tất cả ảnh.
+          mapfile -t imgs < <(list_pool "$prefix")
           if [ "''${#imgs[@]}" -eq 0 ]; then
-            mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
+            mapfile -t imgs < <(list_pool "")
           fi
-          n="''${#imgs[@]}"
-          if [ "$n" -eq 0 ]; then
+          if [ "''${#imgs[@]}" -eq 0 ]; then
             notify-send -a wallpaper "wallpaper-set" "Không có ảnh nào trong $WALL_DIR" 2>/dev/null || true
             exit 1
           fi
-          prev="$(cat "$CACHE" 2>/dev/null || true)"
-          img="''${imgs[$((RANDOM % n))]}"
-          while [ "$n" -gt 1 ] && [ "$img" = "$prev" ]; do
-            img="''${imgs[$((RANDOM % n))]}"
+
+          # Loại ảnh đang hiển thị khỏi danh sách → luôn đổi sang ảnh khác.
+          cur="$(current_resolved)"
+          cands=()
+          for f in "''${imgs[@]}"; do
+            if [ -n "$cur" ] && [ "$(readlink -f -- "$f")" = "$cur" ]; then continue; fi
+            cands+=("$f")
           done
+          if [ "''${#cands[@]}" -eq 0 ]; then
+            cands=("''${imgs[@]}")
+            if [ "''${#cands[@]}" -eq 1 ]; then
+              notify-send -a wallpaper "wallpaper-set" "Chỉ có 1 ảnh trong $WALL_DIR" 2>/dev/null || true
+            fi
+          fi
+          img="''${cands[$((RANDOM % ''${#cands[@]}))]}"
         fi
 
         # Bảo đảm daemon sống (thường đã chạy theo sway-session.target).
         systemctl --user start awww-daemon.service 2>/dev/null || true
         i=0
-        while ! ${pkgs.awww}/bin/awww query >/dev/null 2>&1; do
+        while ! $AWWW query >/dev/null 2>&1; do
           i=$((i + 1))
           if [ "$i" -ge 40 ]; then
             notify-send -a wallpaper "wallpaper-set" "awww-daemon không phản hồi" 2>/dev/null || true
@@ -118,8 +150,8 @@
           sleep 0.25
         done
 
-        # Đặt nền với transition fade 2s.
-        ${pkgs.awww}/bin/awww img "$img" -t fade --transition-duration 2
+        # Đặt nền với transition fade 2s + ghi nhớ ảnh hiện tại.
+        $AWWW img "$img" -t fade --transition-duration 2
         printf '%s\n' "$img" > "$CACHE"
       '';
     };
@@ -128,19 +160,43 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # wallpaper-menu — rofi chọn ảnh nền trong ~/Pictures/wallpapers.
+        # wallpaper-menu — rofi hiện THUMBNAIL từng ảnh trong ~/Pictures/wallpapers
+        # để nhìn ảnh mà chọn. Ảnh đang đặt được đánh dấu "● " ở đầu dòng.
         set -u
         WALL_DIR="$HOME/Pictures/wallpapers"
+        CACHE="$HOME/.cache/wallpaper-current"
+        AWWW=${pkgs.awww}/bin/awww
 
-        list="$(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -printf '%f\n' | sort)"
-        if [ -z "$list" ]; then
+        cur="$($AWWW query 2>/dev/null | sed -n 's/.*currently displaying: image: //p' | head -1)"
+        [ -z "$cur" ] && cur="$(cat "$CACHE" 2>/dev/null || true)"
+        cur="$(readlink -f -- "''${cur:-}" 2>/dev/null || true)"
+
+        mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
+        if [ "''${#imgs[@]}" -eq 0 ]; then
           notify-send -a wallpaper "wallpaper-menu" "Không có ảnh nào trong $WALL_DIR"
           exit 0
         fi
 
-        choice="$(printf '%s\n' "$list" | rofi -dmenu -i -p '🖼️ Wallpaper' \
-          -mesg 'Enter: đặt ảnh này')"
-        [ -n "$choice" ] && exec "$HOME/.local/bin/wallpaper-set" "$WALL_DIR/$choice"
+        # Mỗi dòng gửi rofi: "<tên ảnh>\0icon\x1f<đường dẫn>" → rofi vẽ thumbnail
+        # (rofi nhận metadata này rồi tự bóc khỏi kết quả trả về). 8em ≈ ảnh đủ
+        # lớn để nhận ra; 5 dòng cho vừa màn 1080p.
+        choice="$(
+          for f in "''${imgs[@]}"; do
+            mark=""
+            if [ -n "$cur" ] && [ "$(readlink -f -- "$f")" = "$cur" ]; then mark="● "; fi
+            printf '%s%s\0icon\037%s\n' "$mark" "$(basename -- "$f")" "$f"
+          done | rofi -dmenu -i -show-icons -l 5 -p '🖼️ Wallpaper' \
+            -mesg 'Enter: đặt nền · ● = đang dùng · Esc: huỷ' \
+            -theme-str 'element-icon { size: 8em; }'
+        )" || exit 0
+
+        choice="''${choice#● }"
+        if [ ! -f "$WALL_DIR/$choice" ]; then exit 0; fi
+        if [ "''${cur:-}" = "$(readlink -f -- "$WALL_DIR/$choice")" ]; then
+          notify-send -a wallpaper "wallpaper-menu" "Ảnh này đang là nền hiện tại"
+          exit 0
+        fi
+        exec "$HOME/.local/bin/wallpaper-set" "$WALL_DIR/$choice"
       '';
     };
 
