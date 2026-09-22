@@ -39,6 +39,44 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 
 > Các phím tắt chi tiết được khai trong `home/sway.nix` — tra cứu tại đó khi cần.
 
+## Ảnh nền (wallpaper)
+
+**Pool theo giờ:** `day-*` dùng 06:00–17:59 · `night-*` dùng 18:00–05:59 · ảnh **không có tiền tố** dùng cho cả hai buổi. `nixos.jpg` là ảnh màn hình khoá nên không vào vòng xoay.
+
+### Thêm ảnh — chỉ cần bỏ file vào repo (khuyên dùng)
+
+1. Copy ảnh vào thư mục `wallpapers/` của repo (đặt tiền tố `day-`/`night-` nếu muốn giới hạn buổi):
+   ```bash
+   cp ~/Downloads/hinh-moi.jpg ~/nix-config/wallpapers/night-hinh-moi.jpg
+   ```
+2. `git add wallpapers/` — **bắt buộc**, vì flake chỉ nhìn thấy file đã được git theo dõi
+3. Rebuild:
+   ```bash
+   sudo nixos-rebuild switch --flake ~/nix-config#laptop
+   ```
+
+Không phải sửa file `.nix` nào — `home/scripts.nix` **tự quét** thư mục `wallpapers/`. Sang máy mới chỉ cần clone repo là có đủ ảnh.
+
+### Thêm nhanh, không cần rebuild
+
+Copy thẳng vào `~/Pictures/wallpapers/` và dùng ngay (nhược điểm: không nằm trong repo nên mất khi cài lại máy):
+
+```bash
+cp ~/Downloads/hinh-moi.jpg ~/Pictures/wallpapers/night-hinh-moi.jpg
+```
+
+### Điều khiển
+
+| Phím / lệnh | Việc |
+|---|---|
+| `Alt+Tab` | Đổi nền random theo giờ — luôn khác ảnh đang dùng |
+| `Alt+Shift+Tab` | Menu rofi có thumbnail, `●` là ảnh đang dùng |
+| `~/.local/bin/wallpaper-set day` \| `night` | Random trong đúng một pool |
+| `~/.local/bin/wallpaper-set <đường-dẫn-ảnh>` | Đặt ảnh chỉ định |
+| `awww query` | Xem ảnh đang hiển thị |
+
+06:00 và 18:00 systemd timer tự đổi nền; nếu máy ngủ qua mốc thì thức dậy sẽ chạy bù (`Persistent=true`).
+
 ## Focus — đồng hồ PHIÊN TẬP TRUNG duy nhất (`$mod+p`)
 
 Chỉ MỘT chế độ, KHÔNG break. Rảnh hoàn toàn → menu khởi động:

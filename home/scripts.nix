@@ -1,7 +1,34 @@
 { pkgs, ... }:
 
+let
+  lib = pkgs.lib;
+
+  # ── Ảnh nền: TỰ QUÉT thư mục repo wallpapers/ ────────────────────────
+  # Chỉ cần BỎ FILE ẢNH vào wallpapers/ rồi rebuild là xong — không phải
+  # sửa file Nix nào. Quy ước tiền tố (xem thêm wallpaper-set):
+  #   day-*    → chỉ dùng ban ngày (06:00–17:59)
+  #   night-*  → chỉ dùng ban đêm (18:00–05:59)
+  #   tên khác → ảnh "trung tính", dùng cho cả hai
+  wallpaperDir = ./../wallpapers;
+  # nixos.jpg là ảnh màn hình khoá (lock-screen) → không đưa vào vòng xoay.
+  lockScreenImage = "nixos.jpg";
+  imageExts = [
+    ".png"
+    ".jpg"
+    ".jpeg"
+  ];
+  isWallpaper =
+    name: name != lockScreenImage && lib.any (ext: lib.hasSuffix ext (lib.toLower name)) imageExts;
+  wallpaperLinks = builtins.listToAttrs (
+    map (name: {
+      name = "Pictures/wallpapers/${name}";
+      value.source = wallpaperDir + "/${name}";
+    }) (builtins.filter isWallpaper (builtins.attrNames (builtins.readDir wallpaperDir)))
+  );
+in
+
 {
-  home.file = {
+  home.file = wallpaperLinks // {
     ".local/bin/lock-screen" = {
       executable = true;
       text = ''
@@ -77,19 +104,33 @@
         # Ảnh đang hiển thị luôn bị loại khỏi danh sách random → bấm liên tục
         # chắc chắn ra ảnh mới. Ảnh ở ~/Pictures/wallpapers; thêm ảnh mới với
         # tiền tố day-/night- là dùng được ngay, không cần rebuild.
+        #   day-*/night-*  → chỉ ban ngày / chỉ ban đêm
+        #   tên khác       → ảnh trung tính, dùng cho cả hai
         set -u
 
         WALL_DIR="$HOME/Pictures/wallpapers"
         CACHE="$HOME/.cache/wallpaper-current"
         AWWW=${pkgs.awww}/bin/awww
 
-        # Ảnh trong $WALL_DIR, lọc theo tiền tố ($1 rỗng = lấy tất cả).
+        # Ảnh cho pool "$1" (day-/night-/rỗng = tất cả ảnh):
+        #   day-*/night-*  → chỉ thuộc đúng pool của tiền tố đó
+        #   tên khác       → ảnh "trung tính", dùng cho cả hai pool
         list_pool() {
-          if [ -n "$1" ]; then
-            find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -name "$1*" | sort
-          else
-            find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort
-          fi
+          local want="$1" f b
+          while IFS= read -r f; do
+            b="$(basename -- "$f")"
+            case "$b" in
+              day-*)
+                if [ -z "$want" ] || [ "$want" = "day-" ]; then printf '%s\n' "$f"; fi
+                ;;
+              night-*)
+                if [ -z "$want" ] || [ "$want" = "night-" ]; then printf '%s\n' "$f"; fi
+                ;;
+              *)
+                printf '%s\n' "$f"
+                ;;
+            esac
+          done < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
         }
 
         # realpath ảnh đang hiển thị: ưu tiên awww (chính xác), dự phòng cache.
@@ -200,18 +241,10 @@
       '';
     };
 
-    # ── Ảnh nền từ repo → ~/Pictures/wallpapers (symlink) ────────────────
-    # day-* ban ngày (06:00–17:59), night-* ban đêm; cp thêm ảnh riêng với
-    # tiền tố day-/night- là dùng ngay, không cần rebuild.
-    "Pictures/wallpapers/day-anime_skyline.png".source = ./../wallpapers/day-anime_skyline.png;
-    "Pictures/wallpapers/day-pastel-city.png".source = ./../wallpapers/day-pastel-city.png;
-    "Pictures/wallpapers/day-japan_anime_city.jpg".source = ./../wallpapers/day-japan_anime_city.jpg;
-    "Pictures/wallpapers/night-anime_cafe_tokyonight.png".source =
-      ./../wallpapers/night-anime_cafe_tokyonight.png;
-    "Pictures/wallpapers/night-wide_tokyonight_skyline.jpg".source =
-      ./../wallpapers/night-wide_tokyonight_skyline.jpg;
-    "Pictures/wallpapers/night-neocity2.jpg".source = ./../wallpapers/night-neocity2.jpg;
-    "Pictures/wallpapers/night-neon-lights.jpg".source = ./../wallpapers/night-neon-lights.jpg;
+    # ── Ảnh nền → ~/Pictures/wallpapers ──────────────────────────────────
+    # Không khai báo từng ảnh ở đây nữa: mọi ảnh trong wallpapers/ được tự
+    # quét và symlink (xem khối `let` đầu file). Muốn thêm ảnh → bỏ file vào
+    # wallpapers/ (đặt tiền tố day-/night-, hoặc để tên tự do) rồi rebuild.
 
     ".local/bin/vm-nixos" = {
       executable = true;
@@ -928,6 +961,9 @@
         "*-*-* 06:00:00"
         "*-*-* 18:00:00"
       ];
+      # Máy ngủ/hibernate đúng mốc (rất hay gặp ở laptop) → thức dậy chạy bù
+      # ngay, không bỏ lỡ mốc đổi nền sáng/tối.
+      Persistent = true;
     };
     Install = {
       WantedBy = [ "timers.target" ];

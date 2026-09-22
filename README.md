@@ -46,7 +46,7 @@ nix-config/
 │   ├── laptop.nix               # Hibernate (resume=UUID=), zram, keyd, battery threshold — swap nằm trong hardware-config
 │   └── system-tweaks.nix        # earlyoom, fstrim, nix-ld
 ├── docs/                        # 📚 Tài liệu tiếng Việt (xem bên dưới)
-└── wallpapers/                  # Ảnh nền sáng/tối + ảnh khóa màn hình
+└── wallpapers/                  # Ảnh nền — bỏ file vào đây là tự dùng (xem docs/02) + ảnh khoá màn hình
 ```
 
 ---
