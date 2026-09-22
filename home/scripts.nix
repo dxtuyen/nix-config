@@ -6,16 +6,15 @@ let
   # ── Ảnh nền: TỰ QUÉT thư mục repo wallpapers/ ────────────────────────
   # Chỉ cần BỎ FILE ẢNH vào wallpapers/ rồi rebuild là xong — không phải sửa
   # file Nix nào. Không có quy ước tên: mọi ảnh đều được random như nhau.
+  # Ảnh màn hình khoá nằm ở lockscreen/ (ngoài wallpapers/) → không bao giờ
+  # lẫn vào vòng xoay, nên không cần bất kỳ ngoại lệ nào trong script.
   wallpaperDir = ./../wallpapers;
-  # nixos.jpg là ảnh màn hình khoá (lock-screen) → không đưa vào vòng xoay.
-  lockScreenImage = "nixos.jpg";
   imageExts = [
     ".png"
     ".jpg"
     ".jpeg"
   ];
-  isWallpaper =
-    name: name != lockScreenImage && lib.any (ext: lib.hasSuffix ext (lib.toLower name)) imageExts;
+  isWallpaper = name: lib.any (ext: lib.hasSuffix ext (lib.toLower name)) imageExts;
   wallpaperLinks = builtins.listToAttrs (
     map (name: {
       name = "Pictures/wallpapers/${name}";
@@ -36,7 +35,7 @@ in
         fi
 
         # -f để swayidle không bị block; -e để Enter trống không tính nhập sai.
-        exec ${pkgs.swaylock}/bin/swaylock -f -e -i ${./../wallpapers/nixos.jpg}
+        exec ${pkgs.swaylock}/bin/swaylock -f -e -i ${./../lockscreen/nixos.jpg}
       '';
     };
 

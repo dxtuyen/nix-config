@@ -41,7 +41,7 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 
 ## Ảnh nền (wallpaper)
 
-**Không có logic theo giờ, không chia pool:** mọi ảnh trong `~/Pictures/wallpapers/` đều random như nhau. `nixos.jpg` là ảnh màn hình khoá nên không vào vòng xoay.
+**Không có logic theo giờ, không chia pool:** mọi ảnh trong `~/Pictures/wallpapers/` đều random như nhau. Ảnh màn hình khoá nằm riêng ở `lockscreen/` của repo — nằm ngoài `wallpapers/` nên không bao giờ lẫn vào vòng xoay.
 
 - **Mỗi lần đăng nhập**: tự chọn 1 ảnh random
 - **Đổi ảnh bất cứ lúc nào**: `Alt+Tab` (random — luôn khác ảnh đang dùng) hoặc `Alt+Shift+Tab` (menu rofi có thumbnail, `●` là ảnh đang dùng)
