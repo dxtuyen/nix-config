@@ -25,8 +25,8 @@ in
       set $term alacritty
       set $menu rofi -show drun
 
-      # Wallpaper khởi động phiên: random theo giờ (daemon awww chạy qua
-      # systemd user service awww-daemon).
+      # Wallpaper: mỗi lần đăng nhập chọn 1 ảnh random. Đổi ảnh bất cứ lúc nào
+      # bằng Alt+Tab (random) hoặc Alt+Shift+Tab (menu có thumbnail).
       exec ~/.local/bin/wallpaper-set
 
       # Applets & daemons
@@ -111,7 +111,7 @@ in
       bindsym $mod+d exec $menu
       bindsym $mod+Tab exec rofi -show window
 
-      # Wallpaper: Alt+Tab random theo giờ, Alt+Shift+Tab menu chọn ảnh.
+      # Wallpaper: Alt+Tab đổi ảnh random, Alt+Shift+Tab menu chọn ảnh.
       # ($mod+w đã dùng cho layout tabbed.)
       bindsym Mod1+Tab exec ~/.local/bin/wallpaper-set
       bindsym Mod1+Shift+Tab exec ~/.local/bin/wallpaper-menu

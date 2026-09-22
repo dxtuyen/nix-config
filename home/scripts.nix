@@ -4,11 +4,8 @@ let
   lib = pkgs.lib;
 
   # ── Ảnh nền: TỰ QUÉT thư mục repo wallpapers/ ────────────────────────
-  # Chỉ cần BỎ FILE ẢNH vào wallpapers/ rồi rebuild là xong — không phải
-  # sửa file Nix nào. Quy ước tiền tố (xem thêm wallpaper-set):
-  #   day-*    → chỉ dùng ban ngày (06:00–17:59)
-  #   night-*  → chỉ dùng ban đêm (18:00–05:59)
-  #   tên khác → ảnh "trung tính", dùng cho cả hai
+  # Chỉ cần BỎ FILE ẢNH vào wallpapers/ rồi rebuild là xong — không phải sửa
+  # file Nix nào. Không có quy ước tên: mọi ảnh đều được random như nhau.
   wallpaperDir = ./../wallpapers;
   # nixos.jpg là ảnh màn hình khoá (lock-screen) → không đưa vào vòng xoay.
   lockScreenImage = "nixos.jpg";
@@ -97,41 +94,18 @@ in
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # wallpaper-set [ảnh|day|night] — đặt ảnh nền qua awww (transition fade 2s).
-        #   wallpaper-set                 random theo giờ (day- 06:00–17:59, night- còn lại)
-        #   wallpaper-set day|night       random trong đúng pool đó
-        #   wallpaper-set <đường dẫn ảnh> đặt ảnh chỉ định
-        # Ảnh đang hiển thị luôn bị loại khỏi danh sách random → bấm liên tục
-        # chắc chắn ra ảnh mới. Ảnh ở ~/Pictures/wallpapers; thêm ảnh mới với
-        # tiền tố day-/night- là dùng được ngay, không cần rebuild.
-        #   day-*/night-*  → chỉ ban ngày / chỉ ban đêm
-        #   tên khác       → ảnh trung tính, dùng cho cả hai
+        # wallpaper-set [đường-dẫn-ảnh] — đặt ảnh nền qua awww (transition fade 2s).
+        #   wallpaper-set                  random 1 ảnh (luôn KHÁC ảnh đang hiển thị)
+        #   wallpaper-set <đường dẫn ảnh>  đặt đúng ảnh chỉ định
+        # KHÔNG có logic theo giờ, không chia pool: mọi ảnh trong
+        # ~/Pictures/wallpapers đều random được. Thêm ảnh mới = bỏ file vào đó
+        # (hoặc bỏ vào wallpapers/ của repo rồi rebuild), không cần sửa gì thêm.
+        # Sway gọi script này 1 lần lúc đăng nhập → mỗi lần bật máy có ảnh random.
         set -u
 
         WALL_DIR="$HOME/Pictures/wallpapers"
         CACHE="$HOME/.cache/wallpaper-current"
         AWWW=${pkgs.awww}/bin/awww
-
-        # Ảnh cho pool "$1" (day-/night-/rỗng = tất cả ảnh):
-        #   day-*/night-*  → chỉ thuộc đúng pool của tiền tố đó
-        #   tên khác       → ảnh "trung tính", dùng cho cả hai pool
-        list_pool() {
-          local want="$1" f b
-          while IFS= read -r f; do
-            b="$(basename -- "$f")"
-            case "$b" in
-              day-*)
-                if [ -z "$want" ] || [ "$want" = "day-" ]; then printf '%s\n' "$f"; fi
-                ;;
-              night-*)
-                if [ -z "$want" ] || [ "$want" = "night-" ]; then printf '%s\n' "$f"; fi
-                ;;
-              *)
-                printf '%s\n' "$f"
-                ;;
-            esac
-          done < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
-        }
 
         # realpath ảnh đang hiển thị: ưu tiên awww (chính xác), dự phòng cache.
         current_resolved() {
@@ -146,18 +120,7 @@ in
         if [ "$#" -ge 1 ] && [ -f "$1" ]; then
           img="$1"
         else
-          hour="$(date +%H)"
-          prefix="night-"
-          if [ "$hour" -ge 6 ] && [ "$hour" -lt 18 ]; then prefix="day-"; fi
-          case "''${1:-}" in
-            day) prefix="day-" ;;
-            night) prefix="night-" ;;
-          esac
-          # Pool theo giờ; pool rỗng thì lấy tất cả ảnh.
-          mapfile -t imgs < <(list_pool "$prefix")
-          if [ "''${#imgs[@]}" -eq 0 ]; then
-            mapfile -t imgs < <(list_pool "")
-          fi
+          mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
           if [ "''${#imgs[@]}" -eq 0 ]; then
             notify-send -a wallpaper "wallpaper-set" "Không có ảnh nào trong $WALL_DIR" 2>/dev/null || true
             exit 1
@@ -931,42 +894,6 @@ in
     };
     Install = {
       WantedBy = [ "sway-session.target" ];
-    };
-  };
-
-  # Chạy wallpaper-set lúc 6:00 (pool day-) và 18:00 (pool night-).
-  systemd.user.services.cycle-wallpaper = {
-    Unit = {
-      Description = "Random wallpaper theo giờ + palette wallust";
-    };
-    Service = {
-      Type = "oneshot";
-      # PATH cho lệnh con của script (find, date, sleep, notify-send...).
-      Environment = [
-        "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
-      ];
-      ExecStart = "%h/.local/bin/wallpaper-set";
-    };
-    Install = {
-      WantedBy = [ "default.target" ];
-    };
-  };
-
-  systemd.user.timers.cycle-wallpaper = {
-    Unit = {
-      Description = "Run wallpaper-set at 6:00 and 18:00";
-    };
-    Timer = {
-      OnCalendar = [
-        "*-*-* 06:00:00"
-        "*-*-* 18:00:00"
-      ];
-      # Máy ngủ/hibernate đúng mốc (rất hay gặp ở laptop) → thức dậy chạy bù
-      # ngay, không bỏ lỡ mốc đổi nền sáng/tối.
-      Persistent = true;
-    };
-    Install = {
-      WantedBy = [ "timers.target" ];
     };
   };
 }

@@ -31,7 +31,7 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key ở `~/.config/quick-lang/api.key` |
 | `dict-toggle` | `mod+g`: bật/tắt GoldenDict float — đóng = ẩn về tray (tiến trình giữ nguyên, mở lại tức thời) |
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
-| `wallpaper-set` | `Alt+Tab`: đổi nền random theo giờ (day- 06:00–17:59 / night- còn lại) qua **awww** (fork của swww, transition fade 2s). **Luôn loại ảnh đang hiển thị** khỏi danh sách → bấm liên tục luôn ra ảnh mới. Ảnh đặt ở `~/Pictures/wallpapers` (tiền tố `day-`/`night-`), thêm ảnh không cần rebuild |
+| `wallpaper-set` | `Alt+Tab`: đổi nền random qua **awww** (fork của swww, transition fade 2s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Mỗi lần đăng nhập cũng tự chọn 1 ảnh random. Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
 | `wallpaper-menu` | `Alt+Shift+Tab`: menu rofi **hiện thumbnail** từng ảnh (ảnh đang dùng đánh dấu `●`) để nhìn mà chọn |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
 | `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → chỉ ⏸/▶ + ↺; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
@@ -41,13 +41,16 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 
 ## Ảnh nền (wallpaper)
 
-**Pool theo giờ:** `day-*` dùng 06:00–17:59 · `night-*` dùng 18:00–05:59 · ảnh **không có tiền tố** dùng cho cả hai buổi. `nixos.jpg` là ảnh màn hình khoá nên không vào vòng xoay.
+**Không có logic theo giờ, không chia pool:** mọi ảnh trong `~/Pictures/wallpapers/` đều random như nhau. `nixos.jpg` là ảnh màn hình khoá nên không vào vòng xoay.
+
+- **Mỗi lần đăng nhập**: tự chọn 1 ảnh random
+- **Đổi ảnh bất cứ lúc nào**: `Alt+Tab` (random — luôn khác ảnh đang dùng) hoặc `Alt+Shift+Tab` (menu rofi có thumbnail, `●` là ảnh đang dùng)
 
 ### Thêm ảnh — chỉ cần bỏ file vào repo (khuyên dùng)
 
-1. Copy ảnh vào thư mục `wallpapers/` của repo (đặt tiền tố `day-`/`night-` nếu muốn giới hạn buổi):
+1. Copy ảnh vào thư mục `wallpapers/` của repo:
    ```bash
-   cp ~/Downloads/hinh-moi.jpg ~/nix-config/wallpapers/night-hinh-moi.jpg
+   cp ~/Downloads/hinh-moi.jpg ~/nix-config/wallpapers/hinh-moi.jpg
    ```
 2. `git add wallpapers/` — **bắt buộc**, vì flake chỉ nhìn thấy file đã được git theo dõi
 3. Rebuild:
@@ -62,20 +65,17 @@ Không phải sửa file `.nix` nào — `home/scripts.nix` **tự quét** thư 
 Copy thẳng vào `~/Pictures/wallpapers/` và dùng ngay (nhược điểm: không nằm trong repo nên mất khi cài lại máy):
 
 ```bash
-cp ~/Downloads/hinh-moi.jpg ~/Pictures/wallpapers/night-hinh-moi.jpg
+cp ~/Downloads/hinh-moi.jpg ~/Pictures/wallpapers/hinh-moi.jpg
 ```
 
-### Điều khiển
+### Lệnh tay
 
-| Phím / lệnh | Việc |
+| Lệnh | Việc |
 |---|---|
-| `Alt+Tab` | Đổi nền random theo giờ — luôn khác ảnh đang dùng |
-| `Alt+Shift+Tab` | Menu rofi có thumbnail, `●` là ảnh đang dùng |
-| `~/.local/bin/wallpaper-set day` \| `night` | Random trong đúng một pool |
-| `~/.local/bin/wallpaper-set <đường-dẫn-ảnh>` | Đặt ảnh chỉ định |
+| `~/.local/bin/wallpaper-set` | Đổi sang ảnh random khác |
+| `~/.local/bin/wallpaper-set <đường-dẫn-ảnh>` | Đặt đúng ảnh chỉ định |
+| `~/.local/bin/wallpaper-menu` | Mở menu chọn ảnh (như `Alt+Shift+Tab`) |
 | `awww query` | Xem ảnh đang hiển thị |
-
-06:00 và 18:00 systemd timer tự đổi nền; nếu máy ngủ qua mốc thì thức dậy sẽ chạy bù (`Persistent=true`).
 
 ## Focus — đồng hồ PHIÊN TẬP TRUNG duy nhất (`$mod+p`)
 
@@ -155,7 +155,7 @@ Cách dùng: chạy `systemctl hibernate` (hoặc dùng menu nguồn `power-menu
 | Sway không khởi động | `journalctl -b -u greetd` |
 | Mất âm thanh | `systemctl status pipewire` → `systemctl --user restart wireplumber` |
 | Bộ gõ kẹt | `fcitx5-diagnose` |
-| Wallpaper không đổi | `systemctl --user status awww-daemon` (daemon) + `cycle-wallpaper.timer` (định giờ 6h/18h); test tay: `~/.local/bin/wallpaper-set night`. `wallpaper-set` tự loại ảnh đang hiển thị, nên bấm Alt+Tab luôn ra ảnh mới; menu Alt+Shift+Tab hiện thumbnail (ảnh đang dùng có dấu `●`) |
+| Wallpaper không đổi | `systemctl --user status awww-daemon` (daemon giữ ảnh nền); test tay: `~/.local/bin/wallpaper-set`. Script tự loại ảnh đang hiển thị nên bấm Alt+Tab luôn ra ảnh mới; menu Alt+Shift+Tab hiện thumbnail (ảnh đang dùng có dấu `●`) |
 | Hibernate không dậy | `cat /proc/cmdline` phải có `resume=UUID=...`; `swapon --show` phải thấy `/dev/nvme0n1p3` |
 
 ## Liên quan
