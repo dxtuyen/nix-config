@@ -40,8 +40,6 @@ window#waybar {
   background: rgba(10, 11, 16, 0.85);
   color: @fg;
   font-weight: 500;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 /* pill container (group module wrapper) — waybar 0.15 group selector */
@@ -54,12 +52,6 @@ window#waybar {
   border-radius: 10px;
   padding: 0 12px;
   margin: 4px 4px 4px 0;
-}
-#group-ws-status .module,
-#group-ws-resources .module,
-#group-ws-left .module,
-#group-ws-center .module {
-  padding: 0 8px;
 }
 
 /* ----- left pill: workspaces + window ----- */
