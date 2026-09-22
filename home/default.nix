@@ -24,7 +24,6 @@
     ./mako.nix
     ./fcitx5.nix
     ./scripts.nix
-    ./wallust.nix
     ./sioyek.nix
     ./pomodoro.nix
     ./remnote.nix

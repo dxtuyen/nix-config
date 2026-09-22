@@ -70,11 +70,10 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # wallpaper-set [ảnh|day|night] — đặt nền bằng awww (transition fade)
-        # + sinh palette màu theo ảnh bằng wallust (alacritty/waybar/rofi/sway).
-        # Không đối số → random ảnh theo giờ (day- 06:00–17:59, night- còn lại),
-        # tránh lặp lại ảnh đang đặt. Ảnh để ở ~/Pictures/wallpapers — thêm ảnh
-        # mới với tiền tố day-/night- là dùng được ngay, không cần rebuild.
+        # wallpaper-set [ảnh|day|night] — random ảnh theo giờ qua awww
+        # (transition fade 2s). day- 06:00–17:59, night- còn lại; tránh lặp
+        # lại ảnh đang đặt. Ảnh để ở ~/Pictures/wallpapers — thêm ảnh mới
+        # với tiền tố day-/night- là dùng được ngay, không cần rebuild.
         set -u
 
         WALL_DIR="$HOME/Pictures/wallpapers"
@@ -122,16 +121,6 @@
         # Đặt nền với transition fade 2s.
         ${pkgs.awww}/bin/awww img "$img" -t fade --transition-duration 2
         printf '%s\n' "$img" > "$CACHE"
-
-        # Palette theo ảnh → templating ra ~/.config/wallust/colors/*, waybar, rofi.
-        # Tạo sẵn thư mục đích (wallust không tự tạo và rofi cần theme tồn tại).
-        mkdir -p "$HOME/.config/wallust/colors" "$HOME/.config/rofi/themes"
-        ${pkgs.wallust}/bin/wallust run "$img" >/dev/null 2>&1
-
-        # Reload app đang sống: waybar (SIGUSR2 = nạp lại CSS), sway (re-read
-        # include màu). Alacritty tự nạp lại nhờ live_config_reload.
-        ${pkgs.procps}/bin/pkill -USR2 -x waybar 2>/dev/null || true
-        ${pkgs.sway}/bin/swaymsg reload >/dev/null 2>&1 || true
       '';
     };
 
@@ -150,10 +139,23 @@
         fi
 
         choice="$(printf '%s\n' "$list" | rofi -dmenu -i -p '🖼️ Wallpaper' \
-          -mesg 'Enter: đặt ảnh này — palette màu toàn hệ thống đổi theo ảnh')"
+          -mesg 'Enter: đặt ảnh này')"
         [ -n "$choice" ] && exec "$HOME/.local/bin/wallpaper-set" "$WALL_DIR/$choice"
       '';
     };
+
+    # ── Ảnh nền từ repo → ~/Pictures/wallpapers (symlink) ────────────────
+    # day-* ban ngày (06:00–17:59), night-* ban đêm; cp thêm ảnh riêng với
+    # tiền tố day-/night- là dùng ngay, không cần rebuild.
+    "Pictures/wallpapers/day-anime_skyline.png".source = ./../wallpapers/day-anime_skyline.png;
+    "Pictures/wallpapers/day-pastel-city.png".source = ./../wallpapers/day-pastel-city.png;
+    "Pictures/wallpapers/day-japan_anime_city.jpg".source = ./../wallpapers/day-japan_anime_city.jpg;
+    "Pictures/wallpapers/night-anime_cafe_tokyonight.png".source =
+      ./../wallpapers/night-anime_cafe_tokyonight.png;
+    "Pictures/wallpapers/night-wide_tokyonight_skyline.jpg".source =
+      ./../wallpapers/night-wide_tokyonight_skyline.jpg;
+    "Pictures/wallpapers/night-neocity2.jpg".source = ./../wallpapers/night-neocity2.jpg;
+    "Pictures/wallpapers/night-neon-lights.jpg".source = ./../wallpapers/night-neon-lights.jpg;
 
     ".local/bin/vm-nixos" = {
       executable = true;
@@ -820,6 +822,26 @@
             ;;
         esac
       '';
+    };
+  };
+
+  # Daemon awww (fork của swww) — PartOf sway-session để dừng theo phiên
+  # (đúng mẫu swayidle). wallpaper-set tự chờ daemon sẵn sàng.
+  systemd.user.services.awww-daemon = {
+    Unit = {
+      Description = "awww wallpaper daemon (fork của swww)";
+      After = [ "sway-session.target" ];
+      PartOf = [ "sway-session.target" ];
+      StartLimitIntervalSec = 60;
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.awww}/bin/awww-daemon";
+      Restart = "on-failure";
+      RestartSec = 3;
+    };
+    Install = {
+      WantedBy = [ "sway-session.target" ];
     };
   };
 

@@ -25,8 +25,8 @@ in
       set $term alacritty
       set $menu rofi -show drun
 
-      # Wallpaper khởi động phiên: random theo giờ + palette wallust
-      # (daemon awww chạy qua systemd user service awww-daemon).
+      # Wallpaper khởi động phiên: random theo giờ (daemon awww chạy qua
+      # systemd user service awww-daemon).
       exec ~/.local/bin/wallpaper-set
 
       # Applets & daemons
@@ -111,7 +111,7 @@ in
       bindsym $mod+d exec $menu
       bindsym $mod+Tab exec rofi -show window
 
-      # Wallpaper: Alt+Tab random (palette màu đổi theo ảnh), Alt+Shift+Tab menu.
+      # Wallpaper: Alt+Tab random theo giờ, Alt+Shift+Tab menu chọn ảnh.
       # ($mod+w đã dùng cho layout tabbed.)
       bindsym Mod1+Tab exec ~/.local/bin/wallpaper-set
       bindsym Mod1+Shift+Tab exec ~/.local/bin/wallpaper-menu
@@ -228,11 +228,6 @@ in
 
       # swayidle chạy qua systemd (khóa 300s → tắt màn 310s → ngủ 900s khi
       # dùng pin). Phiên Focus chạy → study stop service này, xong tự start lại.
-
-      # Palette màu client từ wallust (sinh theo wallpaper) — include CUỐI để
-      # đè các dòng client.* mặc định ở trên. File do wallpaper-set sinh ra;
-      # khi thiếu, sway báo lỗi include nhưng vẫn chạy với màu mặc định.
-      include ~/.config/wallust/colors/sway.conf
     '';
   };
 

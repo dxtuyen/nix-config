@@ -7,13 +7,8 @@
     enable = true;
 
     settings = {
-      # Tự nạp lại khi sửa ~/.config/alacritty/alacritty.toml — nhờ vậy khi
-      # đổi wallpaper, palette import từ wallust (dưới đây) cũng đổi theo.
+      # Tự nạp lại khi sửa ~/.config/alacritty/alacritty.toml
       general.live_config_reload = true;
-
-      # Palette sinh từ wallpaper (wallust). File được tạo khi chạy
-      # wallpaper-set lần đầu; trước đó dùng colors Tokyo Night phía dưới.
-      general.import = [ "~/.config/wallust/colors/alacritty.toml" ];
 
       # dynamic_padding dàn đều khoảng trống khi cửa sổ không chia hết lưới ký tự.
       window = {
