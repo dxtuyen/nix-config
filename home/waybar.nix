@@ -1,4 +1,4 @@
-{ config, ... }:
+{ ... }:
 
 let
   # Danh sách tên workspace dùng chung ở home/workspaces.nix
@@ -9,31 +9,81 @@ in
   programs.waybar = {
     enable = true;
     systemd.enable = true;
+    # CSS riêng: style nhận path → dùng file mới.
+    style = ./waybar-style.css;
     settings.mainBar = {
       position = "top";
       height = 30;
-      spacing = 4;
+      spacing = 2;
+      # ── Left pill ──────────────────────────
       "modules-left" = [
-        "sway/workspaces"
-        "sway/window"
-        "sway/mode"
-        "sway/scratchpad"
+        "group/ws-left"
       ];
+      # ── Center pill ───────────────────────
       "modules-center" = [
-        "custom/study"
-        "clock"
+        "group/ws-center"
       ];
+      # ── Right pills ────────────────────────
       "modules-right" = [
-        "custom/inhibit"
-        "power-profiles-daemon"
-        "pulseaudio"
-        "backlight"
-        "temperature"
-        "battery"
-        "cpu"
-        "memory"
+        "group/ws-status"
+        "group/ws-resources"
         "tray"
       ];
+
+      # ═══════════════════════════════════════════
+      #  LEFT pill: workspaces + window + mode + scratchpad
+      # ═══════════════════════════════════════════
+      "group/ws-left" = {
+        orientation = "horizontal";
+        "show-constant" = true;
+        "modules" = [
+          "sway/workspaces"
+          "sway/window"
+          "sway/mode"
+          "sway/scratchpad"
+        ];
+      };
+
+      # ═══════════════════════════════════════════
+      #  CENTER pill: pomodoro + clock
+      # ═══════════════════════════════════════════
+      "group/ws-center" = {
+        orientation = "horizontal";
+        "show-constant" = true;
+        "modules" = [
+          "custom/study"
+          "clock"
+        ];
+      };
+
+      # ═══════════════════════════════════════════
+      #  RIGHT pill 1: status icons (icon-only)
+      # ═══════════════════════════════════════════
+      "group/ws-status" = {
+        orientation = "horizontal";
+        "show-constant" = true;
+        "modules" = [
+          "custom/inhibit"
+          "power-profiles-daemon"
+          "network"
+          "wireplumber"
+          "backlight"
+        ];
+      };
+
+      # ═══════════════════════════════════════════
+      #  RIGHT pill 2: resources (icon + %)
+      # ═══════════════════════════════════════════
+      "group/ws-resources" = {
+        orientation = "horizontal";
+        "show-constant" = true;
+        "modules" = [
+          "cpu"
+          "memory"
+          "temperature"
+          "battery"
+        ];
+      };
       "sway/workspaces" = {
         "disable-scroll" = true;
         "warp-on-scroll" = false;
@@ -62,15 +112,29 @@ in
         tooltip = true;
         "tooltip-format" = "{app}: {title}";
       };
-      pulseaudio = {
-        format = "{volume}% {icon}";
-        "format-muted" = "muted";
-        "format-icons".default = [
+      wireplumber = {
+        format = "{icon} {volume}%";
+        "format-muted" = "󰝟 muted";
+        "format-icons" = [
           ""
           ""
           ""
         ];
         "on-click" = "pavucontrol";
+        "on-click-right" = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
+        "scroll-step" = 2;
+        tooltip = true;
+      };
+      network = {
+        "format-wifi" = "";
+        "format-ethernet" = "󰈀";
+        "format-disconnected" = "󰖪";
+        "format-disabled" = "󰖪 off";
+        "tooltip-format-wifi" = "{essid} · {signalStrength}% · {ipaddr}";
+        "tooltip-format-ethernet" = "{ifname} · {ipaddr}";
+        "tooltip-format-disconnected" = "Mất kết nối";
+        "on-click" = "nm-connection-editor";
+        "interval" = 15;
       };
       "power-profiles-daemon" = {
         format = "{icon} {profile}";
@@ -95,8 +159,11 @@ in
         };
       };
       temperature = {
+        # Chỉ đọc CPU Package (coretemp) thay vì sensor mặc định dễ sai trên laptop.
+        "hwmon-path-abs" = "/sys/devices/platform/coretemp.0/hwmon";
+        "input-filename" = "temp1_input";
         "warning-threshold" = 65;
-        "critical-threshold" = 80;
+        "critical-threshold" = 85;
         format = " {temperatureC}°C";
       };
       backlight = {
@@ -115,6 +182,7 @@ in
         format = "{icon} {capacity}%";
         "format-charging" = " {capacity}%";
         "format-plugged" = " {capacity}%";
+        "tooltip-format" = "{capacity}% · {timeTo}";
         "format-icons" = [
           ""
           ""
@@ -138,7 +206,7 @@ in
         "on-click" = "~/.local/bin/study inhibit-toggle";
       };
       clock = {
-        format = "{:%a %d %b | %I:%M %p}";
+        format = "{:%a %d %b · %H:%M}";
         "format-alt" = "{:%A %d %B %Y}";
         tooltip-format = "<tt><small>{calendar}</small></tt>";
         locale = "en_US.UTF-8";
@@ -148,36 +216,5 @@ in
         "icon-size" = 16;
       };
     };
-    style = ''
-      * { font-family: "JetBrains Mono", "Font Awesome 6 Free", monospace; font-size: 13px; border: none; border-radius: 0; }
-      @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
-      window#waybar { background: rgba(0, 0, 0, 0); color: #c0caf5; }
-      #workspaces { background: #24283b; border: 1px solid #414868; border-radius: 10px; margin: 4px 0 4px 4px; padding: 0 10px; }
-      #workspaces button { padding: 0 7px; color: #a9b1d6; font-size: 15px; border-bottom: 2px solid transparent;
-        background-color: rgba(0, 0, 0, 0); }
-      #workspaces button:hover, #workspaces button:active {
-        background-color: rgba(0, 0, 0, 0); box-shadow: none; }
-      #workspaces button.focused, #workspaces button.active { color: #7aa2f7; border-bottom: 2px solid #7aa2f7; }
-      #workspaces button.urgent { color: #f7768e; border-bottom-color: #f7768e; }
-      #workspaces button.persistent.empty { color: #737aa2; }  /* TN dark5 — sát tone #a9b1d6 để bug nháy #3865 gần như vô hình */
-      #window { background: #364a82; border: 1px solid #7aa2f7; border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: #c0caf5; font-weight: bold; }
-      #custom-inhibit, #pulseaudio, #backlight, #temperature, #battery, #power-profiles-daemon, #cpu, #memory, #tray, #mode, #scratchpad { background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 0; }
-      #mode { color: #7aa2f7; background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; }
-      #scratchpad { color: #a9b1d6; margin: 4px 5px; }
-      #clock { color: #7aa2f7; font-weight: bold; background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 10px 4px 5px; }
-      #custom-study { background: #24283b; border: 1px solid #414868; border-radius: 10px; padding: 0 10px; margin: 4px 5px; font-weight: bold; }
-      #custom-study.running { color: #7aa2f7; }
-      #custom-study.paused { color: #e0af68; }
-      #custom-study.idle { color: #565f89; }
-      #custom-inhibit.running { color: #7aa2f7; }
-      #custom-inhibit.manual { color: #e0af68; }
-      #custom-inhibit.idle { color: #565f89; }
-      #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: #e0af68; }
-      #battery.critical { color: #f7768e; }
-      #temperature.critical, #cpu.critical, #memory.critical { color: #f7768e; animation: blink 1s linear infinite; }
-      #battery.charging { color: #9ece6a; font-weight: bold; }
-      #battery.plugged { color: #9ece6a; }
-      #pulseaudio.muted { color: #565f89; }
-    '';
   };
 }
