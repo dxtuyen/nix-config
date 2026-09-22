@@ -31,7 +31,7 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key ở `~/.config/quick-lang/api.key` |
 | `dict-toggle` | `mod+g`: bật/tắt GoldenDict float — đóng = ẩn về tray (tiến trình giữ nguyên, mở lại tức thời) |
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
-| `wallpaper-set` | `Alt+Tab`: đổi nền random qua **awww** (fork của swww, transition fade 2s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Mỗi lần đăng nhập cũng tự chọn 1 ảnh random. Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
+| `wallpaper-set` | `Alt+Tab`: đổi nền random qua **awww** (fork của swww, transition fade 2s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Lúc đăng nhập: **giữ nguyên ảnh phiên trước** (chưa có ảnh → random 1 ảnh). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
 | `wallpaper-menu` | `Alt+Shift+Tab`: menu rofi **hiện thumbnail** từng ảnh (ảnh đang dùng đánh dấu `●`) để nhìn mà chọn |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
 | `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → chỉ ⏸/▶ + ↺; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
@@ -43,7 +43,7 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 
 **Không có logic theo giờ, không chia pool:** mọi ảnh trong `~/Pictures/wallpapers/` đều random như nhau. Ảnh màn hình khoá nằm riêng ở `lockscreen/` của repo — nằm ngoài `wallpapers/` nên không bao giờ lẫn vào vòng xoay.
 
-- **Mỗi lần đăng nhập**: tự chọn 1 ảnh random
+- **Mỗi lần đăng nhập**: giữ nguyên ảnh của phiên trước (daemon awww tự khôi phục từ cache `~/.cache/awww`) — nếu chưa có ảnh (máy mới / cache trống) mới tự random 1 ảnh
 - **Đổi ảnh bất cứ lúc nào**: `Alt+Tab` (random — luôn khác ảnh đang dùng) hoặc `Alt+Shift+Tab` (menu rofi có thumbnail, `●` là ảnh đang dùng)
 
 ### Thêm ảnh — chỉ cần bỏ file vào repo (khuyên dùng)

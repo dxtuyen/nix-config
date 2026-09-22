@@ -93,13 +93,15 @@ in
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # wallpaper-set [đường-dẫn-ảnh] — đặt ảnh nền qua awww (transition fade 2s).
+        # wallpaper-set [đường-dẫn-ảnh|--if-empty] — đặt ảnh nền qua awww (fade 2s).
         #   wallpaper-set                  random 1 ảnh (luôn KHÁC ảnh đang hiển thị)
         #   wallpaper-set <đường dẫn ảnh>  đặt đúng ảnh chỉ định
+        #   wallpaper-set --if-empty       GIỮ ảnh phiên trước nếu daemon đã khôi phục;
+        #                                  chưa có ảnh mới random (dùng lúc đăng nhập)
         # KHÔNG có logic theo giờ, không chia pool: mọi ảnh trong
         # ~/Pictures/wallpapers đều random được. Thêm ảnh mới = bỏ file vào đó
         # (hoặc bỏ vào wallpapers/ của repo rồi rebuild), không cần sửa gì thêm.
-        # Sway gọi script này 1 lần lúc đăng nhập → mỗi lần bật máy có ảnh random.
+        # Sway gọi lúc đăng nhập với --if-empty → bật máy ra đúng ảnh đang dùng.
         set -u
 
         WALL_DIR="$HOME/Pictures/wallpapers"
@@ -114,6 +116,35 @@ in
           [ -n "$cur" ] && readlink -f -- "$cur" 2>/dev/null
           return 0
         }
+
+        # Bảo đảm daemon sống + sẵn sàng TRƯỚC (phải query được thì kiểm tra
+        # ảnh hiện tại và --if-empty mới chính xác).
+        systemctl --user start awww-daemon.service 2>/dev/null || true
+        i=0
+        while ! $AWWW query >/dev/null 2>&1; do
+          i=$((i + 1))
+          if [ "$i" -ge 40 ]; then
+            notify-send -a wallpaper "wallpaper-set" "awww-daemon không phản hồi" 2>/dev/null || true
+            exit 1
+          fi
+          sleep 0.25
+        done
+
+        # --if-empty (lúc đăng nhập): daemon thường đã tự khôi phục ảnh phiên
+        # trước từ cache (~/.cache/awww) → GIỮ nguyên, thoát luôn. Chờ tối đa ~1s
+        # cho ảnh kịp hiện (socket mở trước khi cache được áp — tránh quyết định
+        # quá sớm). Hết chờ vẫn trống (máy mới / cache trống / upgrade awww)
+        # → rơi xuống random bên dưới: B suy biến thành A, không bao giờ hỏng.
+        if [ "''${1:-}" = "--if-empty" ]; then
+          i=0
+          while [ "$i" -lt 10 ]; do
+            if $AWWW query 2>/dev/null | grep -q "currently displaying: image:"; then
+              exit 0
+            fi
+            i=$((i + 1))
+            sleep 0.1
+          done
+        fi
 
         img=""
         if [ "$#" -ge 1 ] && [ -f "$1" ]; then
@@ -140,18 +171,6 @@ in
           fi
           img="''${cands[$((RANDOM % ''${#cands[@]}))]}"
         fi
-
-        # Bảo đảm daemon sống (thường đã chạy theo sway-session.target).
-        systemctl --user start awww-daemon.service 2>/dev/null || true
-        i=0
-        while ! $AWWW query >/dev/null 2>&1; do
-          i=$((i + 1))
-          if [ "$i" -ge 40 ]; then
-            notify-send -a wallpaper "wallpaper-set" "awww-daemon không phản hồi" 2>/dev/null || true
-            exit 1
-          fi
-          sleep 0.25
-        done
 
         # Đặt nền với transition fade 2s + ghi nhớ ảnh hiện tại.
         $AWWW img "$img" -t fade --transition-duration 2

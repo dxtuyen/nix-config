@@ -25,9 +25,10 @@ in
       set $term alacritty
       set $menu rofi -show drun
 
-      # Wallpaper: mỗi lần đăng nhập chọn 1 ảnh random. Đổi ảnh bất cứ lúc nào
-      # bằng Alt+Tab (random) hoặc Alt+Shift+Tab (menu có thumbnail).
-      exec ~/.local/bin/wallpaper-set
+      # Wallpaper: lúc đăng nhập GIỮ nguyên ảnh phiên trước (--if-empty); nếu chưa
+      # có ảnh (máy mới / cache trống) mới random. Đổi ảnh bất cứ lúc nào bằng
+      # Alt+Tab (random) hoặc Alt+Shift+Tab (menu có thumbnail).
+      exec ~/.local/bin/wallpaper-set --if-empty
 
       # Applets & daemons
       exec nm-applet --indicator
