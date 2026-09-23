@@ -15,11 +15,22 @@ let
     ".jpeg"
   ];
   isWallpaper = name: lib.any (ext: lib.hasSuffix ext (lib.toLower name)) imageExts;
+  wallpaperEntries = builtins.readDir wallpaperDir;
+  # readDir trả về "regular"/"directory"/"symlink"/... — chỉ nhận file thật
+  # và symlink; loại "directory" (và file đặc biệt) để một thư mục tình cờ
+  # tên "xxx.png" không bị copy nhầm nguyên cây vào store.
+  isWallpaperFile =
+    name:
+    builtins.elem wallpaperEntries.${name} [
+      "regular"
+      "symlink"
+    ]
+    && isWallpaper name;
   wallpaperLinks = builtins.listToAttrs (
     map (name: {
       name = "Pictures/wallpapers/${name}";
       value.source = wallpaperDir + "/${name}";
-    }) (builtins.filter isWallpaper (builtins.attrNames (builtins.readDir wallpaperDir)))
+    }) (builtins.filter isWallpaperFile (builtins.attrNames wallpaperEntries))
   );
 in
 

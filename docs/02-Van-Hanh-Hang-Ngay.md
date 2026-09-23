@@ -46,6 +46,16 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 - **Mỗi lần đăng nhập**: giữ nguyên ảnh của phiên trước (daemon awww tự khôi phục từ cache `~/.cache/awww`) — nếu chưa có ảnh (máy mới / cache trống) mới tự random 1 ảnh
 - **Đổi ảnh bất cứ lúc nào**: `Alt+Tab` (random — luôn khác ảnh đang dùng) hoặc `Alt+Shift+Tab` (menu rofi có thumbnail, `●` là ảnh đang dùng)
 
+**Thao tác nhanh — chọn nhanh đường đi:**
+
+| Muốn | Cách làm | Rebuild? |
+|---|---|---|
+| Thêm ảnh bền vững | `cp` vào `~/nix-config/wallpapers/` + `git add` | ✅ Có |
+| Thêm ảnh dùng tạm | `cp` vào `~/Pictures/wallpapers/` | ❌ Không |
+| Xóa ảnh | xóa đúng nơi nó nằm (repo → `git rm`; copy tay → `rm`) | Chỉ ảnh repo |
+| Thay ảnh cùng tên | ghi đè file trong **repo** (repo là file thật, ghi được) | ✅ Có |
+| Đổi tên ảnh | `git mv` trong repo | ✅ Có |
+
 ### Thêm ảnh — chỉ cần bỏ file vào repo (khuyên dùng)
 
 1. Copy ảnh vào thư mục `wallpapers/` của repo:
@@ -60,6 +70,8 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 
 Không phải sửa file `.nix` nào — `home/scripts.nix` **tự quét** thư mục `wallpapers/`. Sang máy mới chỉ cần clone repo là có đủ ảnh.
 
+> ⚠️ **Trùng tên**: các ảnh trong repo được symlink vào `/nix/store` (chỉ đọc). Nếu copy file vào `~/Pictures/wallpapers/` mà **trùng tên** với ảnh đã có từ repo, `cp` sẽ ghi vào symlink và báo `Permission denied`. Lúc đó hãy thêm ảnh qua repo (bước ở trên) rồi rebuild — không copy đè trực tiếp. (Trùng tên với ảnh copy tay bình thường thì ghi đè được.)
+
 ### Thêm nhanh, không cần rebuild
 
 Copy thẳng vào `~/Pictures/wallpapers/` và dùng ngay (nhược điểm: không nằm trong repo nên mất khi cài lại máy):
@@ -67,6 +79,46 @@ Copy thẳng vào `~/Pictures/wallpapers/` và dùng ngay (nhược điểm: kh�
 ```bash
 cp ~/Downloads/hinh-moi.jpg ~/Pictures/wallpapers/hinh-moi.jpg
 ```
+
+### Xóa ảnh
+
+**Ảnh copy tay** (file thường trong `~/Pictures/wallpapers/`) — xóa là xong, không rebuild:
+
+```bash
+rm ~/Pictures/wallpapers/ten-anh.jpg
+```
+
+**Ảnh nằm trong repo** — `git rm` rồi rebuild, home-manager tự gỡ symlink tương ứng khỏi `~/Pictures/wallpapers/`:
+
+```bash
+cd ~/nix-config
+git rm wallpapers/ten-anh.jpg
+sudo nixos-rebuild switch --flake ~/nix-config#laptop
+```
+
+💡 Nếu xóa đúng ảnh **đang hiển thị**: bấm `Alt+Tab` đổi sang ảnh khác *trước*. (Hệ thống vẫn tự phục hồi — daemon giữ ảnh trong bộ nhớ, lần đăng nhập sau cache trỏ file mất thì `wallpaper-set --if-empty` tự rơi về random — nhưng đổi trước vẫn gọn hơn.)
+
+### Thay thế / đổi tên ảnh
+
+**Thay bản đẹp hơn, giữ nguyên tên** — ghi đè trong thư mục **repo** (file ở đó là file thật, ghi được; symlink read-only chỉ có ở `~/Pictures/wallpapers/`):
+
+```bash
+cp -f ~/Downloads/anh-dep-hon.jpg ~/nix-config/wallpapers/ten-cu.jpg
+cd ~/nix-config && git add wallpapers/
+sudo nixos-rebuild switch --flake ~/nix-config#laptop
+```
+
+**Đổi tên** (script không theo quy ước tên nào — tự do đặt lại, ảnh vẫn random như thường):
+
+```bash
+cd ~/nix-config
+git mv wallpapers/cu.jpg wallpapers/moi.jpg
+sudo nixos-rebuild switch --flake ~/nix-config#laptop
+```
+
+**Ảnh màn hình khoá**: thay đúng file `lockscreen/nixos.jpg` (tên cố định, được chèn thẳng vào script `lock-screen`) rồi rebuild.
+
+> ⚠️ Git giữ mọi phiên bản cũ của file binary → thay cùng tên nhiều lần làm lịch sử repo phình dần (hiện mới ~13MB nên không sao). Giữ ranh giới: **bộ ảnh ít đổi → commit vào repo; bộ hay thay → thả thẳng `~/Pictures/wallpapers/` không commit.**
 
 ### Lệnh tay
 
@@ -76,6 +128,8 @@ cp ~/Downloads/hinh-moi.jpg ~/Pictures/wallpapers/hinh-moi.jpg
 | `~/.local/bin/wallpaper-set <đường-dẫn-ảnh>` | Đặt đúng ảnh chỉ định |
 | `~/.local/bin/wallpaper-menu` | Mở menu chọn ảnh (như `Alt+Shift+Tab`) |
 | `awww query` | Xem ảnh đang hiển thị |
+| `ls ~/Pictures/wallpapers/` | Danh sách ảnh thực tế (kiểm tra sau thêm/xóa) |
+| `git -C ~/nix-config status` | Đã stage đủ ảnh trước khi rebuild |
 
 ## Focus — đồng hồ PHIÊN TẬP TRUNG duy nhất (`$mod+p`)
 
