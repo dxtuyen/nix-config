@@ -37,6 +37,7 @@
     gnumake
     cmake
     gdb
+    jdk
     distrobox
     # Máy ảo — luyện cài máy mới (docs/06).
     qemu_kvm
