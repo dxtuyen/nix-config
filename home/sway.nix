@@ -114,8 +114,8 @@ in
 
       # Wallpaper: Alt+Tab đổi ảnh random, Alt+Shift+Tab menu chọn ảnh.
       # ($mod+w đã dùng cho layout tabbed.)
-      bindsym Mod1+Tab exec ~/.local/bin/wallpaper-set
-      bindsym Mod1+Shift+Tab exec ~/.local/bin/wallpaper-menu
+      bindsym Mod1+w exec ~/.local/bin/wallpaper-set
+      bindsym Mod1+Shift+w exec ~/.local/bin/wallpaper-menu
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       bindsym $mod+Shift+n exec ~/.local/bin/toggle-wlsunset

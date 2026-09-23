@@ -104,7 +104,7 @@ in
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # wallpaper-set [đường-dẫn-ảnh|--if-empty] — đặt ảnh nền qua awww (fade 2s).
+        # wallpaper-set [đường-dẫn-ảnh|--if-empty] — đặt ảnh nền qua awww (fade 1.5s).
         #   wallpaper-set                  random 1 ảnh (luôn KHÁC ảnh đang hiển thị)
         #   wallpaper-set <đường dẫn ảnh>  đặt đúng ảnh chỉ định
         #   wallpaper-set --if-empty       GIỮ ảnh phiên trước nếu daemon đã khôi phục;
@@ -183,8 +183,8 @@ in
           img="''${cands[$((RANDOM % ''${#cands[@]}))]}"
         fi
 
-        # Đặt nền với transition fade 2s + ghi nhớ ảnh hiện tại.
-        $AWWW img "$img" -t fade --transition-duration 2
+        # Đặt nền với transition fade 1.5s + ghi nhớ ảnh hiện tại.
+        $AWWW img "$img" -t fade --transition-duration 1.5
         printf '%s\n' "$img" > "$CACHE"
       '';
     };
