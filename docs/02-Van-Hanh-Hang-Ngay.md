@@ -32,7 +32,7 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | `dict-toggle` | `mod+g`: bật/tắt GoldenDict float — đóng = ẩn về tray (tiến trình giữ nguyên, mở lại tức thời) |
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
 | `wallpaper-set` | `Alt+Tab`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Lúc đăng nhập: **giữ nguyên ảnh phiên trước** (chưa có ảnh → random 1 ảnh). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
-| `wallpaper-menu` | `Alt+Shift+Tab`: menu rofi **hiện thumbnail** từng ảnh (ảnh đang dùng đánh dấu `●`) để nhìn mà chọn |
+| `wallpaper-menu` | `Alt+Shift+Tab`: menu rofi **hiện thumbnail** dạng lưới 3 cột × 3 hàng — ảnh trên, tên file dưới (dài quá tự cắt `…`), ảnh đang dùng đánh dấu `●`; xếp lấp từ trái sang phải (đủ 3 mới xuống hàng), quá 9 ảnh giữ 3 hàng và cuộn (thanh bên phải) |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
 | `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → chỉ ⏸/▶ + ↺; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
@@ -44,7 +44,7 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 **Không có logic theo giờ, không chia pool:** mọi ảnh trong `~/Pictures/wallpapers/` đều random như nhau. Ảnh màn hình khoá nằm riêng ở `lockscreen/` của repo — nằm ngoài `wallpapers/` nên không bao giờ lẫn vào vòng xoay.
 
 - **Mỗi lần đăng nhập**: giữ nguyên ảnh của phiên trước (daemon awww tự khôi phục từ cache `~/.cache/awww`) — nếu chưa có ảnh (máy mới / cache trống) mới tự random 1 ảnh
-- **Đổi ảnh bất cứ lúc nào**: `Alt+Tab` (random — luôn khác ảnh đang dùng) hoặc `Alt+Shift+Tab` (menu rofi có thumbnail, `●` là ảnh đang dùng)
+- **Đổi ảnh bất cứ lúc nào**: `Alt+Tab` (random — luôn khác ảnh đang dùng) hoặc `Alt+Shift+Tab` (menu rofi lưới thumbnail 3×3, tên dưới ảnh, xếp lấp trái→phải, `●` là ảnh đang dùng; >9 ảnh tự cuộn)
 
 **Thao tác nhanh — chọn nhanh đường đi:**
 
@@ -126,7 +126,7 @@ sudo nixos-rebuild switch --flake ~/nix-config#laptop
 |---|---|
 | `~/.local/bin/wallpaper-set` | Đổi sang ảnh random khác |
 | `~/.local/bin/wallpaper-set <đường-dẫn-ảnh>` | Đặt đúng ảnh chỉ định |
-| `~/.local/bin/wallpaper-menu` | Mở menu chọn ảnh (như `Alt+Shift+Tab`) |
+| `~/.local/bin/wallpaper-menu` | Mở menu chọn ảnh lưới 3×3 (như `Alt+Shift+Tab`) |
 | `awww query` | Xem ảnh đang hiển thị |
 | `ls ~/Pictures/wallpapers/` | Danh sách ảnh thực tế (kiểm tra sau thêm/xóa) |
 | `git -C ~/nix-config status` | Đã stage đủ ảnh trước khi rebuild |
@@ -209,7 +209,7 @@ Cách dùng: chạy `systemctl hibernate` (hoặc dùng menu nguồn `power-menu
 | Sway không khởi động | `journalctl -b -u greetd` |
 | Mất âm thanh | `systemctl status pipewire` → `systemctl --user restart wireplumber` |
 | Bộ gõ kẹt | `fcitx5-diagnose` |
-| Wallpaper không đổi | `systemctl --user status awww-daemon` (daemon giữ ảnh nền); test tay: `~/.local/bin/wallpaper-set`. Script tự loại ảnh đang hiển thị nên bấm Alt+Tab luôn ra ảnh mới; menu Alt+Shift+Tab hiện thumbnail (ảnh đang dùng có dấu `●`) |
+| Wallpaper không đổi | `systemctl --user status awww-daemon` (daemon giữ ảnh nền); test tay: `~/.local/bin/wallpaper-set`. Script tự loại ảnh đang hiển thị nên bấm Alt+Tab luôn ra ảnh mới; menu Alt+Shift+Tab hiện lưới thumbnail 3×3, tên dưới ảnh (ảnh đang dùng có dấu `●`) |
 | Hibernate không dậy | `cat /proc/cmdline` phải có `resume=UUID=...`; `swapon --show` phải thấy `/dev/nvme0n1p3` |
 
 ## Liên quan

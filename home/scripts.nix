@@ -194,7 +194,9 @@ in
       text = ''
         #! /usr/bin/env bash
         # wallpaper-menu — rofi hiện THUMBNAIL từng ảnh trong ~/Pictures/wallpapers
-        # để nhìn ảnh mà chọn. Ảnh đang đặt được đánh dấu "● " ở đầu dòng.
+        # để nhìn ảnh mà chọn. Lưới 3 cột × 3 hàng (≈690px, vừa màn 1080p): ảnh 8em
+        # bo góc TRÊN, tên file DƯỚI ảnh (dài quá tự hiện "…"). Quá 9 ảnh → tự cuộn.
+        # Ảnh đang đặt được đánh dấu "● " ở đầu tên.
         set -u
         WALL_DIR="$HOME/Pictures/wallpapers"
         CACHE="$HOME/.cache/wallpaper-current"
@@ -210,26 +212,47 @@ in
           exit 0
         fi
 
-        # Mỗi dòng gửi rofi: "<tên ảnh>\0icon\x1f<đường dẫn>" → rofi vẽ thumbnail
-        # (rofi nhận metadata này rồi tự bóc khỏi kết quả trả về). 8em ≈ ảnh đủ
-        # lớn để nhận ra; 5 dòng cho vừa màn 1080p.
-        choice="$(
+        # Con trỏ sẵn trên ảnh đang dùng: rofi trả về INDEX 0-based của dòng được
+        # chọn ("-format i" + "-no-custom" chặn nhập tay) → bền với mọi tên file
+        # lạ, không còn cắt chuỗi "● " như cách cũ.
+        sel=0
+        idx=0
+        for f in "''${imgs[@]}"; do
+          if [ -n "$cur" ] && [ "$(readlink -f -- "$f")" = "$cur" ]; then sel=$idx; break; fi
+          idx=$((idx + 1))
+        done
+
+        # Mỗi mục gửi rofi: "<tên ảnh>\0icon\x1f<đường dẫn>" → rofi tự bóc metadata
+        # khỏi kết quả và dùng icon làm thumbnail. Theme -theme-str chỉ áp cho lần
+        # chạy này (không đụng ~/.config/rofi):
+        #   listview columns:3 + -l 3           → lưới 3 cột × 3 hàng (đúng 9 ô),
+        #     flow:horizontal                   → xếp lấp THEO HÀNG NGANG
+        #                                          (trái→phải, đủ 3 mới xuống hàng);
+        #     >9 ảnh                            → giữ 3 hàng, cuộn thanh ở CÁNH PHẢI;
+        #   element orientation + children order → ảnh TRÊN, tên DƯỚI;
+        #   element-text horizontal-align:center → căn giữa tên dưới ảnh;
+        #   textbox cắt 1 dòng theo ngang         → tên dài tự hiện "…".
+        choice_idx="$(
           for f in "''${imgs[@]}"; do
             mark=""
             if [ -n "$cur" ] && [ "$(readlink -f -- "$f")" = "$cur" ]; then mark="● "; fi
             printf '%s%s\0icon\037%s\n' "$mark" "$(basename -- "$f")" "$f"
-          done | rofi -dmenu -i -show-icons -l 5 -p '🖼️ Wallpaper' \
+          done | rofi -dmenu -i -show-icons -l 3 -p '🖼️ Wallpaper' \
             -mesg 'Enter: đặt nền · ● = đang dùng · Esc: huỷ' \
-            -theme-str 'element-icon { size: 8em; }'
+            -no-custom -format i -selected-row "$sel" \
+            -theme-str 'listview { columns: 3; spacing: 10px; flow: horizontal; }' \
+            -theme-str 'element { orientation: vertical; children: [element-icon, element-text]; padding: 6px; spacing: 6px; }' \
+            -theme-str 'element-icon { size: 8em; border-radius: 10px; }' \
+            -theme-str 'element-text { horizontal-align: center; }'
         )" || exit 0
 
-        choice="''${choice#● }"
-        if [ ! -f "$WALL_DIR/$choice" ]; then exit 0; fi
-        if [ "''${cur:-}" = "$(readlink -f -- "$WALL_DIR/$choice")" ]; then
+        if ! [[ "$choice_idx" =~ ^[0-9]+$ ]] || [ "$choice_idx" -ge "''${#imgs[@]}" ]; then exit 0; fi
+        choice="''${imgs[$choice_idx]}"
+        if [ "''${cur:-}" = "$(readlink -f -- "$choice")" ]; then
           notify-send -a wallpaper "wallpaper-menu" "Ảnh này đang là nền hiện tại"
           exit 0
         fi
-        exec "$HOME/.local/bin/wallpaper-set" "$WALL_DIR/$choice"
+        exec "$HOME/.local/bin/wallpaper-set" "$choice"
       '';
     };
 
