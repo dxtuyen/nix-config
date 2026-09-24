@@ -194,7 +194,7 @@ in
       text = ''
         #! /usr/bin/env bash
         # wallpaper-menu — rofi hiện THUMBNAIL từng ảnh trong ~/Pictures/wallpapers
-        # để nhìn ảnh mà chọn. Lưới 3 cột × 3 hàng (≈690px, vừa màn 1080p): ảnh 8em
+        # để nhìn ảnh mà chọn. Lưới 3 cột × 3 hàng (≈780px, vừa màn 1080p): ảnh 10em
         # bo góc TRÊN, tên file DƯỚI ảnh (dài quá tự hiện "…"). Quá 9 ảnh → tự cuộn.
         # Ảnh đang đặt được đánh dấu "● " ở đầu tên.
         set -u
@@ -242,7 +242,7 @@ in
             -no-custom -format i -selected-row "$sel" \
             -theme-str 'listview { columns: 3; spacing: 10px; flow: horizontal; }' \
             -theme-str 'element { orientation: vertical; children: [element-icon, element-text]; padding: 6px; spacing: 6px; }' \
-            -theme-str 'element-icon { size: 8em; border-radius: 10px; }' \
+            -theme-str 'element-icon { size: 10em; border-radius: 10px; }' \
             -theme-str 'element-text { horizontal-align: center; }'
         )" || exit 0
 
