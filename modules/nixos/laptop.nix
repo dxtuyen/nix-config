@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 let
   batteryThreshold = pkgs.writeShellApplication {
@@ -44,6 +44,8 @@ in
   ];
 
   services.fwupd.enable = true;
+  # Giữ cập nhật firmware nhưng không để daemon chặn greetd lúc đăng nhập.
+  systemd.services.fwupd.before = lib.mkForce [ "shutdown.target" ];
 
   # Đóng nắp → suspend; gắn dock → giữ nguyên. Màn hình luôn khóa khi dậy
   # nhờ before-sleep của swayidle.

@@ -1,4 +1,5 @@
 {
+  lib,
   pkgs,
   userName,
   ...
@@ -36,6 +37,9 @@
     firewall.enable = true;
   };
   services.resolved.enable = true;
+  # Laptop một người dùng: nscd không cần thiết và có thể gây cache NSS cũ.
+  services.nscd.enable = false;
+  system.nssModules = lib.mkForce [ ];
   programs.nh = {
     enable = true;
     # `nh os switch` tự biết flake mặc định.

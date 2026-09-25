@@ -38,6 +38,9 @@
     initExtra = ''
       export PATH="$HOME/.local/bin:$PATH"
 
+      # direnv: tu kich hoat moi truong nix-shell khi cd vao folder co .envrc
+      eval "$(direnv hook bash)"
+
       # Starship không set title nên tự phát OSC 2 mỗi prompt.
       __set_window_title() {
         # Tách 2 bước để né tilde expansion làm title hiện full path.

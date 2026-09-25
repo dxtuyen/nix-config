@@ -17,7 +17,6 @@
     brightnessctl
     translate-shell
     goldendict-ng
-    thunar
     networkmanagerapplet
     blueman
     google-chrome
@@ -28,11 +27,11 @@
     jq
     fastfetch
     libreoffice
-    unrar
     # Dev: thư viện để per-project (venv / `nix develop`), không cài global.
     vscode
     python3
     python3Packages.virtualenv
+    direnv # tu kich hoat moi truong nix-shell khi cd vao folder co .envrc
     gcc
     gnumake
     cmake

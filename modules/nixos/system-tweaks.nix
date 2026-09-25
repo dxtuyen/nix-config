@@ -7,6 +7,8 @@
     freeMemThreshold = 5;
     enableNotifications = true;
   };
+  # Dùng earlyoom làm cơ chế OOM chính để tránh chạy đồng thời hai daemon.
+  systemd.oomd.enable = false;
 
   # TRIM hàng tuần cho SSD/NVMe.
   services.fstrim = {

@@ -16,8 +16,26 @@ in
   programs.sway.enable = true;
   programs.dconf.enable = true;
 
-  # GVFS cung cấp "Move to Trash" cho Thunar (thiếu thì Thunar xóa thẳng).
+  # GVFS hỗ trợ tài nguyên từ xa và filesystem ảo cho GIO/Thunar.
   services.gvfs.enable = true;
+
+  # Thunar chính thức + plugin giải nén/nén tích hợp vào context menu.
+  # Không khai báo `thunar` trong home.packages để tránh bản user-level
+  # thiếu plugin đè lên package có plugin do NixOS module tạo ra.
+  programs.thunar = {
+    enable = true;
+    plugins = with pkgs; [
+      thunar-archive-plugin
+    ];
+  };
+
+  # File Roller là frontend archive cho plugin Thunar; các backend được đặt
+  # trong PATH của hệ thống để hỗ trợ RAR/7z/ZIP và tạo archive mới.
+  environment.systemPackages = with pkgs; [
+    file-roller
+    p7zip
+    unrar
+  ];
 
   hardware.graphics.enable = true;
 
@@ -45,22 +63,11 @@ in
   services.power-profiles-daemon.enable = true;
   hardware.bluetooth.enable = true;
 
-  # XDG portal cho Sway / wlroots.
+  # Module Sway đã cung cấp portal GTK/WLR và cấu hình mặc định cho Sway.
+  # Giữ enable tường minh để module này không phụ thuộc vào đường dẫn import.
   xdg.portal = {
     enable = true;
     wlr.enable = true;
-    extraPortals = with pkgs; [
-      xdg-desktop-portal-gtk
-    ];
-    config = {
-      common.default = [ "gtk" ];
-      sway = {
-        default = lib.mkForce [
-          "wlr"
-          "gtk"
-        ];
-      };
-    };
   };
 
   # Cấu hình bộ gõ Fcitx5
@@ -107,7 +114,7 @@ in
         "FCITX_ADDON_DIRS=${fcitxAddonDirs}:${fcitxPackage}/lib/fcitx5"
         "FCITX_DATA_DIRS=${fcitxDataDirs}:${fcitxPackage}/share/fcitx5"
       ];
-      Restart = "always";
+      Restart = "on-failure";
       RestartSec = "2";
     };
   };

@@ -8,3 +8,7 @@ result-*
 
 # Temp
 *.tmp
+
+# Python venv (phòng khi vô tình tạo lại trong repo)
+.venv/
+venv/
