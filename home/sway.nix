@@ -77,9 +77,23 @@ in
       for_window [class="(?i)^sioyek$"] move container to workspace current
       for_window [app_id="(?i)^sioyek$"] move container to workspace current
 
+      # Foliate: app_id đúng theo .desktop là `com.github.johnfactotum.Foliate`
+      # (đã kiểm tra trong share/applications của gói). Wayland app GTK4 nên
+      # app_id khớp luôn; `class` vẫn khai để phòng XWayland.
+      for_window [class="(?i)^foliate$"] move container to workspace current
+      for_window [app_id="(?i)^com\.github\.johnfactotum\.foliate$"] move container to workspace current
+
       # Thunar float kiểu popup (mod+Shift+space để tiled lại).
       for_window [class="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
       for_window [app_id="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
+
+      # Yazi popup ($mod+y): mở foot với `--title=yazi-popup` (xem `yazi-open`
+      # ở home/scripts.nix).
+      # Yazi KHÔNG phải app riêng — nó chạy trong foot, nên app_id vẫn là
+      # "foot"; phải match theo TITLE mà script đặt ra.
+      # ⚠️ Chỉ cửa sổ có title này mới float — terminal thường (`$mod+Return`)
+      # không bị ảnh hưởng.
+      for_window [title="(?i)^yazi-popup"] floating enable, resize set 1000 px 700 px
 
       # Dialog/popup rules
       for_window [window_role="pop-up"] floating enable
@@ -115,11 +129,13 @@ in
       # ($mod+w đã dùng cho layout tabbed.)
       bindsym Mod1+w exec ~/.local/bin/wallpaper-set
       bindsym Mod1+Shift+w exec ~/.local/bin/wallpaper-menu
-      # $mod+y: yazi (file manager terminal) ở thư mục hiện tại — dùng chung.
-      # $mod+Shift+y: mở THẲNG thư mục ảnh nền để thêm/xoá ảnh cho nhanh
-      # (thư mục ngoài repo, do home.activation tạo sẵn nên không lỗi).
-      bindsym $mod+y exec $term -e yazi
-      bindsym $mod+Shift+y exec $term -e yazi $HOME/Pictures/wallpapers
+      # $mod+y: yazi dạng POPUP (cửa sổ nhỏ, floating) — script `yazi-open`
+      # (home/scripts.nix). CHỈ phím này là popup; gõ `yazi` trong terminal
+      # thì ra cửa sổ thường, không popup (xem trước ảnh/PDF đẹp hơn).
+      #
+      # $mod+Shift+y (mở thẳng thư mục ảnh nền) đã BỎ — vào thẳng bằng
+      #   `cd ~/Pictures/wallpapers` rồi $mod+y, hoặc dùng `wallpaper-menu`.
+      bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       bindsym $mod+Shift+n exec ~/.local/bin/toggle-wlsunset

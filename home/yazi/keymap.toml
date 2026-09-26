@@ -1,0 +1,33 @@
+# Keymap Yazi — CỐ Ý CHỈ KHAI PHẦN CẦN THIẾT.
+#
+# ⚠️ Yazi tự merge file này với preset mặc định. `prepend_keymap` được chèn
+# TRƯỚC preset nên phím khai ở đây thắng phím mặc định cùng tên; nếu dùng
+# khoá `keymap` (không prepend/append) thì sẽ XOÁ SẠCH toàn bộ phím tắt
+# mặc định — tránh.
+#
+# Đã đối chiếu preset `keymap-default.toml` + `yazi-default.toml` của yazi
+# 26.5.6. Mọi mục dưới đây đều đã test thật bằng PTY.
+
+[[mgr.prepend_keymap]]
+# ⭐ SỬA LỖI: bấm <Enter> lên THƯ MỤC thì mở nvim, không vào thư mục.
+#
+# Nguyên nhân (2 mảnh ghép, đều là mặc định của yazi + config cũ của ta):
+#   1. preset `[open] rules` dòng 72 khai thư mục là
+#        { mime = "folder/*", use = [ "edit", "open", "reveal" ] }
+#      → "edit" ĐỨNG ĐẦU, nên <Enter> (run = "open") sẽ mở thư mục bằng edit.
+#   2. `yazi.toml` ghi đè `[opener] edit` thành `foot … nvim %s`.
+# Ghép lại → Enter vào folder = mở nvim. Rất khó chịu khi chủ yếu DỆT file.
+#
+# Cách sửa: <Enter> dùng smart-enter, nó tự rẽ nhánh theo loại mục —
+#   thư mục → `enter` (đi vào, KHÔNG đụng bảng `use`)
+#   file     → `open`  (mở app theo mime, giữ nguyên hành vi cũ)
+# nên giữ nguyên thói quen bấm <Enter> để mở file.
+on   = "<Enter>"
+run  = "plugin smart-enter"
+desc = "Enter the child directory, or open the file"
+
+# ⚠️ CỐ Ý KHÔNG gắn smart-enter vào phím `l`.
+# `l` mặc định của yazi = `enter` (preset dòng 39) → chỉ đi vào thư mục con,
+# đúng như trước. Gắn plugin vào `l` sẽ làm `l` MỞ FILE, không mong muốn.
+# Còn `<Right>` (preset dòng 42) cũng là `enter` — dùng khi cần.
+

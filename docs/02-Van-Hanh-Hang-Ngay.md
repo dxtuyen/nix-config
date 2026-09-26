@@ -35,7 +35,7 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | `wallpaper-set` | `Alt+Tab`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Lúc đăng nhập: **giữ nguyên ảnh phiên trước** (chưa có ảnh → random 1 ảnh). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
 | `wallpaper-menu` | `Alt+Shift+Tab`: menu rofi **hiện thumbnail** dạng lưới 3 cột × 3 hàng — ảnh trên, tên file dưới (dài quá tự cắt `…`), ảnh đang dùng đánh dấu `●`; xếp lấp từ trái sang phải (đủ 3 mới xuống hàng), quá 9 ảnh giữ 3 hàng và cuộn (thanh bên phải) |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
-| `yazi` | `$mod+y`: file manager trong terminal, mở ở thư mục hiện tại · `$mod+Shift+y`: mở thẳng `~/Pictures/wallpapers` để thêm/xoá ảnh nền. Thunar vẫn dùng được cho việc khác |
+| `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` mở thùng rác. Thunar vẫn dùng được cho việc khác |
 | `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → chỉ ⏸/▶ + ↺; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
 
@@ -51,7 +51,7 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 
 - **Mỗi lần đăng nhập**: giữ nguyên ảnh của phiên trước (daemon awww tự khôi phục từ cache `~/.cache/awww`) — nếu chưa có ảnh (máy mới / cache trống) mới tự random 1 ảnh
 - **Đổi ảnh bất cứ lúc nào**: `Alt+Tab` (random — luôn khác ảnh đang dùng) hoặc `Alt+Shift+Tab` (menu rofi lưới thumbnail 3×3, tên dưới ảnh, xếp lấp trái→phải, `●` là ảnh đang dùng; >9 ảnh tự cuộn)
-- **Thêm/xoá ảnh**: `$mod+Shift+y` mở **yazi** thẳng thư mục ảnh nền (xem [Thêm ảnh bằng yazi](#thêm-ảnh-bằng-yazi)). `$mod+y` mở yazi ở thư mục hiện tại (dùng chung)
+- **Thêm/xoá ảnh**: `$mod+y` mở **yazi** popup ở thư mục hiện tại (xem [Thêm ảnh bằng yazi](#thêm-ảnh-bằng-yazi-mody))
 
 ### ⭐ Chưa có ảnh nào? Tự động dùng màu nền
 
@@ -72,7 +72,7 @@ awww query               # → currently displaying: image: 0x1a1b26ff
 
 | Muốn | Cách làm | Rebuild? |
 |---|---|---|
-| Thêm ảnh | `$mod+Shift+y` (yazi) hoặc `cp` vào `~/Pictures/wallpapers/` | ❌ Không |
+| Thêm ảnh | `$mod+y` (yazi popup) rồi `cd ~/Pictures/wallpapers`, hoặc `cp` vào thẳng `~/Pictures/wallpapers/` | ❌ Không |
 | Xóa ảnh | `rm` trong `~/Pictures/wallpapers/` (yazi hỏi xác nhận) | ❌ Không |
 | Thay ảnh cùng tên | `cp -f` đè file cũ | ❌ Không |
 | Đổi tên ảnh | `mv` — không theo quy ước tên nào | ❌ Không |
@@ -82,18 +82,51 @@ awww query               # → currently displaying: image: 0x1a1b26ff
 >
 > `.gitignore` của repo đã có dòng `wallpapers/` để chặn lỡ tay copy ảnh vào `~/nix-config/wallpapers/` rồi `git add`.
 
-### Thêm ảnh bằng yazi (`$mod+Shift+y`)
+### Thêm ảnh bằng yazi (`$mod+y`)
 
-Cách nhanh nhất, không cần nhớ lệnh:
+Cách nhanh nhất, không cần nhớ lệnh. `$mod+y` mở yazi dạng **popup** ở thư mục hiện tại:
 
-1. Bấm **`$mod+Shift+y`** → yazi mở thẳng `~/Pictures/wallpapers/`
-2. Tới nơi ảnh nằm (ví dụ `~/Downloads`) bằng `h` (đi lên) hoặc `~` (về home)
-3. Bấm `y` để **copy** → quay lại thư mục ảnh → `p` để **paste**
+1. Bấm **`$mod+y`** → popup yazi mở ở thư mục terminal đang ở
+2. Đi tới `~/Pictures/wallpapers`: bấm `~` (về home) → `Pictures` → `wallpapers`
+3. Tới nơi ảnh nằm (ví dụ `~/Downloads`), bấm `y` để **copy** → quay lại thư mục ảnh → `p` để **paste**
 4. `Alt+Tab` → ảnh mới hiện ngay
 
-Xoá ảnh: bấm `d` trong yazi (hỏi xác nhận) — **không qua thùng rác**, xoá là mất hẳn.
+Xoá ảnh: bấm `d` trong yazi (hỏi xác nhận) — vào **thùng rác**, nên vẫn khôi phục được bằng `g` `t` nếu lỡ. Muốn xoá hẳn luôn thì bấm `D`. Tự dọn rác cũ lúc 03:00, xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300).
 
-Config yazi: `home/yazi/yazi.toml` — cố ý **tối giảu**, Yazi tự merge với mặc định nên không mất phím tắt nào. Đã đối chiếu từng khoá với `yazi-default.toml` bản 26.5.6 (khoá không có trong đó thì yazi **lặng lẽ bỏ qua**).
+Config yazi gồm 3 file cùng thư mục `home/yazi/`, Yazi tự merge với mặc định nên không mất phím tắt nào. Đã đối chiếu từng khoá với `yazi-default.toml` + `keymap-default.toml` bản 26.5.6 (khoá không có trong đó thì yazi **lặng lẽ bỏ qua**).
+
+**Cách mở — 2 kiểu khác nhau:**
+
+| Cách | Kiểu cửa sổ | Dùng khi |
+|---|---|---|
+| `$mod+y` | **Popup** nhỏ (1000×700, floating) | Chọn nhanh: xem 1 file, thêm/xoá ảnh |
+| Gõ `yazi` trong terminal | Cửa sổ thường, **không** popup | Duyệt file kỹ — preview ảnh/PDF bằng sixel đẹp hơn nhiều |
+
+Popup chỉ là `foot --title=yazi-popup` + rule floating theo title đó trong `home/sway.nix` (yazi chạy **bên trong** foot nên phải match theo title chứ không phải app_id). Không có phím tắt riêng cho file picker — upload dùng hộp thoại native của trình duyệt.
+
+| File | Chứa gì |
+|---|---|
+| `yazi.toml` | Hành vi: opener (mở `.txt` bằng foot+nvim), luật mở app theo phần mở rộng, tỉ lệ cột |
+| `keymap.toml` | Phím tắt ghi đè: `<Enter>` → smart-enter (sửa lỗi Enter vào folder ra nvim) |
+| `theme.toml` | Màu Tokyonight |
+
+#### Plugin `smart-enter` (`<Enter>`)
+
+`<Enter>` tự rẽ nhánh theo loại mục: **thư mục** thì đi vào, **file** thì mở app theo mime (`.txt` → foot+nvim, `.pdf` → sioyek, ảnh → imv, `.epub` → foliate…).
+
+**Vì sao cần plugin này** (lỗi thật, đã test lỗi trước và sau khi sửa): preset yazi khai `{ mime = "folder/*", use = ["edit", "open", "reveal"] }` — `edit` đứng **đầu**; mà ta ghi đè opener `edit` thành nvim. Hai thứ ghép lại khiến **Enter vào thư mục lại ra nvim**. `smart-enter` bỏ qua bảng `use` với thư mục nên sửa đúng gốc, vẫn giữ nguyên thói quen bấm `<Enter>` để mở file.
+
+- Cài gói `yaziPlugins.smart-enter`, link thành `~/.config/yazi/plugins/smart-enter.yazi` — khai trong `home/yazi.nix`.
+- Không cần `init.lua`: mặc định plugin truyền `--hovered` nên chỉ mở **đúng 1 file đang trỏ**, không mở cả nhóm đang chọn (khớp hành vi `enter`, tránh mở nhầm). Muốn mở cả nhóm thì tạo `init.lua` với `require("smart-enter"):setup { open_multi = true }`.
+
+#### Phím tắt sau khi cấu hình
+
+| Phím | Thư mục | File |
+|---|---|---|
+| `<Enter>` | ✅ vào thư mục | ✅ mở app theo mime |
+| `l` / `<Right>` | ✅ vào thư mục | ⬜ không làm gì (giữ nguyên preset — chỉ để đi vào folder) |
+| `h` | ✅ ra thư mục cha | — |
+| `o` / `<S-Enter>` / `O` | ✅ mở | ✅ mở (chọn nhiều / chọn app) |
 
 > ⭐ **Xem trước ảnh trong yazi hoạt động nhờ terminal là `foot`**: foot xuất `TERM=foot` và hỗ trợ **sixel**, yazi nhận ra ngay và vẽ ảnh thật trong khung preview — không cần cài thêm gói nào. (Alacritty không có kitty-graphics lẫn sixel, nên yazi phải gọi `ueberzugpp`, vốn vẽ ảnh ở layer-surface phía **sau** terminal → terminal phải trong suốt mới thấy.)
 
@@ -223,7 +256,7 @@ Hai việc khác nhau, dùng cơ chế khác nhau — đừng lẫn:
 
 | Việc | Làm gì | Cần gì | Cấu hình ở đâu |
 |---|---|---|---|
-| **Mở** file | Mở app thật, cửa sổ riêng | App theo mime: imv / mpv / sioyek / calibre / Chrome / nvim | `home/mimeapps.nix` |
+| **Mở** file | Mở app thật, cửa sổ riêng | App theo mime: imv / mpv / sioyek / foliate / Chrome / nvim | `home/mimeapps.nix` |
 | **Xem trước** | Vẽ ảnh nhỏ **tại chỗ** (khung phải trong yazi, ảnh thu nhỏ trong Thunar) | Ảnh: terminal hỗ trợ **sixel** (foot ✅) · Thunar: `tumbler` | `home/foot.nix`, `modules/nixos/desktop.nix` |
 
 **Trong yazi preview được ẢNH, PDF, video và SVG.** Không cần cài gì thêm: gói `yazi` của nixpkgs đã đóng gói sẵn `poppler-utils`, `ffmpeg`, `resvg`, `imagemagick`, `chafa`… và wrapper tự thêm chúng vào PATH mỗi khi chạy yazi. (Vì vậy `command -v pdftoppm` ở terminal báo *không có* — nhưng bên trong yazi thì có.) Ảnh hiển thị đẹp nhờ foot hỗ trợ **sixel**.
@@ -244,19 +277,45 @@ Dùng khi cần chuột + kéo thả giữa các nơi (yazi vẫn là chính cho
 | Nén / giải nén | Dùng lệnh `7z` (`p7zip`) — **không** có plugin giải nén trong menu |
 | Cắm USB / thẻ nhớ | Thunar **không** tự mount — mount tay theo [04 — Sao lưu](04-Sao-Luu-Phuc-Hoi.md) |
 
-## Thùng rác (không cần cấu hình gì)
+## Thùng rác (tự động dọn lúc 03:00)
 
-Thùng rác GIO **luôn hoạt động** vì `services.gvfs.enable` (khai ở `modules/nixos/desktop.nix`) — không có option nào phải bật thêm. Dùng bằng lệnh:
+Thùng rác GIO **luôn hoạt động** vì `services.gvfs.enable` (khai ở `modules/nixos/desktop.nix`) — không có option nào phải bật thêm. Nằm ở `~/.local/share/Trash` (`files/` = file thật, `info/` = `.trashinfo` ghi đường dẫn gốc + ngày xoá).
+
+| Phím trong yazi | Việc |
+|---|---|
+| `d` | Xoá → **vào thùng rác** (xoá mềm) |
+| `D` | Xoá **vĩnh viễn** — không khôi phục được, dùng khi dọn file rác chắc chắn |
+| `g` `t` | Mở thư mục thùng rác (`trash://`) để xem/khôi phục |
+| `O` (trong thùng rác) | Khôi phục file đã chọn về đúng chỗ cũ |
+
+Dùng bằng lệnh:
 
 ```bash
 gio trash --list                      # xem trong thùng rác có gì (kèm đường dẫn gốc)
 gio trash --restore 'trash:///...%20'  # khôi phục 1 file về chỗ cũ
 gio trash --empty                     # XOÁ HẾT, không hồi phục được
+trash-clean                           # tự dọn mục > 30 ngày (timer gọi lúc 3h)
+trash-clean 7                         # thử với 7 ngày, xem sẽ xoá bao nhiêu
 ```
 
-- **yazi** xoá vĩnh viễn (bấm `d` → xoá thật, không qua thùng rác) — chủ ý, xem `home/yazi.nix`.
-- **Thunar** dùng "Move to Trash" → vào đúng thư mục trên.
-- Thùng rác nằm ở `~/.local/share/Trash` (~680 MB). Xem `docs/04` về việc backup dữ liệu.
+**Tự động dọn:** systemd **user** timer `trash-clean.timer`, chạy **03:00 hằng ngày**, xoá mục **cũ hơn 30 ngày** (`trash-clean 30`).
+
+| Ý nghĩa | Chi tiết |
+|---|---|
+| Vì sao **30 ngày** | Thùng rác là vùng an toàn khôi phục file lỡ xoá. 30 ngày = cửa sổ đủ rộng mà rác không phình vô hạn. Đổi số trong `ExecStart` ở `modules/nixos/desktop.nix` |
+| Vì sao **không** dùng `gio trash --empty` | Lệnh đó xoá **sạch** — file bạn lỡ xoá tối qua sẽ mất vĩnh viễn lúc 3h sáng, không kịp `g t` khôi phục. Script chỉ xoá mục cũ |
+| `Persistent=true` | Bắt buộc — máy tắt/hibernate lúc 3h thì timer đó bị bỏ qua; `Persistent` cho chạy **bù** khi bật máy |
+| User timer, **không** system timer | `gio trash` cần `XDG_RUNTIME_DIR` + dbus. System timer thiếu → hỏng mà không báo lỗi rõ |
+
+Kiểm tra timer:
+
+```bash
+systemctl --user list-timers trash-clean.timer   # lần chạy kế tiếp
+systemctl --user status trash-clean.service      # kết quả lần gần nhất
+journalctl --user -u trash-clean.service -n 20   # log
+```
+
+> Thùng rác nằm trong `~/` → **không** đồng bộ sang máy khác. Xem `docs/04` về backup.
 
 ## Xem ảnh • video • sách điện tử
 
@@ -267,18 +326,38 @@ Mỗi loại file có **app riêng**, khai ở `home/mimeapps.nix` (`xdg.mimeApp
 | Ảnh (jpg, png, webp…) | **imv** | `←/→` ảnh trước/sau · `+`/`-` zoom · `f` vừa màn hình · `Ctrl+C` copy ảnh |
 | Video / audio | **mpv** | `←/→` tua 5s · `↑/↓` tua 60s · `f` toàn màn · `m` tiếng · `,`/`.` lùi/nhanh |
 | PDF | **sioyek** | Đọc tài liệu khoá học/kỹ thuật (đã khai sẵn) |
-| EPUB / MOBI / LRF | **calibre** | `calibre-ebook-viewer` cho epub/mobi, `calibre-lrfviewer` cho lrf. Không cài Foliate — đọc sách điện tử qua calibre là đủ |
+| EPUB / MOBI / AZW3 / FB2 / CBZ | **foliate** | Trình đọc chuyên dụng, dùng WebKitGTK nên typography đẹp hơn hẳn `calibre-ebook-viewer`. Xem [Sách điện tử](#sách-điện-tử-foliate) |
 | File text / code | **nvim** | Mở thẳng trong cửa sổ foot mới |
-| Web / link | **google-chrome** | Mọi `http(s)://` và file `.html` |
+| Web / link / HTML | **google-chrome** | Mọi `http(s)://`, file `.html`/`.xhtml` |
 
-Kiểm tra app mặc định của 1 loại file:
+### Sách điện tử: foliate
+
+**calibre đã được gỡ.** Thư viện chuyển sang thư mục phẳng, không cần app quản lý:
+
+| Thư mục | Chứa gì | Mở bằng |
+|---|---|---|
+| `~/Books/Textbooks` | Sách kỹ thuật (PDF) | sioyek |
+| `~/Books/Reading` | Sách tự do (epub, azw3) | foliate |
+
+Thư mục nằm **ngoài repo** — thêm/xoá sách thoải mái, không rebuild, không commit. Xem `docs/04` về backup.
+
+Vì sao bỏ calibre: nó thêm ~2.9 GB closure chỉ để quản lý 27 file, và `calibre-ebook-viewer` render bằng Qt nên typography kém hơn hẳn foliate (WebKitGTK). Đổi lại mất `ebook-convert` (chuyển đổi định dạng) — không sao, tải sách nên chọn thẳng epub/pdf. Cũng mất đọc LRF (Sony), nhưng thư viện không có file .lrf nào.
 
 ```bash
+# Mở app mặc định của 1 loại file
 xdg-mime query default image/jpeg     # → imv.desktop
 xdg-mime query default video/mp4      # → mpv.desktop
-xdg-mime query default application/epub+zip   # → calibre-ebook-viewer.desktop
+xdg-mime query default application/epub+zip   # → com.github.johnfactotum.Foliate.desktop
 xdg-mime query default application/pdf        # → sioyek.desktop
+
+# Mở sách
+yazi ~/Books/Reading     # duyệt cả thư viện
+xdg-open ~/Books/Reading/*.epub   # mở thẳng 1 cuốn
 ```
+
+**Lưu ý về hyphenation:** foliate bật `justify` + `hyphenate` để chữ không bị dãi lỗ hổng. WebKitGTK (engine render) hardcode tìm từ điển ở `/usr/share/hyphen` — thư mục này không tồn tại mặc định trên NixOS, nên `modules/nixos/desktop.nix` khai `systemd.tmpfiles` tạo symlink tới `hyphenDicts.en_US`. **Nếu tự ý xoá khối `systemd.tmpfiles` đó, foliate vẫn chạy nhưng sẽ im lặng mất ngắt từ.**
+
+**Lưu ý về mime mobi:** mime đúng là `application/x-mobipocket-ebook` và `application/vnd.amazon.mobi8-ebook`. Nếu thấy `application/x-mobi8-ebook` ở đâu đó → đó là mime bịa, dòng mapping đó không bao giờ được dùng (đã sửa trong `home/mimeapps.nix`).
 
 > ⚠️ File `~/.config/mimeapps.list` giờ do **Home-Manager quản lý** (symlink tới `/nix/store`) — muốn đổi app mặc định thì sửa `home/mimeapps.nix` rồi rebuild, **đừng sửa tay file trong `~`** (sẽ bị ghi đè). File cũ sửa tay được giữ lại thành `mimeapps.list.backup`.
 >

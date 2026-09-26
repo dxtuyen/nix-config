@@ -15,10 +15,25 @@
     defaultApplications = {
       # Tài liệu
       "application/pdf" = "sioyek.desktop";
-      # Sách điện tử: calibre-ebook-viewer (trình đọc nhẹ, không mở cả thư viện)
-      "application/epub+zip" = "calibre-ebook-viewer.desktop";
-      "application/x-mobi8-ebook" = "calibre-ebook-viewer.desktop";
-      "application/x-sony-bbeb" = "calibre-lrfviewer.desktop";
+
+      # Sách điện tử → foliate (dùng WebKitGTK, typography tốt nhất).
+      # Thư viện: ~/Books/Textbooks (PDF) + ~/Books/Reading (epub/azw3).
+      "application/epub+zip" = "com.github.johnfactotum.Foliate.desktop";
+      # ⚠️ `application/x-mobi8-ebook` (dòng cũ) KHÔNG phải mime thật → dòng
+      # mapping mobi đó gần như chết. Hai mime đúng của foliate:
+      "application/x-mobipocket-ebook" = "com.github.johnfactotum.Foliate.desktop";
+      "application/vnd.amazon.mobi8-ebook" = "com.github.johnfactotum.Foliate.desktop";
+      # FB2 (FictionBook) — foliate đọc trực tiếp
+      "application/x-fictionbook+xml" = "com.github.johnfactotum.Foliate.desktop";
+      "application/x-zip-compressed-fb2" = "com.github.johnfactotum.Foliate.desktop";
+      # Comic/manga
+      "application/vnd.comicbook+zip" = "com.github.johnfactotum.Foliate.desktop";
+      # Đọc sách trực tiếp từ feed OPDS
+      "x-scheme-handler/opds" = "com.github.johnfactotum.Foliate.desktop";
+      # ⚠️ LRF (Sony Reader): foliate KHÔNG hỗ trợ, calibre đã gỡ → KHÔNG còn app
+      # nào mở được. Cố ý KHÔNG khai mapping (khai trỏ tới app không tồn tại thì
+      # double-click sẽ báo lỗi khó hiểu hơn là không có ứng dụng).
+      # Thư viện hiện tại không có file .lrf nào — xem ~/Books.
 
       # Văn phòng
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = "writer.desktop";

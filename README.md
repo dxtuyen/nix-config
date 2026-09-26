@@ -7,7 +7,7 @@ Cấu hình **NixOS + Home-Manager** cho laptop cá nhân, chạy **Sway** (Wayl
 | 🌐 Hệ thống | NixOS 26.05 (x86_64-linux) |
 | 🪟 Desktop | Sway + Waybar + Mako (thông báo) |
 | 🎨 Terminal | Foot + Starship |
-| 🖼️ Xem ảnh / video | imv (ảnh) • mpv (video) • calibre (sách điện tử) |
+| 🖼️ Xem ảnh / video | imv (ảnh) • mpv (video) • foliate (sách điện tử) • sioyek (PDF) |
 | ⌨️ Bộ gõ | Fcitx5 + Bamboo |
 | 💾 Hibernate | Swap 10G — lưu trạng thái khi tắt máy |
 

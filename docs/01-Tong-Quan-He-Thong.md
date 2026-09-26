@@ -20,7 +20,7 @@
 | Module | Trách nhiệm |
 |---|---|
 | `core.nix` | Nền tảng: Nix/flake, systemd-boot, NetworkManager, user `doxuantuyen`, gói hệ thống tối thiểu, ssh-agent (giữ passphrase SSH key) |
-| `desktop.nix` | Sway + greetd (tuigreet), PipeWire, XDG portal, Fcitx5 + Bamboo, fonts, power-profiles-daemon, bluetooth, Thunar + `tumbler` (thumbnail) |
+| `desktop.nix` | Sway + greetd, PipeWire, XDG portal, Fcitx5 + Bamboo, fonts, power-profiles-daemon, bluetooth, Thunar + `tumbler` (thumbnail), **timer dọn thùng rác 03:00 (giữ 30 ngày)**, symlink `/usr/share/hyphen` cho WebKit |
 | `development.nix` | VS Code, Python, GCC, CMake, gdb, podman, distrobox, nix-ld |
 | `laptop.nix` | **Hibernate** (`resume=UUID=`), zram 50% RAM, keyd, battery threshold 85–90%, fwupd, logind (đóng nắp → suspend) — **swap khai trong `hosts/laptop/hardware-configuration.nix`** (tự sinh) |
 | `system-tweaks.nix` | earlyoom (chống treo RAM), fstrim hàng tuần |
@@ -31,16 +31,17 @@
 |---|---|
 | `default.nix` | Entry point: import tất cả, bật `xdg`, PATH `~/.local/bin` |
 | `git.nix` | Git identity toàn cục (tất cả repo): user `dxtuyen` + email, `defaultBranch=main`, `pull.rebase`, `pager=cat` |
-| `packages.nix` | Gói user: rofi, grim, slurp, swaylock, swayidle, google-chrome, obsidian, anki, calibre, imv (xem ảnh), mpv (xem video), sioyek, ripgrep, fd… |
+| `packages.nix` | Gói user: rofi, grim, slurp, swaylock, swayidle, google-chrome, obsidian, anki, **foliate** (đọc sách), imv (xem ảnh), mpv (xem video), sioyek, ripgrep, fd… |
 | `sway.nix` | Cửa sổ, layout, idle/lock/sleep (swayidle), phím tắt (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)) |
 | `waybar.nix` / `foot.nix` + `starship.nix` / `gtk.nix` / `mako.nix` | Thanh trạng thái / terminal / theme / thông báo |
-| `mimeapps.nix` | App mặc định theo loại file: imv (ảnh), mpv (video), sioyek (PDF), calibre (epub), Chrome (web), nvim (text) — khai trong `xdg.mimeApps` (**phải bật `enable`**) |
+| `mimeapps.nix` | App mặc định theo loại file: imv (ảnh), mpv (video), sioyek (PDF), **foliate** (epub/mobi/azw3/fb2/cbz/opds), Chrome (web/HTML), nvim (text) — khai trong `xdg.mimeApps` (**phải bật `enable`**) |
+| `foliate.nix` | Cấu hình dconf cho foliate (font Noto Serif 18px, justify + hyphenate, cỡ dòng 680px) + theme **Tokyo Night** tự tạo tại `~/.config/com.github.johnfactotum.Foliate/themes/tokyo-night.json` |
 | `fcitx5.nix` | Bộ gõ tiếng Việt (Bamboo engine, Telex) |
-| `scripts.nix` | Script `~/.local/bin`: lock-screen, power-menu, quick-lang, screenshot-menu, wallpaper-set/menu... |
+| `scripts.nix` | Script `~/.local/bin`: lock-screen, power-menu, quick-lang, screenshot-menu, wallpaper-set/menu, **trash-clean** (dọn rác > 30 ngày)... |
 | `pomodoro.nix` | Đồng hồ PHIÊN TẬP TRUNG duy nhất (focus): menu `$mod+p` — rảnh: ⌨ tự nhập 1–480 phút / preset 🍅 30/60/120; có phiên: chỉ ⏸/▶ toggle + ↺ reset; không break; phiên chạy → tự dừng swayidle (icon mắt trên bar đồng bộ); máy ngủ → tự pause phiên, thức dậy → tự tiếp tục; tự phục hồi khi daemon chết |
 | `remnote.nix` | RemNote AppImage (khung cài + script `setup-remnote`) |
-| `thunar.nix` | File manager đồ hoạ (giữ lại) + mở terminal bằng Foot. **Không dùng thùng rác** — xoá file bằng yazi/rm |
-| `yazi.nix` | File manager trong terminal (`$mod+y` dùng chung, `$mod+Shift+y` mở thẳng thư mục ảnh nền) — dùng để thêm/xoá ảnh ngoài repo. Config tối giải tại `home/yazi/yazi.toml`. **Xem trước ảnh hoạt động nhờ foot hỗ trợ sixel** |
+| `thunar.nix` | File manager đồ hoạ (giữ lại) + mở terminal bằng Foot. Thùng rác GIO dùng chung với yazi (`d` = xoá mềm), tự dọn lúc 3h sáng — xem [docs/02](02-Van-Hanh-Hang-Ngay.md#thùng-rác-tự-động-dọn-lúc-0300) |
+| `yazi.nix` | File manager trong terminal — `$mod+y` mở dạng **popup** nhỏ (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). Config ở `home/yazi/`: `yazi.toml` + `keymap.toml` + `theme.toml`, cộng plugin **smart-enter** (`<Enter>` tự rẽ nhánh: vào thư mục *hoặc* mở file) |
 
 ## Dòng chảy khởi động
 

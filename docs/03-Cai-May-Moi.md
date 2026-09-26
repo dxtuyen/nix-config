@@ -297,7 +297,7 @@ Sau khi vào desktop (Sway), mở terminal và kiểm tra theo thứ tự:
      cp -r /đường/dẫn/ảnh-của-bạn/* ~/Pictures/wallpapers/
      ls ~/Pictures/wallpapers/       # kiểm tra đã đủ ảnh chưa
      ```
-   - Trên máy đã chạy: bấm **`$mod+Shift+y`** (yazi) để thêm ảnh bằng giao diện, không cần lệnh.
+   - Trên máy đã chạy: bấm **`$mod+y`** (yazi popup) rồi `cd ~/Pictures/wallpapers` để thêm ảnh bằng giao diện, không cần lệnh.
 6. **Thử hibernate**: chạy `sudo systemctl hibernate` — máy lưu tất cả cửa sổ rồi tắt nguồn; bật lại, đăng nhập, mọi thứ khôi phục nguyên trạng.
 7. **Chế độ ngủ (deep sleep)**: chạy `cat /sys/power/mem_sleep`.
    - Thấy `s2idle [deep]` → máy hỗ trợ deep (S3), giữ nguyên config. ✓

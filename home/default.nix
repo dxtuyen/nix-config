@@ -26,6 +26,7 @@
     ./fcitx5.nix
     ./scripts.nix
     ./sioyek.nix
+    ./foliate.nix
     ./pomodoro.nix
     ./remnote.nix
     ./thunar.nix

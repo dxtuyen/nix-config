@@ -1,6 +1,9 @@
 # Cấu hình Yazi — CỐ Ý TỐI GIẢN. Yazi tự merge với config mặc định nên chỉ
 # khai cái thật sự cần. Đã đối chiếu với yazi 26.5.6 (`yazi --debug` xem file
 # nào được nạp). Sai khoá → yazi báo lỗi rồi RƠI VỀ TOÀN BỘ preset.
+#
+# Phím tắt nằm ở `keymap.toml` (cùng thư mục) — tách riêng vì Home-Manager chỉ
+# sinh `keymap.toml` khi option có nội dung, còn `yazi.toml` luôn được tạo.
 
 [opener]
 # `%s` = đường dẫn file, bắt buộc có.
@@ -23,6 +26,7 @@ edit = [
 prepend_rules = [
 { url = "*.{html,htm,xhtml}", use = [ "open", "edit" ] }, # → Chrome
 { url = "*.csv", use = [ "open", "edit" ] },               # → Calc
+{ url = "*.pdf", use = [ "open", "edit" ] },               # → sioyek (không rơi vào nvim)
 ]
 
 [mgr]

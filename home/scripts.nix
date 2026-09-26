@@ -157,7 +157,7 @@
             # đã đặt nền thành công, không spam lỗi.
             $AWWW img "$FALLBACK_COLOR" -t fade --transition-duration 1.5
             notify-send -a wallpaper "wallpaper-set" \
-              "Chưa có ảnh nền — tạm dùng màu nền. Thêm ảnh: mở yazi (\$mod+Shift+y) rồi copy vào Pictures/wallpapers" 2>/dev/null || true
+              "Chưa có ảnh nền — tạm dùng màu nền. Thêm ảnh: mở yazi (\$mod+y) rồi copy vào Pictures/wallpapers" 2>/dev/null || true
             exit 0
           fi
 
@@ -209,7 +209,7 @@
         mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
         if [ "''${#imgs[@]}" -eq 0 ]; then
           notify-send -a wallpaper "wallpaper-menu" \
-            "Chưa có ảnh nào trong $WALL_DIR — thêm bằng yazi (\$mod+Shift+y). Hiện đang dùng màu nền dự phòng."
+            "Chưa có ảnh nào trong $WALL_DIR — thêm bằng yazi (\$mod+y). Hiện đang dùng màu nền dự phòng."
           exit 0
         fi
 
@@ -357,6 +357,100 @@
           swaymsg "[con_id=$cid] move container to workspace current"
           swaymsg "[con_id=$cid] focus"
         fi
+      '';
+    };
+
+    ".local/bin/trash-clean" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # Dọn thùng rác GIO, giữ lại N ngày gần nhất.
+        #
+        # ⚠️ VÌ SAO KHÔNG DÙNG `gio trash --empty`?
+        # Lệnh đó xoá SẠCH toàn bộ. Nghĩa là file bạn lỡ tay xoá tối qua sẽ mất
+        # vĩnh viễn ngay lúc 3h sáng — không kịp khôi phục bằng `g t` trong yazi.
+        # Script này chỉ xoá mục CŨ HƠN N ngày nên vẫn có cửa sổ khôi phục.
+        #
+        # Xoá cả file lẫn .trashinfo cùng lúc: nếu chỉ xoá file, .trashinfo mồ
+        # côi sẽ làm gio/yazi báo "trash hỏng" hoặc hiện file không tồn tại.
+        set -u
+
+        # ⭐ MẶC ĐỊNH 30 NGÀY — chọn có chủ ý, đừng để nhỏ hơn.
+        # Thùng rác đang dùng làm vùng an toàn: file lỡ xoá nhầm vẫn khôi phục
+        # được bằng `g t` trong yazi. 30 ngày là mức cân bằng giữa an toàn và
+        # dung lượng (đổi số ở ExecStart trong modules/nixos/desktop.nix).
+        KEEP_DAYS="''${1:-30}"
+        TRASH_DIR="''$HOME/.local/share/Trash"
+        FILES_DIR="$TRASH_DIR/files"
+        INFO_DIR="$TRASH_DIR/info"
+
+        [ -d "$INFO_DIR" ] || exit 0
+
+        # Mốc cắt: mốc CŨ HƠN mốc này thì bị xoá. So sánh chuỗi ngày
+        # YYYY-MM-DD thì đúng theo thứ tự (zero-padded) nên không cần date.
+        CUTOFF="$(date -d "''${KEEP_DAYS} days ago" +%Y-%m-%d)"
+
+        removed=0
+        kept=0
+        for info in "$INFO_DIR"/*.trashinfo; do
+          [ -e "$info" ] || continue
+
+          # DeletionDate trong .trashinfo là ISO: 2026-09-08T11:16:25
+          date="''$(sed -n 's/^DeletionDate=//p' "$info" | head -1 | cut -dT -f1)"
+          [ -n "$date" ] || date="$(date +%Y-%m-%d)" # thiếu dữ liệu → coi như mới
+
+          if [[ "$date" < "$CUTOFF" ]]; then
+            base="''${info##*/}"
+            base="''${base%.trashinfo}"
+            # rm -rf: mục có thể là thư mục. -f để không lỗi nếu đã mất.
+            rm -rf -- "$FILES_DIR/$base" "$info" 2>/dev/null || true
+            removed=$((removed + 1))
+          else
+            kept=$((kept + 1))
+          fi
+        done
+
+        echo "thung rac: giu $kept muc (<= $KEEP_DAYS ngay), da xoa $removed muc (< $CUTOFF)"
+
+        # Cảnh báo nếu còn rác nhiều (để biết nên tăng KEEP_DAYS).
+        size="''$(du -sh "$FILES_DIR" 2>/dev/null | cut -f1)"
+        if [ "''${size:-0}" != "0" ] && [ -n "''${size:-}" ]; then
+          echo "dung luong con lai trong thung rac: $size"
+        fi
+      '';
+    };
+
+    ".local/bin/yazi-open" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # Mở yazi trong cửa sổ foot NHỎ (popup, floating) — gắn $mod+y.
+        # Dùng để chọn nhanh: xem 1 file, chỉ đường dẫn, thêm/xoá ảnh.
+        #
+        # ⚠️ Vì sao có `--title=yazi-popup`?
+        # Yazi KHÔNG phải app riêng — nó chạy BÊN TRONG foot, nên sway chỉ thấy
+        # app_id="foot". Muốn chỉ làm CỬA SỔ NÀY floating mà không ảnh hưởng
+        # terminal thường, ta đặt title riêng rồi match theo title
+        # (xem rule `title="^yazi-popup"` trong home/sway.nix).
+        # Đây cũng chính là pattern đã dùng cho `foot --title=nvim`.
+        #
+        # ⚠️ CHỈ $mod+y gọi script này. Gõ `yazi` trong terminal thì mở cửa
+        # sổ thường, KHÔNG popup (đúng như bạn muốn).
+        # Cần yazi cửa sổ lớn để xem trước ảnh/PDF đẹp: gõ `yazi` trong
+        # terminal, hoặc thoát popup rồi mở lại bằng `yazi`.
+        #
+        # Kích thước cố định theo pixel. Muốn to hơn thì sửa 2 số này; hoặc
+        # dùng `ppt` (phần trăm) cho co theo màn hình.
+        #
+        # ⚠️ Cửa sổ nhỏ BÓP khung preview của yazi — ảnh/PDF xem thoáng qua được
+        # nhưng không sướng bằng cửa sổ tiled. Vì vậy $mod+y là popup, còn muốn
+        # duyệt file thì mở `yazi` trong terminal cho cửa sổ lớn.
+        set -u
+        TERM_BIN="${pkgs.foot}/bin/foot"
+        # ⚠️ foot dùng `WIDTHxHEIGHT` (chữ x), KHÔNG phải "1000,700".
+        FOOT_SIZE="--window-size-pixels=1000x700"
+
+        exec "$TERM_BIN" --title=yazi-popup $FOOT_SIZE -e yazi "$@"
       '';
     };
 
