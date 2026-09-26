@@ -5,8 +5,9 @@
 # khoá `keymap` (không prepend/append) thì sẽ XOÁ SẠCH toàn bộ phím tắt
 # mặc định — tránh.
 #
-# Dùng kiểu MẢNG `[mgr] prepend_keymap = [...]` (không phải `[[mgr.prepend_keymap]]`)
-# vì plugin `recycle-bin` yêu cầu: TOML không cho trộn 2 kiểu trong cùng file.
+# Dùng kiểu MẢNG `[mgr] prepend_keymap = [...]` (không phải `[[mgr.prepend_keymap]]`):
+# plugin `recycle-bin` cảnh báo TOML không cho trộn 2 kiểu trong cùng 1 file, và
+# kiểu mảng gọn hơn khi có nhiều binding.
 #
 # Đã đối chiếu preset `keymap-default.toml` + `yazi-default.toml` của yazi
 # 26.5.6 (đọc trực tiếp từ binary, không đoán).
@@ -28,18 +29,20 @@ prepend_keymap = [
   # nên giữ nguyên thói quen bấm <Enter> để mở file.
   { on = "<Enter>", run = "plugin smart-enter", desc = "Enter the child directory, or open the file" },
 
-  # `R b` — menu thùng rác, THEO ĐÚNG preset khuyến nghị của plugin
-  # recycle-bin (bản 26.5.6 chưa có sẵn: scheme `trash://` mới xuất hiện ở
-  # nightly — đã kiểm binary, không có chuỗi nào). Plugin + `trash-cli` khai ở
-  # home/yazi.nix.
+  # `g t` — THEO ĐÚNG preset chính thức của yazi (đã grep trực tiếp preset
+  # `main` trên GitHub):
+  #     { on = [ "g", "t" ], run = "plugin trash", desc = "Go to trash bin" }
+  # nằm cùng nhóm với g h (cd ~) · g c (~/.config) · g d (~/Downloads) ·
+  # g f (follow symlink) → `g` = "go to", `t` = trash.
   #
-  # ⚠️ KHÔNG thêm đối số sau tên plugin — đúng như README: `plugin recycle-bin`
-  # (entry tự rơi về menu khi không có action). Cú pháp có `--` chỉ dành cho
-  # các binding gọi thẳng từng lệnh, không dùng ở đây.
+  # Bản 26.5.6 CHƯA có binding này (đã kiểm binary: không có chuỗi "Go to trash
+  # bin"; scheme `trash://` mới xuất hiện ở nightly) → dùng plugin `recycle-bin`
+  # + gói `trash-cli`, khai ở home/yazi.nix. Khi nâng cấp yazi, phím này vẫn
+  # đúng ý nghĩa, không phải đổi.
   #
   # Menu: o mở thùng rác · r khôi phục (tick nhiều bằng Space) · d xoá hẳn
   #       e dọn sạch · D dọn mục > 30 ngày
-  { on = [ "R", "b" ], run = "plugin recycle-bin", desc = "Open Recycle Bin menu" },
+  { on = [ "g", "t" ], run = "plugin recycle-bin", desc = "Open Recycle Bin menu" },
 ]
 
 # ⚠️ CỐ Ý KHÔNG gắn smart-enter vào phím `l`.

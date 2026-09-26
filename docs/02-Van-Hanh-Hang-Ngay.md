@@ -35,7 +35,7 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | `wallpaper-set` | `Alt+Tab`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Lúc đăng nhập: **giữ nguyên ảnh phiên trước** (chưa có ảnh → random 1 ảnh). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
 | `wallpaper-menu` | `Alt+Shift+Tab`: menu rofi **hiện thumbnail** dạng lưới 3 cột × 3 hàng — ảnh trên, tên file dưới (dài quá tự cắt `…`), ảnh đang dùng đánh dấu `●`; xếp lấp từ trái sang phải (đủ 3 mới xuống hàng), quá 9 ảnh giữ 3 hàng và cuộn (thanh bên phải) |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
-| `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `R` `b` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
+| `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
 | `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → chỉ ⏸/▶ + ↺; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
 
@@ -91,7 +91,7 @@ Cách nhanh nhất, không cần nhớ lệnh. `$mod+y` mở yazi dạng **popup
 3. Tới nơi ảnh nằm (ví dụ `~/Downloads`), bấm `y` để **copy** → quay lại thư mục ảnh → `p` để **paste**
 4. `Alt+Tab` → ảnh mới hiện ngay
 
-Xoá ảnh: bấm `d` trong yazi (hỏi xác nhận) — vào **thùng rác**, nên vẫn khôi phục được bằng `R` `b` nếu lỡ. Muốn xoá hẳn luôn thì bấm `D`. Tự dọn rác cũ lúc 03:00, xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300).
+Xoá ảnh: bấm `d` trong yazi (hỏi xác nhận) — vào **thùng rác**, nên vẫn khôi phục được bằng `g` `t` nếu lỡ. Muốn xoá hẳn luôn thì bấm `D`. Tự dọn rác cũ lúc 03:00, xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300).
 
 Config yazi gồm 3 file cùng thư mục `home/yazi/`, Yazi tự merge với mặc định nên không mất phím tắt nào. Đã đối chiếu từng khoá với `yazi-default.toml` + `keymap-default.toml` bản 26.5.6 (khoá không có trong đó thì yazi **lặng lẽ bỏ qua**).
 
@@ -117,7 +117,8 @@ Popup chỉ là `foot --title=yazi-popup` + rule floating theo title đó trong 
 **Vì sao cần plugin này** (lỗi thật, đã test lỗi trước và sau khi sửa): preset yazi khai `{ mime = "folder/*", use = ["edit", "open", "reveal"] }` — `edit` đứng **đầu**; mà ta ghi đè opener `edit` thành nvim. Hai thứ ghép lại khiến **Enter vào thư mục lại ra nvim**. `smart-enter` bỏ qua bảng `use` với thư mục nên sửa đúng gốc, vẫn giữ nguyên thói quen bấm `<Enter>` để mở file.
 
 - Cài gói `yaziPlugins.smart-enter`, link thành `~/.config/yazi/plugins/smart-enter.yazi` — khai trong `home/yazi.nix`.
-- Không cần `init.lua`: mặc định plugin truyền `--hovered` nên chỉ mở **đúng 1 file đang trỏ**, không mở cả nhóm đang chọn (khớp hành vi `enter`, tránh mở nhầm). Muốn mở cả nhóm thì tạo `init.lua` với `require("smart-enter"):setup { open_multi = true }`.
+- Plugin này **không cần** `setup()`. Mặc định nó truyền `--hovered` nên chỉ mở **đúng 1 file đang trỏ**, không mở cả nhóm đang chọn (khớp hành vi `enter`, tránh mở nhầm). Muốn mở cả nhóm thì thêm `require("smart-enter"):setup { open_multi = true }`.
+- ⚠️ **Không xoá `init.lua`.** File đó đang tồn tại và **bắt buộc cho plugin `recycle-bin`** (xem bên dưới): `require("recycle-bin"):setup()`. Thiếu nó thì `config` = nil → các lệnh dùng `config.trash_dir` sẽ lỗi. Nội dung hiện tại đúng là chỉ dòng trên.
 
 #### Phím tắt sau khi cấu hình
 
@@ -126,7 +127,7 @@ Popup chỉ là `foot --title=yazi-popup` + rule floating theo title đó trong 
 | `<Enter>` | ✅ vào thư mục | ✅ mở app theo mime |
 | `l` / `<Right>` | ✅ vào thư mục | ⬜ không làm gì (giữ nguyên preset — chỉ để đi vào folder) |
 | `h` | ✅ ra thư mục cha | — |
-| `R` `b` | Menu thùng rác (duyệt / khôi phục / dọn) — xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300) | |
+| `g` `t` | Menu thùng rác (duyệt / khôi phục / dọn) — xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300) | |
 | `d` / `D` | Xoá mềm / xoá hẳn | |
 
 > ⭐ **Xem trước ảnh trong yazi hoạt động nhờ terminal là `foot`**: foot xuất `TERM=foot` và hỗ trợ **sixel**, yazi nhận ra ngay và vẽ ảnh thật trong khung preview — không cần cài thêm gói nào. (Alacritty không có kitty-graphics lẫn sixel, nên yazi phải gọi `ueberzugpp`, vốn vẽ ảnh ở layer-surface phía **sau** terminal → terminal phải trong suốt mới thấy.)
@@ -286,13 +287,13 @@ Thùng rác GIO **luôn hoạt động** vì `services.gvfs.enable` (khai ở `m
 |---|---|
 | `d` | Xoá → **vào thùng rác** (xoá mềm) |
 | `D` | Xoá **vĩnh viễn** — không khôi phục được, dùng khi dọn file rác chắc chắn |
-| `R` `b` | Menu thùng rác (xem bên dưới) |
+| `g` `t` | Menu thùng rác (xem bên dưới) |
 
-> ⚠️ **Bản yazi 26.5.6 CHƯA có sẵn** scheme `trash://` lẫn phím `g t` gốc — đó là tính năng của bản nightly (đã kiểm trực tiếp binary: không có chuỗi nào). Nên `R b` ở đây là **plugin `recycle-bin`** khai trong `home/yazi.nix` + `home/yazi/keymap.toml`, cần gói `trash-cli`. Nếu xoá 2 chỗ đó, `R b` sẽ hết tác dụng (nhưng `d` vẫn xoá mềm bình thường). Phím `R b` là **đúng preset khuyến nghị** trong README plugin (mục *Recommended: Preset*).
+> ⚠️ **Bản yazi 26.5.6 CHƯA có sẵn** scheme `trash://` lẫn phím `g t` gốc — đó là tính năng của bản nightly (đã kiểm trực tiếp binary: không có chuỗi nào). Nên `g t` ở đây là **plugin `recycle-bin`** khai trong `home/yazi.nix` + `home/yazi/keymap.toml`, cần gói `trash-cli`. Nếu xoá 2 chỗ đó, `g t` sẽ hết tác dụng (nhưng `d` vẫn xoá mềm bình thường). Phím `g t` là **đúng preset chính thức của yazi** (đã grep preset `main` trên GitHub: `{ on = ["g","t"], run = "plugin trash", desc = "Go to trash bin" }`), cùng nhóm với `g h`/`g c`/`g d`/`g f`.
 >
 > Nếu không muốn dùng plugin, xem thẳng `~/.local/share/Trash/files` trong yazi cũng được — đó là thư mục thật, chỉ thiếu chức năng khôi phục tự động.
 
-**Menu `R b` (plugin `recycle-bin`):**
+**Menu `g t` (plugin `recycle-bin`):**
 
 | Phím trong menu | Việc |
 |---|---|

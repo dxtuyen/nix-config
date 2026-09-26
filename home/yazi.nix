@@ -42,16 +42,22 @@
   # bật nó sẽ kéo theo `finalPackage` override + bash/fish/zsh integration,
   # đổi hành vi ngoài ý muốn. `home/yazi.nix` cố ý làm thủ công.
   #
-  # ⚠️ KHÔNG cần `init.lua`: mặc định plugin truyền `--hovered` cho `open`
-  # nên chỉ mở đúng file đang trỏ chuột (khớp hành vi `enter`, tránh mở
-  # nhầm cả nhóm file đang chọn). Muốn mở được cả nhóm thì mới cần
-  # `require("smart-enter"):setup { open_multi = true }` trong init.lua.
+  # ⚠️ `smart-enter` KHÔNG cần `setup()` — chỉ cần khi muốn `open_multi = true`
+  # (mở cả nhóm file đang tick thay vì đúng 1 file đang trỏ).
+  #
+  # ⚠️ `init.lua` dưới đây là BẮT BUỘC cho `recycle-bin` (xem phần ngay sau),
+  # đừng xoá. Không liên quan gì tới smart-enter.
   xdg.configFile."yazi/plugins/smart-enter.yazi".source = pkgs.yaziPlugins.smart-enter;
 
   # ── Plugin: recycle-bin (duyệt / khôi phục thùng rác) ──────────────────────
-  # Cần vì yazi 26.5.6 CHƯA có `g t` + scheme `trash://` (đó là tính năng của
-  # bản nightly — đã kiểm trực tiếp binary: không có chuỗi nào). Bản này vẫn
-  # XOÁ MỀM bình thường (`d`), chỉ thiếu phần xem/khôi phục → plugin này bù lại.
+  # Gắn phím `g t` — đúng preset chính thức của yazi (đã grep preset `main`:
+  # `{ on = [ "g","t" ], run = "plugin trash", desc = "Go to trash bin" }`, cùng
+  # nhóm với `g h` / `g c` / `g d` / `g f` → `g` = "go to", `t` = trash).
+  #
+  # Bản 26.5.6 CHƯA có sẵn binding đó (đã kiểm trực tiếp binary: không có chuỗi
+  # "Go to trash bin"; scheme `trash://` mới xuất hiện ở nightly). Nhưng `d`
+  # xoá mềm thì vẫn chạy sẵn — 26.5.6 chỉ thiếu phần XEM / KHÔI PHỤC, nên
+  # plugin này bù lại đúng chỗ đó.
   #
   # Đã đọc source để chắc chắn chạy được với 26.5.6:
   #   - không dùng `fs.trash` (API mới, 26.5.6 chưa có) ✔
