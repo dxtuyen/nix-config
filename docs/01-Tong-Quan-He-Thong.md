@@ -44,7 +44,7 @@
 
 1. Boot → **systemd-boot** chọn generation.
 2. **greetd** (tuigreet) hiện màn hình đăng nhập → chạy Sway.
-3. Sway kích hoạt `sway-session.target`: Waybar, Fcitx5, nm-applet, wlsunset, awww-daemon + `wallpaper-set`...
+3. Sway kích hoạt `sway-session.target`: Waybar, Fcitx5, nm-applet, wlsunset, awww-daemon + `wallpaper-set`... (ảnh nền lấy từ `~/Pictures/wallpapers` — ngoài repo, người dùng tự quản lý)
 4. **swayidle** lo chuỗi khóa màn hình → tắt màn → suspend (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)).
 
 ## Config vs Dữ liệu (quan trọng nhất)

@@ -289,8 +289,15 @@ Sau khi vào desktop (Sway), mở terminal và kiểm tra theo thứ tự:
 2. **Kernel có `resume`**: `cat /proc/cmdline` phải chứa `resume=UUID=<SWAP_UUID>`.
 3. **Phân vùng đúng**: `lsblk -f`.
 4. **Clone repo về máy** để lần sau rebuild tại chỗ: `git clone https://github.com/dxtuyen/nix-config.git ~/nix-config`.
-5. **Thử hibernate**: chạy `sudo systemctl hibernate` — máy lưu tất cả cửa sổ rồi tắt nguồn; bật lại, đăng nhập, mọi thứ khôi phục nguyên trạng.
-6. **Chế độ ngủ (deep sleep)**: chạy `cat /sys/power/mem_sleep`.
+5. **Copy ảnh nền vào `~/Pictures/wallpapers/`** — ảnh nền **KHÔNG nằm trong repo** (chỉ `lockscreen/nixos.jpg` là ảnh duy nhất được commit). Lấy từ máy cũ / USB / backup, hoặc tải lại:
+   ```bash
+   mkdir -p ~/Pictures/wallpapers
+   cp -r /đường/dẫn/ảnh-của-bạn/* ~/Pictures/wallpapers/
+   ls ~/Pictures/wallpapers/       # kiểm tra đã đủ ảnh chưa
+   ```
+   Không có bước này thì máy chạy vẫn ổn, chỉ là `Alt+Tab` sẽ báo *"Không có ảnh nào"*.
+6. **Thử hibernate**: chạy `sudo systemctl hibernate` — máy lưu tất cả cửa sổ rồi tắt nguồn; bật lại, đăng nhập, mọi thứ khôi phục nguyên trạng.
+7. **Chế độ ngủ (deep sleep)**: chạy `cat /sys/power/mem_sleep`.
    - Thấy `s2idle [deep]` → máy hỗ trợ deep (S3), giữ nguyên config. ✓
    - Chỉ thấy `[s2idle]` → máy **không hỗ trợ** deep. Kernel tự bỏ qua tham số
      nên không lỗi gì cả; chỉ cần **xóa dòng `"mem_sleep_default=deep"`**

@@ -46,9 +46,10 @@ nix-config/
 │   ├── laptop.nix               # Hibernate (resume=UUID=), zram, keyd, battery threshold — swap nằm trong hardware-config
 │   └── system-tweaks.nix        # earlyoom, fstrim, nix-ld
 ├── docs/                        # 📚 Tài liệu tiếng Việt (xem bên dưới)
-├── wallpapers/                  # Ảnh nền — bỏ file vào đây là tự dùng (xem docs/02)
-└── lockscreen/                  # Ảnh khoá màn hình (swaylock) — tách riêng, không vào vòng xoay
+└── lockscreen/                  # 🖼️ Ảnh khoá màn hình (swaylock) — ảnh DUY NHẤT còn trong repo
 ```
+
+> 🖼️ **Ảnh nền KHÔNG nằm trong repo**: `~/Pictures/wallpapers/` là thư mục của bạn, tự `cp`/`rm`, không rebuild. Xem [docs/02](docs/02-Van-Hanh-Hang-Ngay.md#ảnh-nền-wallpaper).
 
 ---
 

@@ -19,6 +19,7 @@ Nhưng **dữ liệu cá nhân nằm ngoài Nix** — cài máy mới / hỏng �
 | Gemini API key | `~/.config/quick-lang/api.key` | mất → `quick-lang` hỏng |
 | Từ điển StarDict | `~/.stardict/dic/` | cho GoldenDict |
 | Tài liệu & tải về | `~/Documents`, `~/Downloads`, `~/Pictures/Screenshots` | ảnh chụp màn hình |
+| **Ảnh nền** | **`~/Pictures/wallpapers/`** | ⚠️ **KHÔNG có trong repo** — clone lại không có ảnh. Đây là bản duy nhất, mất là mất. |
 | ~~SSH keys~~ | ~~`~/.ssh/`~~ | **không cần nữa** — tạo key mới theo Đường B (docs/03 Bước 10) |
 
 ## Backup trước khi cài mới (chạy trên máy cũ)
