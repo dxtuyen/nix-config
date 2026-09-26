@@ -221,7 +221,7 @@
         for f in "''${imgs[@]}"; do
           if [ -n "$cur" ] && [ "$(readlink -f -- "$f")" = "$cur" ]; then sel=$idx; break; fi
           idx=$((idx + 1))
-        done
+        doneall
 
         # Mỗi mục gửi rofi: "<tên ảnh>\0icon\x1f<đường dẫn>" → rofi tự bóc metadata
         # khỏi kết quả và dùng icon làm thumbnail. Theme -theme-str chỉ áp cho lần

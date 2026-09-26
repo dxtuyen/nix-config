@@ -34,6 +34,11 @@
     ripgrep # tìm nội dung nhanh (thay grep)
     fd # tìm file nhanh (thay find)
     zoxide # nhớ thư mục hay đi, `z <tên>` nhảy thẳng tới (khởi tạo ở home/default.nix)
+    # fzf: bản RIÊNG cho shell. Gói yazi cũng kéo theo fzf và wrapper của nó
+    # thêm vào PATH *chỉ trong tiến trình yazi* (nên phím `z` trong yazi dùng
+    # được mà không cần dòng này). Dòng này để fzf dùng được NGOÀI yazi:
+    # Ctrl+R tìm lịch sử, và làm picker mờ cho `z <từ>` của zoxide.
+    fzf
     sioyek
     obsidian
     jq
