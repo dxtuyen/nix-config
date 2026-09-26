@@ -1,4 +1,5 @@
-# Yazi — file manager chạy trong terminal, mở bằng $mod+y.
+# Yazi — file manager chạy trong terminal, mở bằng $mod+y (thư mục hiện tại)
+# hoặc $mod+Shift+y (mở thẳng thư mục ảnh nền).
 # Dùng chủ yếu để quản lý ~/Pictures/wallpapers (ảnh nền nằm NGOÀI repo):
 # copy ảnh vào là xài ngay, không rebuild. Thunar vẫn giữ cho việc đồ hoạ.
 #

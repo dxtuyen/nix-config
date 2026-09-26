@@ -157,7 +157,7 @@
             # đã đặt nền thành công, không spam lỗi.
             $AWWW img "$FALLBACK_COLOR" -t fade --transition-duration 1.5
             notify-send -a wallpaper "wallpaper-set" \
-              "Chưa có ảnh nền — tạm dùng màu nền. Thêm ảnh: mở yazi (\$mod+y) rồi copy vào Pictures/wallpapers" 2>/dev/null || true
+              "Chưa có ảnh nền — tạm dùng màu nền. Thêm ảnh: mở yazi (\$mod+Shift+y) rồi copy vào Pictures/wallpapers" 2>/dev/null || true
             exit 0
           fi
 
@@ -209,7 +209,7 @@
         mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
         if [ "''${#imgs[@]}" -eq 0 ]; then
           notify-send -a wallpaper "wallpaper-menu" \
-            "Chưa có ảnh nào trong $WALL_DIR — thêm bằng yazi (\$mod+y). Hiện đang dùng màu nền dự phòng."
+            "Chưa có ảnh nào trong $WALL_DIR — thêm bằng yazi (\$mod+Shift+y). Hiện đang dùng màu nền dự phòng."
           exit 0
         fi
 

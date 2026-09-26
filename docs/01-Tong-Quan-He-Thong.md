@@ -39,7 +39,7 @@
 | `pomodoro.nix` | Đồng hồ PHIÊN TẬP TRUNG duy nhất (focus): menu `$mod+p` — rảnh: ⌨ tự nhập 1–480 phút / preset 🍅 30/60/120; có phiên: chỉ ⏸/▶ toggle + ↺ reset; không break; phiên chạy → tự dừng swayidle (icon mắt trên bar đồng bộ); máy ngủ → tự pause phiên, thức dậy → tự tiếp tục; tự phục hồi khi daemon chết |
 | `remnote.nix` | RemNote AppImage (khung cài + script `setup-remnote`) |
 | `thunar.nix` | File manager đồ hoạ (giữ lại) + mở terminal bằng Alacritty. **Không dùng thùng rác** — xoá file bằng yazi/rm |
-| `yazi.nix` | File manager trong terminal (`$mod+y`) — dùng để thêm/xoá ảnh nền ngoài repo. Config tối giải tại `home/yazi/yazi.toml` |
+| `yazi.nix` | File manager trong terminal (`$mod+y` dùng chung, `$mod+Shift+y` mở thẳng thư mục ảnh nền) — dùng để thêm/xoá ảnh ngoài repo. Config tối giải tại `home/yazi/yazi.toml` |
 
 ## Dòng chảy khởi động
 
