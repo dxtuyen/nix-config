@@ -369,7 +369,11 @@ yazi ~/Books/Reading     # duyệt cả thư viện
 xdg-open ~/Books/Reading/*.epub   # mở thẳng 1 cuốn
 ```
 
-**Lưu ý về hyphenation:** foliate bật `justify` + `hyphenate` để chữ không bị dãi lỗ hổng. WebKitGTK (engine render) hardcode tìm từ điển ở `/usr/share/hyphen` — thư mục này không tồn tại mặc định trên NixOS, nên `modules/nixos/desktop.nix` khai `systemd.tmpfiles` tạo symlink tới `hyphenDicts.en_US`. **Nếu tự ý xoá khối `systemd.tmpfiles` đó, foliate vẫn chạy nhưng sẽ im lặng mất ngắt từ.**
+**Cấu hình foliate: KHÔNG quản lý bằng Nix** — repo chỉ cài gói (`home/packages.nix`) và khai app mặc định (`home/mimeapps.nix`). Mọi tuỳ chọn đọc (font, cỡ chữ, nền, giãn dòng) chỉnh trực tiếp trong app: `~` trong yazi rồi `Enter` trên 1 file epub, hoặc chạy thẳng `foliate ~/Books/Reading/*.epub`.
+
+> ⚠️ **Lưu ý khi bật "Căn đều 2 mép" (justify):** WebKitGTK (engine render) hardcode tìm từ điển ngắt từ ở `/usr/share/hyphen` — thư mục này không tồn tại mặc định trên NixOS, nên `modules/nixos/desktop.nix` khai `systemd.tmpfiles` tạo symlink tới `hyphenDicts.en_US`. **Nếu tự ý xoá khối `systemd.tmpfiles` đó, foliate vẫn chạy nhưng sẽ im lặng mất ngắt từ** (chữ bị dãi lỗ hổng giữa các từ).
+>
+> Đây là sửa ở tầng **hệ thống** cho WebKitGTK nên giữ lại dù không khai file config cho foliate — có lợi cho mọi app dùng WebKit (Epiphany, wpewebkit…), không chỉ foliate.
 
 **Lưu ý về mime mobi:** mime đúng là `application/x-mobipocket-ebook` và `application/vnd.amazon.mobi8-ebook`. Nếu thấy `application/x-mobi8-ebook` ở đâu đó → đó là mime bịa, dòng mapping đó không bao giờ được dùng (đã sửa trong `home/mimeapps.nix`).
 

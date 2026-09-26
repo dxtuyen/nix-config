@@ -35,7 +35,7 @@
 | `sway.nix` | Cửa sổ, layout, idle/lock/sleep (swayidle), phím tắt (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)) |
 | `waybar.nix` / `foot.nix` + `starship.nix` / `gtk.nix` / `mako.nix` | Thanh trạng thái / terminal / theme / thông báo |
 | `mimeapps.nix` | App mặc định theo loại file: imv (ảnh), mpv (video), sioyek (PDF), **foliate** (epub/mobi/azw3/fb2/cbz/opds), Chrome (web/HTML), nvim (text) — khai trong `xdg.mimeApps` (**phải bật `enable`**) |
-| `foliate.nix` | Cấu hình dconf cho foliate (font Noto Serif 18px, justify + hyphenate, cỡ dòng 680px) + theme **Tokyo Night** tự tạo tại `~/.config/com.github.johnfactotum.Foliate/themes/tokyo-night.json` |
+| `sioyek.nix` | Script `sioyek-open` (mở PDF, kéo cửa sổ về workspace đang focus) |
 | `fcitx5.nix` | Bộ gõ tiếng Việt (Bamboo engine, Telex) |
 | `scripts.nix` | Script `~/.local/bin`: lock-screen, power-menu, quick-lang, screenshot-menu, wallpaper-set/menu, **trash-clean** (dọn rác > 30 ngày)... |
 | `pomodoro.nix` | Đồng hồ PHIÊN TẬP TRUNG duy nhất (focus): menu `$mod+p` — rảnh: ⌨ tự nhập 1–480 phút / preset 🍅 30/60/120; có phiên: chỉ ⏸/▶ toggle + ↺ reset; không break; phiên chạy → tự dừng swayidle (icon mắt trên bar đồng bộ); máy ngủ → tự pause phiên, thức dậy → tự tiếp tục; tự phục hồi khi daemon chết |
