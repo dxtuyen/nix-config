@@ -1,41 +1,21 @@
 { pkgs, ... }:
 
-let
-  lib = pkgs.lib;
-
-  # ── Ảnh nền: TỰ QUÉT thư mục repo wallpapers/ ────────────────────────
-  # Chỉ cần BỎ FILE ẢNH vào wallpapers/ rồi rebuild là xong — không phải sửa
-  # file Nix nào. Không có quy ước tên: mọi ảnh đều được random như nhau.
-  # Ảnh màn hình khoá nằm ở lockscreen/ (ngoài wallpapers/) → không bao giờ
-  # lẫn vào vòng xoay, nên không cần bất kỳ ngoại lệ nào trong script.
-  wallpaperDir = ./../wallpapers;
-  imageExts = [
-    ".png"
-    ".jpg"
-    ".jpeg"
-  ];
-  isWallpaper = name: lib.any (ext: lib.hasSuffix ext (lib.toLower name)) imageExts;
-  wallpaperEntries = builtins.readDir wallpaperDir;
-  # readDir trả về "regular"/"directory"/"symlink"/... — chỉ nhận file thật
-  # và symlink; loại "directory" (và file đặc biệt) để một thư mục tình cờ
-  # tên "xxx.png" không bị copy nhầm nguyên cây vào store.
-  isWallpaperFile =
-    name:
-    builtins.elem wallpaperEntries.${name} [
-      "regular"
-      "symlink"
-    ]
-    && isWallpaper name;
-  wallpaperLinks = builtins.listToAttrs (
-    map (name: {
-      name = "Pictures/wallpapers/${name}";
-      value.source = wallpaperDir + "/${name}";
-    }) (builtins.filter isWallpaperFile (builtins.attrNames wallpaperEntries))
-  );
-in
-
 {
-  home.file = wallpaperLinks // {
+  # Ảnh nền KHÔNG nằm trong repo: người dùng tự quản lý ~/Pictures/wallpapers
+  # (cp/rm thoải mái, không rebuild, không commit). Script wallpaper-set /
+  # wallpaper-menu quét thư mục đó lúc chạy nên không cần khai báo ở đây.
+  # Thư mục được tạo bởi home.activation bên dưới (không có symlink nào tạo
+  # nó nữa) — cần cho máy mới cài từ repo.
+  # Ảnh màn hình khoá thì vẫn nằm trong repo: lockscreen/nixos.jpg.
+
+  # Tạo ~/Pictures/wallpapers + ~/Pictures/Screenshots nếu chưa có (máy mới
+  # clone repo không có symlink nào tạo sẵn thư mục này). mkdir -p idempotent
+  # nên không cần DAG, chạy trước phần script là đủ.
+  home.activation.wallpaperDirs = ''
+    mkdir -p "$HOME/Pictures/wallpapers" "$HOME/Pictures/Screenshots"
+  '';
+
+  home.file = {
     ".local/bin/lock-screen" = {
       executable = true;
       text = ''
@@ -110,8 +90,8 @@ in
         #   wallpaper-set --if-empty       GIỮ ảnh phiên trước nếu daemon đã khôi phục;
         #                                  chưa có ảnh mới random (dùng lúc đăng nhập)
         # KHÔNG có logic theo giờ, không chia pool: mọi ảnh trong
-        # ~/Pictures/wallpapers đều random được. Thêm ảnh mới = bỏ file vào đó
-        # (hoặc bỏ vào wallpapers/ của repo rồi rebuild), không cần sửa gì thêm.
+        # ~/Pictures/wallpapers đều random được. Thêm ảnh mới = cp file vào đó,
+        # không cần rebuild, không cần sửa gì thêm.
         # Sway gọi lúc đăng nhập với --if-empty → bật máy ra đúng ảnh đang dùng.
         set -u
 
@@ -257,9 +237,10 @@ in
     };
 
     # ── Ảnh nền → ~/Pictures/wallpapers ──────────────────────────────────
-    # Không khai báo từng ảnh ở đây nữa: mọi ảnh trong wallpapers/ được tự
-    # quét và symlink (xem khối `let` đầu file). Muốn thêm ảnh → bỏ file vào
-    # wallpapers/ (đặt tiền tố day-/night-, hoặc để tên tự do) rồi rebuild.
+    # Cố ý KHÔNG khai báo ảnh nào ở đây: thư mục này ngoài repo, người dùng
+    # tự cp/rm. Thêm ảnh: cp <file> ~/Pictures/wallpapers/ (dùng được ngay, KHÔNG
+    # rebuild). Xóa ảnh: rm ~/Pictures/wallpapers/<tên>. Đổi tên tùy ý — script
+    # không theo quy ước tên, mọi ảnh .png/.jpg/.jpeg đều random như nhau.
 
     ".local/bin/vm-nixos" = {
       executable = true;

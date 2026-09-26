@@ -12,3 +12,7 @@ result-*
 # Python venv (phòng khi vô tình tạo lại trong repo)
 .venv/
 venv/
+
+# Ảnh nền NẰM NGOÀI repo: ~/Pictures/wallpapers (tự cp/rm, không rebuild).
+# Dòng này chặn lỡ tay cp ảnh vào ~/nix-config/wallpapers rồi git add.
+wallpapers/
