@@ -21,6 +21,11 @@
     blueman
     google-chrome
     calibre
+    imv # xem ảnh (nhẹ, có zoom/timeline)
+    mpv # xem video/nhạc
+    ripgrep # tìm nội dung nhanh (thay grep)
+    fd # tìm file nhanh (thay find)
+    zoxide # nhớ thư mục hay đi, `z <tên>` nhảy thẳng tới (khởi tạo ở home/default.nix)
     sioyek
     obsidian
     anki

@@ -6,7 +6,8 @@ Cấu hình **NixOS + Home-Manager** cho laptop cá nhân, chạy **Sway** (Wayl
 |---|---|
 | 🌐 Hệ thống | NixOS 26.05 (x86_64-linux) |
 | 🪟 Desktop | Sway + Waybar + Mako (thông báo) |
-| 🎨 Terminal | Alacritty + Starship |
+| 🎨 Terminal | Foot + Starship |
+| 🖼️ Xem ảnh / video | imv (ảnh) • mpv (video) • calibre (sách điện tử) |
 | ⌨️ Bộ gõ | Fcitx5 + Bamboo |
 | 💾 Hibernate | Swap 10G — lưu trạng thái khi tắt máy |
 
@@ -38,7 +39,7 @@ nix-config/
 │   ├── git.nix                  # Git identity toàn cục (user/email, pull.rebase…)
 │   ├── sway.nix                 # Sway: cửa sổ, phím tắt, idle/lock/sleep
 │   ├── scripts.nix              # Script ~/.local/bin (power-menu, quick-lang…)
-│   └── ...                      # waybar, alacritty, starship, gtk, mako, fcitx5, pomodoro (focus), thunar, yazi ($mod+y), remnote
+│   └── ...                      # waybar, foot, starship, gtk, mako, fcitx5, pomodoro (focus), thunar, yazi ($mod+y), mimeapps, remnote
 ├── modules/nixos/               # Module NixOS (system-level)
 │   ├── core.nix                 # Nền tảng: Nix/flake, boot, mạng, user
 │   ├── desktop.nix              # Sway/greetd, PipeWire, Fcitx5, fonts

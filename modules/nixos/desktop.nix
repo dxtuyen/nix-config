@@ -19,22 +19,23 @@ in
   # GVFS hỗ trợ tài nguyên từ xa và filesystem ảo cho GIO/Thunar.
   services.gvfs.enable = true;
 
-  # Thunar chính thức + plugin giải nén/nén tích hợp vào context menu.
-  # Không khai báo `thunar` trong home.packages để tránh bản user-level
-  # thiếu plugin đè lên package có plugin do NixOS module tạo ra.
+  # Thunar GIỮ LẠI: duyệt/xem/copy file + tích hợp GIO (mở file từ
+  # Obsidian/Chrome…). Không khai báo `thunar` trong home.packages để tránh
+  # bản user-level thiếu plugin đè lên package do NixOS module tạo ra.
+  #
+  # `tumbler` = dịch vụ ảnh thu nhỏ cho Thunar (không có nó thì chỉ có icon).
+  # KHÔNG thêm thunar-archive-plugin (kéo file-roller → kéo cả GNOME stack)
+  # và thunar-volman (mount USB thủ công theo docs/04) — xem docs/02.
   programs.thunar = {
     enable = true;
     plugins = with pkgs; [
-      thunar-archive-plugin
+      tumbler
     ];
   };
 
-  # File Roller là frontend archive cho plugin Thunar; các backend được đặt
-  # trong PATH của hệ thống để hỗ trợ RAR/7z/ZIP và tạo archive mới.
+  # Chỉ giữ backend nhẹ: `7z` xử lý zip/7z/rar… đủ dùng, không kéo GNOME.
   environment.systemPackages = with pkgs; [
-    file-roller
     p7zip
-    unrar
   ];
 
   hardware.graphics.enable = true;

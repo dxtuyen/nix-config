@@ -1,37 +1,42 @@
-# Cấu hình Yazi — CỐ Ý TỐI GIẢN.
-# Yazi tự merge file này với config mặc định, nên chỉ khai những gì thật sự
-# muốn đổi. Thêm mục mới ở đây hoàn toàn an toàn.
-#
-# Nguồn chính thức: https://yazi.rs/docs/configuration/yazi
+# Cấu hình Yazi — CỐ Ý TỐI GIẢN. Yazi tự merge với config mặc định nên chỉ
+# khai cái thật sự cần. Đã đối chiếu với yazi 26.5.6 (`yazi --debug` xem file
+# nào được nạp). Sai khoá → yazi báo lỗi rồi RƠI VỀ TOÀN BỘ preset.
 
 [opener]
-# Thoát yazi: dùng đường dẫn tuyệt đối, không phụ thuộc $SHELL/PATH khi
-# khởi chạy từ Sway (sway không set shell).
+# `%s` = đường dẫn file, bắt buộc có.
+# ⚠️ `orphan = true` bắt buộc: yazi dùng `kill_on_drop(!orphan)` nên thiếu nó
+# thì đóng yazi (`q`) là SIGKILL luôn cửa sổ nvim vừa mở.
 edit = [
-	{ run = 'alacritty --title "nvim" -e nvim', block = false, desc = "Edit" },
+{ run = 'foot --title=nvim nvim %s', for = "unix", orphan = true, desc = "Edit" },
+]
+
+[open]
+# ⭐ Để Enter mở app thật thay vì nhảy vào nvim.
+# Yazi đoán mime bằng `file -bL --mime-type`, hàm này trả "text/plain" cho cả
+# .csv lẫn .md (không phải "text/csv" như GIO suy ra) → preset rule
+# `{ mime = "text/*" }` nuốt hết vào nvim. Đây là lý do html mở sai app.
+#
+# `prepend_rules` (không phải `rules`) để GIỮ luật mặc định, chỉ chèn trước.
+# Phần tử ĐẦU của `use` chạy khi bấm Enter; phần còn lại nằm trong menu
+# "Open with" (phím `O`) để vẫn sửa bằng nvim được.
+# ⚠️ 26.5.6 dùng khoá `url` cho glob tên file, KHÔNG phải `name`.
+prepend_rules = [
+{ url = "*.{html,htm,xhtml}", use = [ "open", "edit" ] }, # → Chrome
+{ url = "*.csv", use = [ "open", "edit" ] },               # → Calc
 ]
 
 [mgr]
-# Ảnh nền nằm ở ~/Pictures/wallpapers — YÊN TĨNH, không tự đổi ảnh đại diện
-# (Yazi mặc định sort theo natural, còn đây ép alphabetical cho ổn định).
-# Giá trị hợp lệ: none|mtime|btime|extension|alphabetical|natural|size|random
-sort_by = "alphabetical"
-sort_dir = true
-ratio = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+# ⚠️ CHỈ NHẬN ĐÚNG 3 PHẦN TỬ (`MgrRatio` deserialize từ `[u16; 3]`). Yazi CẮT
+# BỎ phần tử thừa mà KHÔNG báo lỗi — `ratio = [1,2,3,4,...,9]` chạy bình thường
+# nhưng thực tế chỉ dùng `[1,2,3]`. Không có tính năng xoay vòng nhiều tỉ lệ.
+ratio = [1, 4, 3]
 
-# Sắp xếp file trước thư mục, ẩn file ẩn.
-sort_layout = "mixed"
-show_hidden = false
-
-[preview]
-# Xem trước ảnh ngay khi duyệt ~/Pictures/wallpapers.
-# wrap chỉ nhận "no" | "yes".
-wrap = "no"
-
-[task]
-# Đoán sẵn thư mục mở lần đầu (mỗi lần chạy).
-micro_workers = 8
-macro_workers = 4
-
-# Không tạo file backup khi ghi (làm nhiễu thư mục ảnh).
-skip_confirm = false
+# show_hidden / sort_by / wrap đều đã đúng bằng preset → không khai lại.
+#
+# ⭐ Preview ảnh nhờ foot hỗ trợ SIXEL (foot đặt TERM=foot, yazi tự nhận diện).
+#
+# ⚠️ KHÔNG cần cài poppler-utils / ffmpeg / resvg để preview PDF, video, SVG.
+# Gói yazi của nixpkgs đã đóng gói sẵn chúng (gói `yazi` tham chiếu tới):
+# poppler-utils, ffmpeg, resvg, imagemagick, chafa, fzf, zoxide, fd, ripgrep,
+# 7zz, jq, file — và wrapper tự thêm tất cả vào PATH lúc chạy yazi.
+# Nên PDF/video/SVG đều preview được. Kiểm tra: `yazi --debug` (xem PATH).

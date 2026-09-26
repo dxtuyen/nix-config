@@ -22,7 +22,7 @@ in
       set $down j
       set $up k
       set $right l
-      set $term alacritty
+      set $term foot
       set $menu rofi -show drun
 
       # Wallpaper: lúc đăng nhập GIỮ nguyên ảnh phiên trước (--if-empty); nếu chưa
@@ -69,7 +69,6 @@ in
       # Floating rules
       for_window [app_id="pavucontrol"] floating enable, resize set width 30 ppt height 40 ppt
       for_window [app_id="blueman-manager"] floating enable, resize set width 40 ppt height 40 ppt
-      for_window [app_id="file-roller"] floating enable
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
       # GoldenDict float như popup (mod+g bật/tắt; đóng = ẩn về tray).

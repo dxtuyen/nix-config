@@ -21,6 +21,7 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | Quay lại generation cũ | `nixos-rebuild switch --rollback` |
 | Dọn rác store | `nix-collect-garbage -d` (GC tự động hàng tuần theo `core.nix`) |
 | Xem log Sway | `journalctl -b -u sway` / `journalctl --user -u sway` |
+| Tìm file / tìm trong nội dung | `fd -e pdf` · `rg -g '*.md' 'từ_khoá'` (thay `find`/`grep`) |
 
 ## Scripts quan trọng (`~/.local/bin`)
 
@@ -92,7 +93,9 @@ Cách nhanh nhất, không cần nhớ lệnh:
 
 Xoá ảnh: bấm `d` trong yazi (hỏi xác nhận) — **không qua thùng rác**, xoá là mất hẳn.
 
-Config yazi: `home/yazi/yazi.toml` — cố ý **tối giảu**, Yazi tự merge với mặc định nên không mất phím tắt nào. Đã kiểm tra parse thành công trên yazi 26.5.6.
+Config yazi: `home/yazi/yazi.toml` — cố ý **tối giảu**, Yazi tự merge với mặc định nên không mất phím tắt nào. Đã đối chiếu từng khoá với `yazi-default.toml` bản 26.5.6 (khoá không có trong đó thì yazi **lặng lẽ bỏ qua**).
+
+> ⭐ **Xem trước ảnh trong yazi hoạt động nhờ terminal là `foot`**: foot xuất `TERM=foot` và hỗ trợ **sixel**, yazi nhận ra ngay và vẽ ảnh thật trong khung preview — không cần cài thêm gói nào. (Alacritty không có kitty-graphics lẫn sixel, nên yazi phải gọi `ueberzugpp`, vốn vẽ ảnh ở layer-surface phía **sau** terminal → terminal phải trong suốt mới thấy.)
 
 ### Thêm ảnh (dòng lệnh)
 
@@ -214,6 +217,80 @@ Cách dùng: chạy `systemctl hibernate` (hoặc dùng menu nguồn `power-menu
 - Phân vùng swap **≥ RAM**: máy này 10G ≥ 7.4G ✓. Swap khai trong `hosts/laptop/hardware-configuration.nix` (file tự sinh).
 - Kernel có tham số `resume=UUID=...` (trong `modules/nixos/laptop.nix`) để biết swap nào chứa image khôi phục.
 
+## Mở file ≠ Xem trước (preview)
+
+Hai việc khác nhau, dùng cơ chế khác nhau — đừng lẫn:
+
+| Việc | Làm gì | Cần gì | Cấu hình ở đâu |
+|---|---|---|---|
+| **Mở** file | Mở app thật, cửa sổ riêng | App theo mime: imv / mpv / sioyek / calibre / Chrome / nvim | `home/mimeapps.nix` |
+| **Xem trước** | Vẽ ảnh nhỏ **tại chỗ** (khung phải trong yazi, ảnh thu nhỏ trong Thunar) | Ảnh: terminal hỗ trợ **sixel** (foot ✅) · Thunar: `tumbler` | `home/foot.nix`, `modules/nixos/desktop.nix` |
+
+**Trong yazi preview được ẢNH, PDF, video và SVG.** Không cần cài gì thêm: gói `yazi` của nixpkgs đã đóng gói sẵn `poppler-utils`, `ffmpeg`, `resvg`, `imagemagick`, `chafa`… và wrapper tự thêm chúng vào PATH mỗi khi chạy yazi. (Vì vậy `command -v pdftoppm` ở terminal báo *không có* — nhưng bên trong yazi thì có.) Ảnh hiển thị đẹp nhờ foot hỗ trợ **sixel**.
+
+Bấm `Enter` vẫn mở app thật (`sioyek` / `mpv` / `imv`), preview chỉ là xem nhanh. Muốn xác nhận các lệnh trên có thật không: chạy `yazi --debug` rồi xem PATH của tiến trình.
+
+Đổi app mặc định cho 1 loại file: sửa `home/mimeapps.nix` → `nh os switch` → kiểm tra `xdg-mime query default image/jpeg`. **Đừng sửa tay `~/.config/mimeapps.list`** — nó là symlink do Home-Manager quản lý, sẽ bị ghi đè.
+
+## Thunar (file manager đồ hoạ)
+
+Dùng khi cần chuột + kéo thả giữa các nơi (yazi vẫn là chính cho việc thường ngày).
+
+| Việc | Cách |
+|---|---|
+| Ảnh thu nhỏ trong danh sách | Có sẵn nhờ `tumbler` (`programs.thunar.plugins`). Vào **Icon view** mới thấy rõ |
+| Mở terminal tại thư mục đang xem | Nút phải chuột → *Open Terminal Here* — tự mở **foot** (đọc `TerminalEmulator` trong `home/thunar.nix`) |
+| Xoá file | *Move to Trash* → vào thùng rác (xem mục dưới) |
+| Nén / giải nén | Dùng lệnh `7z` (`p7zip`) — **không** có plugin giải nén trong menu |
+| Cắm USB / thẻ nhớ | Thunar **không** tự mount — mount tay theo [04 — Sao lưu](04-Sao-Luu-Phuc-Hoi.md) |
+
+## Thùng rác (không cần cấu hình gì)
+
+Thùng rác GIO **luôn hoạt động** vì `services.gvfs.enable` (khai ở `modules/nixos/desktop.nix`) — không có option nào phải bật thêm. Dùng bằng lệnh:
+
+```bash
+gio trash --list                      # xem trong thùng rác có gì (kèm đường dẫn gốc)
+gio trash --restore 'trash:///...%20'  # khôi phục 1 file về chỗ cũ
+gio trash --empty                     # XOÁ HẾT, không hồi phục được
+```
+
+- **yazi** xoá vĩnh viễn (bấm `d` → xoá thật, không qua thùng rác) — chủ ý, xem `home/yazi.nix`.
+- **Thunar** dùng "Move to Trash" → vào đúng thư mục trên.
+- Thùng rác nằm ở `~/.local/share/Trash` (~680 MB). Xem `docs/04` về việc backup dữ liệu.
+
+## Xem ảnh • video • sách điện tử
+
+Mỗi loại file có **app riêng**, khai ở `home/mimeapps.nix` (`xdg.mimeApps`). Không mở ảnh/video local bằng Chrome — Chrome nặng, mỗi tấm 1 tab, không có zoom/timeline/tua nhanh.
+
+| Loại file | App | Phím tắt / ghi chú |
+|---|---|---|
+| Ảnh (jpg, png, webp…) | **imv** | `←/→` ảnh trước/sau · `+`/`-` zoom · `f` vừa màn hình · `Ctrl+C` copy ảnh |
+| Video / audio | **mpv** | `←/→` tua 5s · `↑/↓` tua 60s · `f` toàn màn · `m` tiếng · `,`/`.` lùi/nhanh |
+| PDF | **sioyek** | Đọc tài liệu khoá học/kỹ thuật (đã khai sẵn) |
+| EPUB / MOBI / LRF | **calibre** | `calibre-ebook-viewer` cho epub/mobi, `calibre-lrfviewer` cho lrf. Không cài Foliate — đọc sách điện tử qua calibre là đủ |
+| File text / code | **nvim** | Mở thẳng trong cửa sổ foot mới |
+| Web / link | **google-chrome** | Mọi `http(s)://` và file `.html` |
+
+Kiểm tra app mặc định của 1 loại file:
+
+```bash
+xdg-mime query default image/jpeg     # → imv.desktop
+xdg-mime query default video/mp4      # → mpv.desktop
+xdg-mime query default application/epub+zip   # → calibre-ebook-viewer.desktop
+xdg-mime query default application/pdf        # → sioyek.desktop
+```
+
+> ⚠️ File `~/.config/mimeapps.list` giờ do **Home-Manager quản lý** (symlink tới `/nix/store`) — muốn đổi app mặc định thì sửa `home/mimeapps.nix` rồi rebuild, **đừng sửa tay file trong `~`** (sẽ bị ghi đè). File cũ sửa tay được giữ lại thành `mimeapps.list.backup`.
+>
+> Lưu ý: `text/plain` cố ý trỏ về `nvim.desktop` → double-click file `.txt`/`.log`/`.csv` sẽ **mở nvim** trong terminal.
+
+## Terminal: Foot (không có "acrylic" trên Sway)
+
+- Terminal là **foot** (`$mod+Return` mở cửa sổ mới). Lý do đổi từ Alacritty: foot hỗ trợ **sixel** nên yazi xem trước ảnh thật.
+- **Hiệu ứng blur ("acrylic") không tồn tại trên Sway** — Sway không implement protocol blur nào. Foot *có* khoá `blur = yes` nhưng nó cần protocol `ext-background-effect-manager-v1` (chỉ KDE Plasma 6.1+ có) nên trên Sway foot chỉ log `disabling background blur` rồi bỏ qua; Alacritty cũng tương tự (blur chỉ chạy macOS/KDE). Ở đây chỉ có **trong suốt phẳng** (`alpha = 0.9` trong `home/foot.nix`).
+- Muốn cảm giác kính mờ: đặt sẵn **ảnh nền đã blur** vào `~/Pictures/wallpapers/` rồi đổi ảnh đó (`Alt+Tab`) → terminal trong suốt nằm trên nền mờ trông gần giống acrylic.
+- Sửa `home/foot.nix` rồi `nh os switch` là xong. **Kiểm tra config foot không cần mở cửa sổ**: `foot -C` → in `err: config.c:…` và exit 1 nếu sai cú pháp (sai màu hay gặp nhất, xem chú thích trong `home/foot.nix`).
+
 ## Sự cố thường gặp
 
 | Triệu chứng | Kiểm tra |
@@ -221,6 +298,8 @@ Cách dùng: chạy `systemctl hibernate` (hoặc dùng menu nguồn `power-menu
 | Sway không khởi động | `journalctl -b -u greetd` |
 | Mất âm thanh | `systemctl status pipewire` → `systemctl --user restart wireplumber` |
 | Bộ gõ kẹt | `fcitx5-diagnose` |
+| Yazi không xem trước ảnh | Ảnh phải hiện (foot hỗ trợ sixel). Kiểm tra `echo $TERM` trong terminal đang chạy yazi phải ra `foot` — nếu là `xterm-256color` thì terminal khác đã mở yazi, đóng đi mở lại từ foot. Hover PDF/video/SVG thì báo lỗi là **bình thường** (xem [Mở file ≠ Xem trước](#mở-file--xem-trước-preview)) |
+| Double-click file mở app không đúng | `xdg-mime query default <mime>` xem app đang được gán; sửa `home/mimeapps.nix` rồi rebuild (đừng sửa tay `~/.config/mimeapps.list` — nó là symlink do Home-Manager quản lý) |
 | Wallpaper không đổi | `systemctl --user status awww-daemon` (daemon giữ ảnh nền); test tay: `~/.local/bin/wallpaper-set`. Script tự loại ảnh đang hiển thị nên bấm Alt+Tab luôn ra ảnh mới; menu Alt+Shift+Tab hiện lưới thumbnail 3×3, tên dưới ảnh (ảnh đang dùng có dấu `●`) |
 | Hibernate không dậy | `cat /proc/cmdline` phải có `resume=UUID=...`; `swapon --show` phải thấy `/dev/nvme0n1p3` |
 

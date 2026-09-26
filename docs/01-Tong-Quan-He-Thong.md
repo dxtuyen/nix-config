@@ -2,7 +2,7 @@
 
 ## Máy này là gì
 
-- **NixOS 26.05** (x86_64) chạy **Sway** (Wayland) + **Waybar** + **Mako** (thông báo) + **Alacritty** (terminal) + **Starship** (prompt), theme **Tokyo Night** đồng bộ toàn hệ thống.
+- **NixOS 26.05** (x86_64) chạy **Sway** (Wayland) + **Waybar** + **Mako** (thông báo) + **Foot** (terminal) + **Starship** (prompt), theme **Tokyo Night** đồng bộ toàn hệ thống.
 - Toàn bộ cấu hình nằm trong repo `nix-config` (được version bằng git) — không cài "theo kiểu Ubuntu" mà **khai báo rồi build** ra hệ thống.
 
 ## Hai tầng cấu hình
@@ -10,7 +10,7 @@
 | Tầng | Thư mục | Quản lý bởi | Gồm |
 |---|---|---|---|
 | Hệ điều hành | `modules/nixos/` | NixOS (cần root) | boot, mạng, Sway/greetd, âm thanh, bộ gõ, user, swap + hibernate |
-| Người dùng | `home/` | Home-Manager | config Sway, Waybar, Alacritty, script cá nhân, gói user |
+| Người dùng | `home/` | Home-Manager | config Sway, Waybar, Foot, script cá nhân, gói user |
 
 - Entry point: `flake.nix` → `hosts/laptop/default.nix` → import các module NixOS + gắn home-manager cho user `doxuantuyen`.
 - Một lệnh `sudo nixos-rebuild switch --flake .#laptop` cập nhật **cả hai tầng**.
@@ -20,7 +20,7 @@
 | Module | Trách nhiệm |
 |---|---|
 | `core.nix` | Nền tảng: Nix/flake, systemd-boot, NetworkManager, user `doxuantuyen`, gói hệ thống tối thiểu, ssh-agent (giữ passphrase SSH key) |
-| `desktop.nix` | Sway + greetd (tuigreet), PipeWire, XDG portal, Fcitx5 + Bamboo, fonts, power-profiles-daemon, bluetooth |
+| `desktop.nix` | Sway + greetd (tuigreet), PipeWire, XDG portal, Fcitx5 + Bamboo, fonts, power-profiles-daemon, bluetooth, Thunar + `tumbler` (thumbnail) |
 | `development.nix` | VS Code, Python, GCC, CMake, gdb, podman, distrobox, nix-ld |
 | `laptop.nix` | **Hibernate** (`resume=UUID=`), zram 50% RAM, keyd, battery threshold 85–90%, fwupd, logind (đóng nắp → suspend) — **swap khai trong `hosts/laptop/hardware-configuration.nix`** (tự sinh) |
 | `system-tweaks.nix` | earlyoom (chống treo RAM), fstrim hàng tuần |
@@ -31,15 +31,16 @@
 |---|---|
 | `default.nix` | Entry point: import tất cả, bật `xdg`, PATH `~/.local/bin` |
 | `git.nix` | Git identity toàn cục (tất cả repo): user `dxtuyen` + email, `defaultBranch=main`, `pull.rebase`, `pager=cat` |
-| `packages.nix` | Gói user: rofi, grim, slurp, swaylock, swayidle, google-chrome, obsidian, anki, calibre, sioyek... |
+| `packages.nix` | Gói user: rofi, grim, slurp, swaylock, swayidle, google-chrome, obsidian, anki, calibre, imv (xem ảnh), mpv (xem video), sioyek, ripgrep, fd… |
 | `sway.nix` | Cửa sổ, layout, idle/lock/sleep (swayidle), phím tắt (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)) |
-| `waybar.nix` / `alacritty.nix` + `starship.nix` / `gtk.nix` / `mako.nix` | Thanh trạng thái / terminal / theme / thông báo |
+| `waybar.nix` / `foot.nix` + `starship.nix` / `gtk.nix` / `mako.nix` | Thanh trạng thái / terminal / theme / thông báo |
+| `mimeapps.nix` | App mặc định theo loại file: imv (ảnh), mpv (video), sioyek (PDF), calibre (epub), Chrome (web), nvim (text) — khai trong `xdg.mimeApps` (**phải bật `enable`**) |
 | `fcitx5.nix` | Bộ gõ tiếng Việt (Bamboo engine, Telex) |
 | `scripts.nix` | Script `~/.local/bin`: lock-screen, power-menu, quick-lang, screenshot-menu, wallpaper-set/menu... |
 | `pomodoro.nix` | Đồng hồ PHIÊN TẬP TRUNG duy nhất (focus): menu `$mod+p` — rảnh: ⌨ tự nhập 1–480 phút / preset 🍅 30/60/120; có phiên: chỉ ⏸/▶ toggle + ↺ reset; không break; phiên chạy → tự dừng swayidle (icon mắt trên bar đồng bộ); máy ngủ → tự pause phiên, thức dậy → tự tiếp tục; tự phục hồi khi daemon chết |
 | `remnote.nix` | RemNote AppImage (khung cài + script `setup-remnote`) |
-| `thunar.nix` | File manager đồ hoạ (giữ lại) + mở terminal bằng Alacritty. **Không dùng thùng rác** — xoá file bằng yazi/rm |
-| `yazi.nix` | File manager trong terminal (`$mod+y` dùng chung, `$mod+Shift+y` mở thẳng thư mục ảnh nền) — dùng để thêm/xoá ảnh ngoài repo. Config tối giải tại `home/yazi/yazi.toml` |
+| `thunar.nix` | File manager đồ hoạ (giữ lại) + mở terminal bằng Foot. **Không dùng thùng rác** — xoá file bằng yazi/rm |
+| `yazi.nix` | File manager trong terminal (`$mod+y` dùng chung, `$mod+Shift+y` mở thẳng thư mục ảnh nền) — dùng để thêm/xoá ảnh ngoài repo. Config tối giải tại `home/yazi/yazi.toml`. **Xem trước ảnh hoạt động nhờ foot hỗ trợ sixel** |
 
 ## Dòng chảy khởi động
 

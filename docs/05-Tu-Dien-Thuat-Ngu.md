@@ -33,9 +33,12 @@
 | **Sway** | Tiling window manager cho Wayland (`home/sway.nix`) |
 | **Greetd / Tuigreet** | Display manager nhẹ + màn hình đăng nhập TUI |
 | **Waybar / Mako** | Thanh trạng thái / daemon thông báo |
-| **Alacritty** | Terminal mặc định (theme Tokyo Night) |
+| **Foot** | Terminal mặc định (theme Tokyo Night). Chọn foot vì hỗ trợ **sixel** → yazi xem trước ảnh thật (Alacritty không có kitty-graphics/sixel) |
+| **Sixel** | Chuẩn vẽ ảnh trong terminal (ô ký tự). Foot hỗ trợ → yazi hiện ảnh xem trước không cần gói phụ |
+| **Sway không có blur** | Hiệu ứng "acrylic" (blur nền cửa sổ) **không tồn tại** trên Sway — kể cả Alacritty (blur chỉ chạy macOS/KDE). Chỉ có trong suốt phẳng; muốn giống kính mờ thì dùng **ảnh nền đã blur sẵn** |
 | **Starship** | Prompt shell tối giản (directory + git, không user@hostname) |
 | **Rofi** | Launcher ứng dụng + chuyển cửa sổ |
+| **imv / mpv** | Xem ảnh / xem video (nhẹ, phím tắt tốt — thay cho mở bằng Chrome) |
 | **PipeWire** | Máy chủ âm thanh/video (thay PulseAudio) |
 | **grim / slurp** | Chụp màn hình / chọn vùng |
 | **wl-clipboard** | Clipboard Wayland (`wl-copy` / `wl-paste`) |
@@ -46,7 +49,8 @@
 |---|---|
 | **Home Manager** | Công cụ khai báo config user (`~/.config`, `~/.local/bin`, gói user) |
 | **home.packages** | Gói user trong `home/packages.nix` |
-| **xdg.enable** | Bật `xdg.configFile`, `xdg.desktopEntries`, `xdg.mimeApps` |
+| **xdg.enable** | Bật `xdg.configFile`, `xdg.desktopEntries` |
+| **xdg.mimeApps** | App mặc định theo mime — **mặc định `enable = false`**, quên bật thì mọi khai báo bị bỏ qua im lặng (`home/mimeapps.nix`) |
 | **desktop entry** | File `.desktop` mô tả app cho menu / file manager |
 | **AppImage** | Gói app tự chứa (RemNote), chạy bằng `appimage-run` |
 

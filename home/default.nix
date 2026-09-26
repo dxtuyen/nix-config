@@ -16,7 +16,8 @@
   imports = [
     ./packages.nix
     ./git.nix
-    ./alacritty.nix
+    ./foot.nix
+    ./mimeapps.nix
     ./starship.nix
     ./gtk.nix
     ./sway.nix
@@ -41,6 +42,10 @@
 
       # direnv: tu kich hoat moi truong nix-shell khi cd vao folder co .envrc
       eval "$(direnv hook bash)"
+
+      # zoxide: ghi nho thu muc hay di, `z <ten>` nhay thang toi.
+      # Bat buoc cho `z` ton tai trong moi shell moi.
+      eval "$(zoxide init bash)"
 
       # Starship không set title nên tự phát OSC 2 mỗi prompt.
       __set_window_title() {

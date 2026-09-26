@@ -19,9 +19,14 @@
       "Development"
       "Viewer"
     ];
-    mimeType = [ "application/pdf" ];
     terminal = false;
     startupNotify = true;
-    settings.StartupWMClass = "sioyek";
+    settings = {
+      StartupWMClass = "sioyek";
+      # `mimeType` bị module xdg.desktopEntries dịch qua `extraConfig` — option
+      # đã bị XOÁ ở Home-Manager 26.05 → entry này không được sinh file.
+      # `settings` là option thay thế, vẫn sinh đúng dòng MimeType=.
+      MimeType = "application/pdf;";
+    };
   };
 }

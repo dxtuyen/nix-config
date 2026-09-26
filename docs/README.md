@@ -18,6 +18,8 @@ Mỗi trang trả lời một câu hỏi thực tế, đọc theo nhu cầu, kh�
 ## Luồng nhanh theo tình huống
 
 - **Sửa config hàng ngày** → [02](02-Van-Hanh-Hang-Ngay.md)
+- **Đổi app mặc định khi mở file (ảnh/video/pdf/epub)** → [02 — Mở file ≠ Xem trước](02-Van-Hanh-Hang-Ngay.md#mở-file--xem-trước-preview)
+- **yazi không hiện ảnh xem trước** → [02 — Sự cố thường gặp](02-Van-Hanh-Hang-Ngay.md#sự-cố-thường-gặp)
 - **Cài máy mới** → [03](03-Cai-May-Moi.md) rồi [04](04-Sao-Luu-Phuc-Hoi.md) (đừng quên khôi phục dữ liệu!)
 - **Sang máy mới chỉ có 2 việc tay**: đặt mật khẩu ([03 Bước 7.5](03-Cai-May-Moi.md)) + SSH key lên GitHub ([03 Bước 10](03-Cai-May-Moi.md)) — còn lại tự có sau `nixos-install`
 - **Hỏng máy nặng / mất dữ liệu** → [04](04-Sao-Luu-Phuc-Hoi.md)
