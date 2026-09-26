@@ -289,13 +289,15 @@ Sau khi vào desktop (Sway), mở terminal và kiểm tra theo thứ tự:
 2. **Kernel có `resume`**: `cat /proc/cmdline` phải chứa `resume=UUID=<SWAP_UUID>`.
 3. **Phân vùng đúng**: `lsblk -f`.
 4. **Clone repo về máy** để lần sau rebuild tại chỗ: `git clone https://github.com/dxtuyen/nix-config.git ~/nix-config`.
-5. **Copy ảnh nền vào `~/Pictures/wallpapers/`** — ảnh nền **KHÔNG nằm trong repo** (chỉ `lockscreen/nixos.jpg` là ảnh duy nhất được commit). Lấy từ máy cũ / USB / backup, hoặc tải lại:
-   ```bash
-   mkdir -p ~/Pictures/wallpapers
-   cp -r /đường/dẫn/ảnh-của-bạn/* ~/Pictures/wallpapers/
-   ls ~/Pictures/wallpapers/       # kiểm tra đã đủ ảnh chưa
-   ```
-   Không có bước này thì máy chạy vẫn ổn, chỉ là `Alt+Tab` sẽ báo *"Không có ảnh nào"*.
+5. **Ảnh nền (tuỳ chọn)** — ảnh nền **KHÔNG nằm trong repo** (chỉ `lockscreen/nixos.jpg` là ảnh duy nhất được commit).
+   - **Bỏ qua bước này cũng được**: khi thư mục ảnh rỗng, hệ thống tự dùng **màu nền Tokyo Night `#1a1b26`** → không có màn đen, không lỗi.
+   - Muốn có ảnh thật thì copy từ máy cũ / USB / backup:
+     ```bash
+     mkdir -p ~/Pictures/wallpapers
+     cp -r /đường/dẫn/ảnh-của-bạn/* ~/Pictures/wallpapers/
+     ls ~/Pictures/wallpapers/       # kiểm tra đã đủ ảnh chưa
+     ```
+   - Trên máy đã chạy: bấm **`$mod+y`** (yazi) để thêm ảnh bằng giao diện, không cần lệnh.
 6. **Thử hibernate**: chạy `sudo systemctl hibernate` — máy lưu tất cả cửa sổ rồi tắt nguồn; bật lại, đăng nhập, mọi thứ khôi phục nguyên trạng.
 7. **Chế độ ngủ (deep sleep)**: chạy `cat /sys/power/mem_sleep`.
    - Thấy `s2idle [deep]` → máy hỗ trợ deep (S3), giữ nguyên config. ✓

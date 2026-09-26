@@ -92,18 +92,26 @@
         # KHÔNG có logic theo giờ, không chia pool: mọi ảnh trong
         # ~/Pictures/wallpapers đều random được. Thêm ảnh mới = cp file vào đó,
         # không cần rebuild, không cần sửa gì thêm.
+        # CHƯA CÓ ẢNH nào (máy mới / vừa xoá hết) → dự phòng bằng MÀU nền
+        # theme: awww nhận hexcode nên không cần file ảnh, 0 byte trong repo.
         # Sway gọi lúc đăng nhập với --if-empty → bật máy ra đúng ảnh đang dùng.
         set -u
 
         WALL_DIR="$HOME/Pictures/wallpapers"
         CACHE="$HOME/.cache/wallpaper-current"
         AWWW=${pkgs.awww}/bin/awww
+        FALLBACK_COLOR="0x1a1b26" # nền Tokyo Night — dùng khi chưa có ảnh nào
 
         # realpath ảnh đang hiển thị: ưu tiên awww (chính xác), dự phòng cache.
         current_resolved() {
           local cur
           cur="$($AWWW query 2>/dev/null | sed -n 's/.*currently displaying: image: //p' | head -1)"
           [ -z "$cur" ] && cur="$(cat "$CACHE" 2>/dev/null || true)"
+          # awww trả về hexcode (vd 0x1a1b26ff) khi nền là MÀU TRƠN, không phải
+          # đường dẫn file — readlink -f sẽ ra rỗng và phá logic so sánh.
+          case "$cur" in
+            0x*) printf '%s\n' "$cur"; return 0 ;;
+          esac
           [ -n "$cur" ] && readlink -f -- "$cur" 2>/dev/null
           return 0
         }
@@ -143,8 +151,14 @@
         else
           mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
           if [ "''${#imgs[@]}" -eq 0 ]; then
-            notify-send -a wallpaper "wallpaper-set" "Không có ảnh nào trong $WALL_DIR" 2>/dev/null || true
-            exit 1
+            # Chưa có ảnh nào (máy mới vừa cài / vừa xoá hết) → dự phòng bằng
+            # MÀU nền theme. awww nhận thẳng hexcode nên KHÔNG cần file ảnh,
+            # không tốn byte nào trong repo. Thoát 0 để lúc đăng nhập coi như
+            # đã đặt nền thành công, không spam lỗi.
+            $AWWW img "$FALLBACK_COLOR" -t fade --transition-duration 1.5
+            notify-send -a wallpaper "wallpaper-set" \
+              "Chưa có ảnh nền — tạm dùng màu nền. Thêm ảnh: mở yazi (\$mod+y) rồi copy vào Pictures/wallpapers" 2>/dev/null || true
+            exit 0
           fi
 
           # Loại ảnh đang hiển thị khỏi danh sách → luôn đổi sang ảnh khác.
@@ -184,11 +198,18 @@
 
         cur="$($AWWW query 2>/dev/null | sed -n 's/.*currently displaying: image: //p' | head -1)"
         [ -z "$cur" ] && cur="$(cat "$CACHE" 2>/dev/null || true)"
-        cur="$(readlink -f -- "''${cur:-}" 2>/dev/null || true)"
+        # Nền MÀU TRƠN (awww trả hexcode 0x…) không phải đường dẫn file →
+        # readlink -f sẽ ra rỗng. Giữ nguyên hexcode, không so sánh được thì
+        # coi như chưa chọn ảnh nào (con trỏ về dòng đầu).
+        case "$cur" in
+          0x*) cur="" ;;
+          *) cur="$(readlink -f -- "''${cur:-}" 2>/dev/null || true)" ;;
+        esac
 
         mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
         if [ "''${#imgs[@]}" -eq 0 ]; then
-          notify-send -a wallpaper "wallpaper-menu" "Không có ảnh nào trong $WALL_DIR"
+          notify-send -a wallpaper "wallpaper-menu" \
+            "Chưa có ảnh nào trong $WALL_DIR — thêm bằng yazi (\$mod+y). Hiện đang dùng màu nền dự phòng."
           exit 0
         fi
 

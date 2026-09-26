@@ -28,6 +28,7 @@
     ./pomodoro.nix
     ./remnote.nix
     ./thunar.nix
+    ./yazi.nix
   ];
 
   programs.home-manager.enable = true;

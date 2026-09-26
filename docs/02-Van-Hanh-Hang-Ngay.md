@@ -34,6 +34,7 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | `wallpaper-set` | `Alt+Tab`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Lúc đăng nhập: **giữ nguyên ảnh phiên trước** (chưa có ảnh → random 1 ảnh). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
 | `wallpaper-menu` | `Alt+Shift+Tab`: menu rofi **hiện thumbnail** dạng lưới 3 cột × 3 hàng — ảnh trên, tên file dưới (dài quá tự cắt `…`), ảnh đang dùng đánh dấu `●`; xếp lấp từ trái sang phải (đủ 3 mới xuống hàng), quá 9 ảnh giữ 3 hàng và cuộn (thanh bên phải) |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
+| `yazi` | `$mod+y`: file manager trong terminal, mở thẳng `~/Pictures/wallpapers` để thêm/xoá ảnh nền bằng giao diện. Thunar vẫn dùng được cho việc khác |
 | `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → chỉ ⏸/▶ + ↺; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
 
@@ -49,13 +50,29 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 
 - **Mỗi lần đăng nhập**: giữ nguyên ảnh của phiên trước (daemon awww tự khôi phục từ cache `~/.cache/awww`) — nếu chưa có ảnh (máy mới / cache trống) mới tự random 1 ảnh
 - **Đổi ảnh bất cứ lúc nào**: `Alt+Tab` (random — luôn khác ảnh đang dùng) hoặc `Alt+Shift+Tab` (menu rofi lưới thumbnail 3×3, tên dưới ảnh, xếp lấp trái→phải, `●` là ảnh đang dùng; >9 ảnh tự cuộn)
+- **Thêm/xoá ảnh**: `$mod+y` mở **yazi** thẳng thư mục ảnh nền (xem [Thêm ảnh bằng yazi](#thêm-ảnh-bằng-yazi))
+
+### ⭐ Chưa có ảnh nào? Tự động dùng màu nền
+
+**Không bao giờ thấy màn đen.** Khi `~/Pictures/wallpapers/` rỗng (máy mới vừa cài, hoặc vừa xoá hết ảnh), `wallpaper-set` tự đặt nền là **màu Tokyo Night `#1a1b26`** — màu nền dùng ở mọi nơi trong config.
+
+```bash
+awww img 0x1a1b26        # awww nhận thẳng HEXCODE, không cần file ảnh
+awww query               # → currently displaying: image: 0x1a1b26ff
+```
+
+- ✅ **0 byte** trong repo — không lo repo phình
+- ✅ Máy mới cài xong đăng nhập là có nền đẹp, không lỗi, không phải copy ảnh gì cả
+- ✅ Báo qua `notify-send` hướng dẫn thêm ảnh
+
+> Khi đang ở chế độ màu, `wallpaper-menu` báo *"chưa có ảnh nào — thêm bằng yazi"* thay vì lỗi. Script cũng tự nhận ra giá trị hexcode và **không** cố `readlink` nó như đường dẫn file.
 
 **Thao tác nhanh — chọn nhanh đường đi:**
 
 | Muốn | Cách làm | Rebuild? |
 |---|---|---|
-| Thêm ảnh | `cp` vào `~/Pictures/wallpapers/` | ❌ Không |
-| Xóa ảnh | `rm` trong `~/Pictures/wallpapers/` | ❌ Không |
+| Thêm ảnh | `$mod+y` (yazi) hoặc `cp` vào `~/Pictures/wallpapers/` | ❌ Không |
+| Xóa ảnh | `rm` trong `~/Pictures/wallpapers/` (yazi hỏi xác nhận) | ❌ Không |
 | Thay ảnh cùng tên | `cp -f` đè file cũ | ❌ Không |
 | Đổi tên ảnh | `mv` — không theo quy ước tên nào | ❌ Không |
 | Thêm ảnh **mới vào repo** | ❌ Không làm — repo chỉ có `lockscreen/nixos.jpg` | — |
@@ -64,7 +81,20 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 >
 > `.gitignore` của repo đã có dòng `wallpapers/` để chặn lỡ tay copy ảnh vào `~/nix-config/wallpapers/` rồi `git add`.
 
-### Thêm ảnh
+### Thêm ảnh bằng yazi (`$mod+y`)
+
+Cách nhanh nhất, không cần nhớ lệnh:
+
+1. Bấm **`$mod+y`** → yazi mở thẳng `~/Pictures/wallpapers/`
+2. Tới nơi ảnh nằm (ví dụ `~/Downloads`) bằng `h` (đi lên) hoặc `~` (về home)
+3. Bấm `y` để **copy** → quay lại thư mục ảnh → `p` để **paste**
+4. `Alt+Tab` → ảnh mới hiện ngay
+
+Xoá ảnh: bấm `d` trong yazi (hỏi xác nhận) — **không qua thùng rác**, xoá là mất hẳn.
+
+Config yazi: `home/yazi/yazi.toml` — cố ý **tối giảu**, Yazi tự merge với mặc định nên không mất phím tắt nào. Đã kiểm tra parse thành công trên yazi 26.5.6.
+
+### Thêm ảnh (dòng lệnh)
 
 ```bash
 cp ~/Downloads/hinh-moi.jpg ~/Pictures/wallpapers/hinh-moi.jpg

@@ -116,6 +116,9 @@ in
       # ($mod+w đã dùng cho layout tabbed.)
       bindsym Mod1+w exec ~/.local/bin/wallpaper-set
       bindsym Mod1+Shift+w exec ~/.local/bin/wallpaper-menu
+      # $mod+y mở yazi THẲNG thư mục ảnh nền (ngoài repo) để thêm/xoá ảnh
+      # bằng giao diện. Thư mục do home.activation tạo sẵn nên không lỗi.
+      bindsym $mod+y exec $term -e yazi $HOME/Pictures/wallpapers
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       bindsym $mod+Shift+n exec ~/.local/bin/toggle-wlsunset

@@ -38,7 +38,7 @@ nix-config/
 │   ├── git.nix                  # Git identity toàn cục (user/email, pull.rebase…)
 │   ├── sway.nix                 # Sway: cửa sổ, phím tắt, idle/lock/sleep
 │   ├── scripts.nix              # Script ~/.local/bin (power-menu, quick-lang…)
-│   └── ...                      # waybar, alacritty, starship, gtk, mako, fcitx5, pomodoro (focus), thunar, remnote
+│   └── ...                      # waybar, alacritty, starship, gtk, mako, fcitx5, pomodoro (focus), thunar, yazi ($mod+y), remnote
 ├── modules/nixos/               # Module NixOS (system-level)
 │   ├── core.nix                 # Nền tảng: Nix/flake, boot, mạng, user
 │   ├── desktop.nix              # Sway/greetd, PipeWire, Fcitx5, fonts
