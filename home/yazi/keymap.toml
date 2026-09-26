@@ -5,40 +5,48 @@
 # khoá `keymap` (không prepend/append) thì sẽ XOÁ SẠCH toàn bộ phím tắt
 # mặc định — tránh.
 #
+# Dùng kiểu MẢNG `[mgr] prepend_keymap = [...]` (không phải `[[mgr.prepend_keymap]]`)
+# vì plugin `recycle-bin` yêu cầu: TOML không cho trộn 2 kiểu trong cùng file.
+#
 # Đã đối chiếu preset `keymap-default.toml` + `yazi-default.toml` của yazi
-# 26.5.6. Mọi mục dưới đây đều đã test thật bằng PTY.
+# 26.5.6 (đọc trực tiếp từ binary, không đoán).
 
-[[mgr.prepend_keymap]]
-# ⭐ SỬA LỖI: bấm <Enter> lên THƯ MỤC thì mở nvim, không vào thư mục.
-#
-# Nguyên nhân (2 mảnh ghép, đều là mặc định của yazi + config cũ của ta):
-#   1. preset `[open] rules` dòng 72 khai thư mục là
-#        { mime = "folder/*", use = [ "edit", "open", "reveal" ] }
-#      → "edit" ĐỨNG ĐẦU, nên <Enter> (run = "open") sẽ mở thư mục bằng edit.
-#   2. `yazi.toml` ghi đè `[opener] edit` thành `foot … nvim %s`.
-# Ghép lại → Enter vào folder = mở nvim. Rất khó chịu khi chủ yếu DỆT file.
-#
-# Cách sửa: <Enter> dùng smart-enter, nó tự rẽ nhánh theo loại mục —
-#   thư mục → `enter` (đi vào, KHÔNG đụng bảng `use`)
-#   file     → `open`  (mở app theo mime, giữ nguyên hành vi cũ)
-# nên giữ nguyên thói quen bấm <Enter> để mở file.
-on   = "<Enter>"
-run  = "plugin smart-enter"
-desc = "Enter the child directory, or open the file"
+[mgr]
+prepend_keymap = [
+  # ⭐ SỬA LỖI: bấm <Enter> lên THƯ MỤC thì mở nvim, không vào thư mục.
+  #
+  # Nguyên nhân (2 mảnh ghép, đều là mặc định của yazi + config cũ của ta):
+  #   1. preset `[open] rules` dòng 72 khai thư mục là
+  #        { mime = "folder/*", use = [ "edit", "open", "reveal" ] }
+  #      → "edit" ĐỨNG ĐẦU, nên <Enter> (run = "open") sẽ mở thư mục bằng edit.
+  #   2. `yazi.toml` ghi đè `[opener] edit` thành `foot … nvim %s`.
+  # Ghép lại → Enter vào folder = mở nvim. Rất khó chịu khi chủ yếu DỆT file.
+  #
+  # Cách sửa: <Enter> dùng smart-enter, nó tự rẽ nhánh theo loại mục —
+  #   thư mục → `enter` (đi vào, KHÔNG đụng bảng `use`)
+  #   file     → `open`  (mở app theo mime, giữ nguyên hành vi cũ)
+  # nên giữ nguyên thói quen bấm <Enter> để mở file.
+  { on = "<Enter>", run = "plugin smart-enter", desc = "Enter the child directory, or open the file" },
 
-[[mgr.prepend_keymap]]
-# `g t` — bản yazi 26.5.6 KHÔNG có sẵn (scheme `trash://` mới xuất hiện ở
-# nightly; đã kiểm binary: không có chuỗi nào). Dùng plugin `recycle-bin` thay
-# thế — cài ở home/yazi.nix, cần gói `trash-cli`.
-#
-# Ra menu: o mở thùng rác · r khôi phục (chọn nhiều được) · d xoá hẳn
-#          e dọn sạch · D dọn mục > 30 ngày
-on   = [ "g", "t" ]
-run  = "plugin recycle-bin menu"
-desc = "Recycle bin menu"
+  # `R b` — menu thùng rác, THEO ĐÚNG preset khuyến nghị của plugin
+  # recycle-bin (bản 26.5.6 chưa có sẵn: scheme `trash://` mới xuất hiện ở
+  # nightly — đã kiểm binary, không có chuỗi nào). Plugin + `trash-cli` khai ở
+  # home/yazi.nix.
+  #
+  # ⚠️ KHÔNG thêm đối số sau tên plugin — đúng như README: `plugin recycle-bin`
+  # (entry tự rơi về menu khi không có action). Cú pháp có `--` chỉ dành cho
+  # các binding gọi thẳng từng lệnh, không dùng ở đây.
+  #
+  # Menu: o mở thùng rác · r khôi phục (tick nhiều bằng Space) · d xoá hẳn
+  #       e dọn sạch · D dọn mục > 30 ngày
+  { on = [ "R", "b" ], run = "plugin recycle-bin", desc = "Open Recycle Bin menu" },
+]
 
 # ⚠️ CỐ Ý KHÔNG gắn smart-enter vào phím `l`.
-# `l` mặc định của yazi = `enter` (preset dòng 39) → chỉ đi vào thư mục con,
-# đúng như trước. Gắn plugin vào `l` sẽ làm `l` MỞ FILE, không mong muốn.
-# Còn `<Right>` (preset dòng 42) cũng là `enter` — dùng khi cần.
+# `l` mặc định của yazi = `enter` → chỉ đi vào thư mục con, đúng như trước.
+# Gắn plugin vào `l` sẽ làm `l` MỞ FILE, không mong muốn.
+# Còn `<Right>` cũng là `enter` — dùng khi cần.
+#
+# Xoá mềm / xoá hẳn DÙNG SẴN của yazi, không cần khai: `d` vào thùng rác,
+# `D` xoá vĩnh viễn.
 
