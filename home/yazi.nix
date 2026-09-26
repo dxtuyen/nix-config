@@ -11,6 +11,11 @@
 {
   home.packages = [ pkgs.yazi ];
 
-  # Yazi tự merge file này với config mặc định của nó.
-  xdg.configFile."yazi/yazi.toml".source = ./yazi/yazi.toml;
+  # Yazi tự merge 2 file này với config mặc định của nó.
+  # yazi.toml: hành vi (opener, tỉ lệ cột, luật mở app theo loại file).
+  # theme.toml: màu — chỉ ghi đè chỗ có nền màu, xem chú thích trong file.
+  xdg.configFile = {
+    "yazi/yazi.toml".source = ./yazi/yazi.toml;
+    "yazi/theme.toml".source = ./yazi/theme.toml;
+  };
 }
