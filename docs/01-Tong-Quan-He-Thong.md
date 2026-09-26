@@ -31,7 +31,7 @@
 |---|---|
 | `default.nix` | Entry point: import tất cả, bật `xdg`, PATH `~/.local/bin` |
 | `git.nix` | Git identity toàn cục (tất cả repo): user `dxtuyen` + email, `defaultBranch=main`, `pull.rebase`, `pager=cat` |
-| `packages.nix` | Gói user: rofi, grim, slurp, swaylock, swayidle, google-chrome, obsidian, anki, **foliate** (đọc sách), imv (xem ảnh), mpv (xem video), sioyek, ripgrep, fd… |
+| `packages.nix` | Gói user: rofi, grim, slurp, swaylock, swayidle, google-chrome, obsidian, **foliate** (đọc sách), imv (xem ảnh), mpv (xem video), sioyek, ripgrep, fd… |
 | `sway.nix` | Cửa sổ, layout, idle/lock/sleep (swayidle), phím tắt (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)) |
 | `waybar.nix` / `foot.nix` + `starship.nix` / `gtk.nix` / `mako.nix` | Thanh trạng thái / terminal / theme / thông báo |
 | `mimeapps.nix` | App mặc định theo loại file: imv (ảnh), mpv (video), sioyek (PDF), **foliate** (epub/mobi/azw3/fb2/cbz/opds), Chrome (web/HTML), nvim (text) — khai trong `xdg.mimeApps` (**phải bật `enable`**) |

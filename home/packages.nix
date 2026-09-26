@@ -36,7 +36,6 @@
     zoxide # nhớ thư mục hay đi, `z <tên>` nhảy thẳng tới (khởi tạo ở home/default.nix)
     sioyek
     obsidian
-    anki
     jq
     fastfetch
     libreoffice

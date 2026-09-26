@@ -112,10 +112,6 @@ in
       for_window [class="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
       for_window [app_id="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
 
-      # Anki luôn mở vào workspace 7.
-      for_window [class="(?i)^anki$"] move container to workspace number 7, workspace number 7
-      for_window [app_id="(?i)^anki$"] move container to workspace number 7, workspace number 7
-
       # Inhibit idle
       for_window [class="google-chrome"] inhibit_idle fullscreen
 
