@@ -10,7 +10,7 @@
 # kiểu mảng gọn hơn khi có nhiều binding.
 #
 # Đã đối chiếu preset `keymap-default.toml` + `yazi-default.toml` của yazi
-# 26.5.6 (đọc trực tiếp từ binary, không đoán).
+# 26.9.1 (đọc trực tiếp từ GitHub, không đoán).
 
 [mgr]
 prepend_keymap = [
@@ -29,21 +29,6 @@ prepend_keymap = [
   # nên giữ nguyên thói quen bấm <Enter> để mở file.
   { on = "<Enter>", run = "plugin smart-enter", desc = "Enter the child directory, or open the file" },
 
-  # `g t` — THEO ĐÚNG preset chính thức của yazi (đã grep trực tiếp preset
-  # `main` trên GitHub):
-  #     { on = [ "g", "t" ], run = "plugin trash", desc = "Go to trash bin" }
-  # nằm cùng nhóm với g h (cd ~) · g c (~/.config) · g d (~/Downloads) ·
-  # g f (follow symlink) → `g` = "go to", `t` = trash.
-  #
-  # Bản 26.5.6 CHƯA có binding này (đã kiểm binary: không có chuỗi "Go to trash
-  # bin"; scheme `trash://` mới xuất hiện ở nightly) → dùng plugin `recycle-bin`
-  # + gói `trash-cli`, khai ở home/yazi.nix. Khi nâng cấp yazi, phím này vẫn
-  # đúng ý nghĩa, không phải đổi.
-  #
-  # Menu: o mở thùng rác · r khôi phục (tick nhiều bằng Space) · d xoá hẳn
-  #       e dọn sạch · D dọn mục > 30 ngày
-  { on = [ "g", "t" ], run = "plugin recycle-bin", desc = "Open Recycle Bin menu" },
-
   { on = "B", run = 'shell --orphan "foot --title=term -D \"$PWD\""', desc = "Open a new terminal" },
   { on = "b", run = 'shell --block "$SHELL"', desc = "Open a shell here (in Yazi's window)" },
 ]
@@ -53,6 +38,12 @@ prepend_keymap = [
 # Gắn plugin vào `l` sẽ làm `l` MỞ FILE, không mong muốn.
 # Còn `<Right>` cũng là `enter` — dùng khi cần.
 #
+# Phím thùng rác: `g t` là phím CỦA PRESET yazi 26.9.1 (đã đọc trực tiếp file
+# `keymap-default.toml` của bản này: `{ on = ["g","t"], run = "plugin trash",
+# desc = "Go to trash bin" }`), cùng nhóm với `g h`/`g c`/`g d`/`g f`.
+# KHÔNG khai lại ở đây — khai trùng chỉ là thừa.
+#
 # Xoá mềm / xoá hẳn DÙNG SẴN của yazi, không cần khai: `d` vào thùng rác,
-# `D` xoá vĩnh viễn.
+# `D` xoá vĩnh viễn. Bên trong thùng rác thì dùng `D` — nó xoá sạch cả file
+# lẫn `.trashinfo` (bản cũ 26.5.6 để lại .trashinfo mồ côi, 26.9.1 đã sửa).
 

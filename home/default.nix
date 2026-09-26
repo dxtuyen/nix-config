@@ -1,7 +1,15 @@
-{ pkgs, userName, ... }:
+{
+  pkgs,
+  unstablePkgs,
+  userName,
+  ...
+}:
 
 # Điểm nhập chính của Home Manager cho user.
 # Mọi module trong thư mục home/ đều được import ở đây.
+#
+# `unstablePkgs` là bộ gói từ nixos-unstable (xem `flake.nix`) — CHỈ `home/yazi.nix`
+# dùng tới, để lấy yazi mới hơn bản trong nixpkgs ổn định.
 
 {
   home = {
