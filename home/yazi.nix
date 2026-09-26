@@ -47,4 +47,23 @@
   # nhầm cả nhóm file đang chọn). Muốn mở được cả nhóm thì mới cần
   # `require("smart-enter"):setup { open_multi = true }` trong init.lua.
   xdg.configFile."yazi/plugins/smart-enter.yazi".source = pkgs.yaziPlugins.smart-enter;
+
+  # ── Plugin: recycle-bin (duyệt / khôi phục thùng rác) ──────────────────────
+  # Cần vì yazi 26.5.6 CHƯA có `g t` + scheme `trash://` (đó là tính năng của
+  # bản nightly — đã kiểm trực tiếp binary: không có chuỗi nào). Bản này vẫn
+  # XOÁ MỀM bình thường (`d`), chỉ thiếu phần xem/khôi phục → plugin này bù lại.
+  #
+  # Đã đọc source để chắc chắn chạy được với 26.5.6:
+  #   - không dùng `fs.trash` (API mới, 26.5.6 chưa có) ✔
+  #   - chỉ dùng `fs.cha` + `fs.remove` (đã có sẵn) ✔
+  #   - gọi shell: trash-list / trash-restore / trash-rm / trash-empty → cần
+  #     gói `trash-cli` (đã khai ở home/packages.nix) ✔
+  xdg.configFile."yazi/plugins/recycle-bin.yazi".source = pkgs.yaziPlugins.recycle-bin;
+
+  # ⚠️ `setup()` BẮT BUỘC: entry đọc config từ state, không có setup thì
+  # `config` = nil → các lệnh dùng `config.trash_dir` sẽ lỗi. Gọi không tham số
+  # để dùng default (trash_dir tự dò qua `trash-list --trash-dirs`).
+  xdg.configFile."yazi/init.lua".text = ''
+    require("recycle-bin"):setup()
+  '';
 }

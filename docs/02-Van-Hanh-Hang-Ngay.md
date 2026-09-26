@@ -35,7 +35,7 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | `wallpaper-set` | `Alt+Tab`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Lúc đăng nhập: **giữ nguyên ảnh phiên trước** (chưa có ảnh → random 1 ảnh). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
 | `wallpaper-menu` | `Alt+Shift+Tab`: menu rofi **hiện thumbnail** dạng lưới 3 cột × 3 hàng — ảnh trên, tên file dưới (dài quá tự cắt `…`), ảnh đang dùng đánh dấu `●`; xếp lấp từ trái sang phải (đủ 3 mới xuống hàng), quá 9 ảnh giữ 3 hàng và cuộn (thanh bên phải) |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
-| `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` mở thùng rác. Thunar vẫn dùng được cho việc khác |
+| `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
 | `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → chỉ ⏸/▶ + ↺; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
 
@@ -126,7 +126,8 @@ Popup chỉ là `foot --title=yazi-popup` + rule floating theo title đó trong 
 | `<Enter>` | ✅ vào thư mục | ✅ mở app theo mime |
 | `l` / `<Right>` | ✅ vào thư mục | ⬜ không làm gì (giữ nguyên preset — chỉ để đi vào folder) |
 | `h` | ✅ ra thư mục cha | — |
-| `o` / `<S-Enter>` / `O` | ✅ mở | ✅ mở (chọn nhiều / chọn app) |
+| `g` `t` | Menu thùng rác (duyệt / khôi phục / dọn) — xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300) | |
+| `d` / `D` | Xoá mềm / xoá hẳn | |
 
 > ⭐ **Xem trước ảnh trong yazi hoạt động nhờ terminal là `foot`**: foot xuất `TERM=foot` và hỗ trợ **sixel**, yazi nhận ra ngay và vẽ ảnh thật trong khung preview — không cần cài thêm gói nào. (Alacritty không có kitty-graphics lẫn sixel, nên yazi phải gọi `ueberzugpp`, vốn vẽ ảnh ở layer-surface phía **sau** terminal → terminal phải trong suốt mới thấy.)
 
@@ -285,8 +286,21 @@ Thùng rác GIO **luôn hoạt động** vì `services.gvfs.enable` (khai ở `m
 |---|---|
 | `d` | Xoá → **vào thùng rác** (xoá mềm) |
 | `D` | Xoá **vĩnh viễn** — không khôi phục được, dùng khi dọn file rác chắc chắn |
-| `g` `t` | Mở thư mục thùng rác (`trash://`) để xem/khôi phục |
-| `O` (trong thùng rác) | Khôi phục file đã chọn về đúng chỗ cũ |
+| `g` `t` | Menu thùng rác (xem bên dưới) |
+
+> ⚠️ **Bản yazi 26.5.6 CHƯA có sẵn** scheme `trash://` lẫn phím `g t` gốc — đó là tính năng của bản nightly (đã kiểm trực tiếp binary: không có chuỗi nào). Nên `g t` ở đây là **plugin `recycle-bin`** khai trong `home/yazi.nix` + `home/yazi/keymap.toml`, cần gói `trash-cli`. Nếu xoá 2 chỗ đó, `g t` sẽ hết tác dụng (nhưng `d` vẫn xoá mềm bình thường).
+>
+> Nếu không muốn dùng plugin, xem thẳng `~/.local/share/Trash/files` trong yazi cũng được — đó là thư mục thật, chỉ thiếu chức năng khôi phục tự động.
+
+**Menu `g t` (plugin `recycle-bin`):**
+
+| Phím trong menu | Việc |
+|---|---|
+| `o` | Mở thư mục thùng rác để duyệt |
+| `r` | **Khôi phục** file đã chọn về chỗ cũ (tick nhiều file bằng `Space` trước; tự xử lý xung đột khi chỗ cũ đã có file) |
+| `d` | Xoá vĩnh viễn các mục đã chọn (có hỏi xác nhận) |
+| `e` | Dọn sạch toàn bộ (có xem trước danh sách + dung lượng) |
+| `D` | Dọn mục **cũ hơn 30 ngày** — trùng chức năng timer lúc 3h, dùng để dọn ngay trong phiên |
 
 Dùng bằng lệnh:
 

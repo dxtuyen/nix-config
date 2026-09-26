@@ -26,6 +26,17 @@ on   = "<Enter>"
 run  = "plugin smart-enter"
 desc = "Enter the child directory, or open the file"
 
+[[mgr.prepend_keymap]]
+# `g t` — bản yazi 26.5.6 KHÔNG có sẵn (scheme `trash://` mới xuất hiện ở
+# nightly; đã kiểm binary: không có chuỗi nào). Dùng plugin `recycle-bin` thay
+# thế — cài ở home/yazi.nix, cần gói `trash-cli`.
+#
+# Ra menu: o mở thùng rác · r khôi phục (chọn nhiều được) · d xoá hẳn
+#          e dọn sạch · D dọn mục > 30 ngày
+on   = [ "g", "t" ]
+run  = "plugin recycle-bin menu"
+desc = "Recycle bin menu"
+
 # ⚠️ CỐ Ý KHÔNG gắn smart-enter vào phím `l`.
 # `l` mặc định của yazi = `enter` (preset dòng 39) → chỉ đi vào thư mục con,
 # đúng như trước. Gắn plugin vào `l` sẽ làm `l` MỞ FILE, không mong muốn.

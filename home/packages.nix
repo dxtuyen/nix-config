@@ -20,6 +20,10 @@
     networkmanagerapplet
     blueman
     google-chrome
+    # trash-cli: plugin `recycle-bin` của yazi gọi lệnh `trash-list` /
+    # `trash-restore` / `trash-rm` / `trash-empty`. Không có gói này thì plugin
+    # báo "trashcli not found".
+    trash-cli
     # 📖 Sách: foliate đọc epub/mobi/azw3/fb2/cbz/opds (WebKitGTK → typography
     # đẹp hơn hẳn calibre-ebook-viewer). Thư viện nằm ở ~/Books/{Textbooks,Reading}
     # — KHÔNG dùng calibre nữa (đã gỡ), nên không có `ebook-convert` chuyển đổi:
