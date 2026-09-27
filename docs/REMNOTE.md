@@ -37,9 +37,42 @@ Quy trình **giống hệt nhau** cho cả 3 tình huống:
 Script làm gì (đơn giản tối đa, **KHÔNG so sánh hash**):
 - Tìm file `RemNote-*.AppImage` mới nhất trong `~/Downloads/` (theo thời gian sửa).
 - Không có file → báo lỗi và thoát.
-- Có file → **đè thẳng** lên `~/Apps/RemNote/RemNote.AppImage` (bản cũ bị thay) + `chmod +x`.
+- Có file → **đè thẳng** lên `~/Apps/RemNote/RemNote.AppImage` + `chmod +x`.
+  Bản cũ được giữ lại thành **`RemNote.AppImage.bak`** để quay lui nếu bản mới lỗi.
 - **Trích icon** từ AppImage ra `~/.local/share/icons/hicolor/512x512/apps/remnote.png` (xem [Icon trong Rofi](#icon-trong-rofi)).
 - Dữ liệu note/kiến thức **không bị ảnh hưởng** — RemNote lưu riêng trong thư mục dữ liệu của app; thay file AppImage chỉ thay "vỏ" chương trình.
+
+## Kiểm tra an toàn
+
+File AppImage **nặng ~207 MB**, tải dở rất dễ xảy ra (hết mạng, đóng tab giữa chừng).
+Nếu cài nhầm file hỏng thì mất app đang chạy. Nên script kiểm tra **2 lớp** trước khi đụng bản cũ:
+
+| Lớp | Cách kiểm tra | Bắt được trường hợp |
+|---|---|---|
+| 1. Magic bytes | Byte 8–10 phải là `AI\x02` | File **không phải** AppImage (đổi tên file HTML/PDF, tải nhầm trang 404) |
+| 2. Superblock squashfs | `unsquashfs -s` đọc cấu trúc squashfs | File **bị cắt cụt** — magic bytes vẫn đúng vì nằm trong ELF header, nhưng dữ liệu bên trong đã thiếu |
+
+> ⚠️ **Chỉ lớp 1 là KHÔNG ĐỦ.** File bị cắt còn 50 KB vẫn có `AI\x02` ở offset 8 nên vẫn
+> qua lớp 1 — không có lớp 2 thì script sẽ đè bản đang chạy bằng một file không
+> bao giờ khởi động được.
+
+Cả 2 lớp kiểm tra trên **file tạm**, chưa đụng tới bản cũ → lỗi thì bản cũ nguyên vẹn.
+
+## Quay lui (bản `.bak`)
+
+Mỗi lần cập nhật, bản cũ được giữ lại:
+
+```bash
+ls -lh ~/Apps/RemNote/
+# RemNote.AppImage       ← bản đang chạy
+# RemNote.AppImage.bak   ← bản trước đó
+```
+
+Bản mới lỗi / không khởi động được → quay lui trong 1 giây:
+
+```bash
+mv ~/Apps/RemNote/RemNote.AppImage.bak ~/Apps/RemNote/RemNote.AppImage
+```
 
 ## Icon trong Rofi
 
@@ -54,6 +87,11 @@ Vài điểm dễ sai đã được xử lý sẵn trong `home/remnote.nix`:
 | AppImage đặt icon ở thư mục size **không chuẩn** `hicolor/0x0` → GTK **không đọc** size này, copy nguyên thư mục cũng vẫn mất icon | `setup-remnote` copy file ra `hicolor/**512x512**/apps/remnote.png` (size GTK thật sự đọc) |
 | `Exec=appimage-run ...` (tên trần) → Rofi **loại bỏ entry** khi binary không có trong `PATH` của session | Trỏ tuyệt đối: `${pkgs.appimage-run}/bin/appimage-run` |
 | Trỏ icon **bằng tên** (`Icon=remnote`) → phụ thuộc icon theme đang dùng (`Papirus-Dark`) và icon cache của GTK | Trỏ **đường dẫn tuyệt đối** tới file PNG — không phụ thuộc theme, không phụ thuộc cache |
+| `AppImage --appimage-extract` **bung toàn bộ 207 MB** ra đĩa chỉ để lấy 1 file icon (~500MB–1GB rác, vài giây) | Dùng `unsquashfs -o <offset>` chỉ trích **đúng 1 file**: **~9 ms**, không ghi rác |
+
+> Vì `icon` đã trỏ **đường dẫn tuyệt đối**, GTK **không cần icon cache** → không phải
+> chạy `gtk-update-icon-cache` sau khi trích icon mới. Script vẫn gọi
+> `update-desktop-database` để Rofi/Thunar nhận app list mới ngay.
 
 Lưu ý khi debug:
 
@@ -88,7 +126,15 @@ Nên cứ dùng `setup-remnote` — nó làm cả hai việc trong một lệnh.
 
 ## Khi file bị lỗi / không chạy được
 
-1. **Xóa file cũ**:
+**Cách nhanh nhất — quay lui về `.bak`:**
+
+```bash
+mv ~/Apps/RemNote/RemNote.AppImage.bak ~/Apps/RemNote/RemNote.AppImage
+```
+
+Nếu không có `.bak` (lần cài đầu tiên):
+
+1. **Xóa file hỏng**:
    ```bash
    rm ~/Apps/RemNote/RemNote.AppImage
    ```
@@ -108,8 +154,9 @@ Chạy `sudo nixos-rebuild switch --flake .#laptop` — **không ảnh hưởng*
 | Tình huống | Thao tác |
 |---|---|
 | Máy mới (lần đầu) | rebuild → tải file về `~/Downloads/` → `setup-remnote` (file + icon) |
-| Có bản mới | tải file mới về `~/Downloads/` → `setup-remnote` (tự đè bản cũ + làm mới icon) |
-| File lỗi | xóa file cũ → tải lại → `setup-remnote` |
+| Có bản mới | tải file mới về `~/Downloads/` → `setup-remnote` (tự đè, giữ `.bak`, làm mới icon) |
+| Bản mới lỗi | `mv ~/Apps/RemNote/RemNote.AppImage.bak ~/Apps/RemNote/RemNote.AppImage` |
+| File tải dở / hỏng | `setup-remnote` **tự phát hiện và từ chối**, bản cũ giữ nguyên → chỉ cần tải lại |
 | Cài thủ công | `cp` + `chmod +x` (xem ở trên) |
 | Cập nhật config Nix | `nixos-rebuild switch` (không ảnh hưởng AppImage) |
 
