@@ -35,11 +35,12 @@ in
     memoryPercent = 50;
   };
 
-  # Hibernate: swap khai trong hardware-configuration.nix (file tự sinh).
-  # Điều kiện: swap ≥ RAM. Sang máy mới sửa UUID resume cho khớp swap mới
-  # (docs/03 Bước 7). deep sleep tiết kiệm pin hơn s2idle.
+  # Hibernate: tự động nhận diện thiết bị resume theo nhãn của file hệ thống.
+  # Phân vùng swap được format với nhãn 'swap' (mkswap -L swap).
+  # Điều kiện: swap ≥ RAM. Sang máy mới chỉ cần gán nhãn swap là tự khớp,
+  # không cần sửa UUID thủ công. deep sleep tiết kiệm pin hơn s2idle.
+  boot.resumeDevice = lib.mkDefault "/dev/disk/by-label/swap";
   boot.kernelParams = [
-    "resume=UUID=044520bf-eed9-498c-a382-97615c111b1f"
     "mem_sleep_default=deep"
   ];
 

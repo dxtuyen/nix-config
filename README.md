@@ -44,7 +44,7 @@ nix-config/
 │   ├── core.nix                 # Nền tảng: Nix/flake, boot, mạng, user
 │   ├── desktop.nix              # Sway/greetd, PipeWire, Fcitx5, fonts
 │   ├── development.nix          # VS Code, Python, GCC, podman…
-│   ├── laptop.nix               # Hibernate (resume=UUID=), zram, keyd, battery threshold — swap nằm trong hardware-config
+│   ├── laptop.nix               # Hibernate (resume=/dev/disk/by-label/swap), zram, keyd, battery threshold — swap theo nhãn
 │   └── system-tweaks.nix        # earlyoom, fstrim, nix-ld
 ├── docs/                        # 📚 Tài liệu tiếng Việt (xem bên dưới)
 └── lockscreen/                  # 🖼️ Ảnh khoá màn hình (swaylock) — ảnh DUY NHẤT còn trong repo

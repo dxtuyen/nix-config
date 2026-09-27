@@ -27,7 +27,7 @@ in
 
       # Wallpaper: lúc đăng nhập GIỮ nguyên ảnh phiên trước (--if-empty); nếu chưa
       # có ảnh (máy mới / cache trống) mới random. Đổi ảnh bất cứ lúc nào bằng
-      # Alt+Tab (random) hoặc Alt+Shift+Tab (menu có thumbnail).
+      # Alt+w (random) hoặc Alt+Shift+w (menu có thumbnail).
       exec ~/.local/bin/wallpaper-set --if-empty
 
       # Applets & daemons
@@ -121,7 +121,7 @@ in
       bindsym $mod+d exec $menu
       bindsym $mod+Tab exec rofi -show window
 
-      # Wallpaper: Alt+Tab đổi ảnh random, Alt+Shift+Tab menu chọn ảnh.
+      # Wallpaper: Alt+w đổi ảnh random, Alt+Shift+w menu chọn ảnh.
       # ($mod+w đã dùng cho layout tabbed.)
       bindsym Mod1+w exec ~/.local/bin/wallpaper-set
       bindsym Mod1+Shift+w exec ~/.local/bin/wallpaper-menu

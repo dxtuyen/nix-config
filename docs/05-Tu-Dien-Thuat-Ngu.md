@@ -21,9 +21,9 @@
 | Thuật ngữ | Ý nghĩa |
 |---|---|
 | **zram** | Swap nén **trong RAM** (`/dev/zram0`, 3.7G = 50% RAM, zstd, priority 5) — nhanh cho app, **không** dùng cho hibernate |
-| **Swap partition** | `/dev/nvme0n1p3` (10G, priority -2), khai trong `hosts/laptop/hardware-configuration.nix` (tự sinh) — **chứa image hibernate** |
+| **Swap partition** | Phân vùng swap (10G, priority -2), có nhãn `swap` — **chứa image hibernate** |
 | **Hibernate** | `systemctl hibernate` — nén RAM → swap 10G, tắt nguồn; bật lại khôi phục nguyên trạng |
-| **Resume** | `boot.kernelParams = ["resume=UUID=..."]` — kernel biết swap nào chứa image để dậy |
+| **Resume** | `boot.resumeDevice = "/dev/disk/by-label/swap"` — kernel & initrd tự bắt swap theo nhãn để dậy |
 
 ## Wayland / Desktop
 

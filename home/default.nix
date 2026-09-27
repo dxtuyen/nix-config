@@ -42,18 +42,27 @@
 
   programs.home-manager.enable = true;
 
+  # Tích hợp công cụ shell qua Home-Manager module (tự hook vào bash và quản lý chuẩn).
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true; # Cache nix-shell/flake environment, vào thư mục dev tức thì
+  };
+
+  programs.zoxide = {
+    enable = true;
+    enableBashIntegration = true;
+  };
+
+  programs.fzf = {
+    enable = true;
+    enableBashIntegration = true;
+  };
+
   # Nơi duy nhất thêm ~/.local/bin vào PATH + tạo ~/.bashrc.
   programs.bash = {
     enable = true;
     initExtra = ''
       export PATH="$HOME/.local/bin:$PATH"
-
-      # direnv: tu kich hoat moi truong nix-shell khi cd vao folder co .envrc
-      eval "$(direnv hook bash)"
-
-      # zoxide: ghi nho thu muc hay di, `z <ten>` nhay thang toi.
-      # Bat buoc cho `z` ton tai trong moi shell moi.
-      eval "$(zoxide init bash)"
 
       # Starship không set title nên tự phát OSC 2 mỗi prompt.
       __set_window_title() {

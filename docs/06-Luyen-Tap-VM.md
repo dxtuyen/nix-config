@@ -114,7 +114,7 @@ Bây giờ terminal trong VM chính là "máy mới". Đi từng bước:
    git clone https://github.com/dxtuyen/nix-config.git /tmp/nix-config
    cp /mnt/etc/nixos/hardware-configuration.nix /tmp/nix-config/hosts/laptop/
    ```
-   Rồi sửa `resume=UUID=` trong `modules/nixos/laptop.nix` theo swap của VM.
+   (Resume tự nhận diện theo nhãn `swap` nên không cần sửa gì thêm).
 
 7. **Cài hệ thống** (chờ tải gói ~10–40 phút):
    ```bash

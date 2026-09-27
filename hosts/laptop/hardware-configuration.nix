@@ -38,12 +38,12 @@
     ];
   };
 
-  # Phân vùng swap 10G (nvme0n1p3). Khai ở ĐÂY thay vì trong module laptop.nix vì
-  # nixos-generate-config sẽ tự sinh mục này theo đúng swap đang bật — máy mới làm
-  # theo docs/03-Cai-May-Moi.md Bước 7 là swap tự khớp, chỉ còn sửa resume=UUID=.
+  # Phân vùng swap (nvme0n1p2). Có thể dùng theo nhãn /dev/disk/by-label/swap
+  # hoặc để nixos-generate-config tự sinh theo UUID swap đang bật.
+  # Tham số resume hibernate trong laptop.nix tự động nhận theo nhãn /dev/disk/by-label/swap.
   swapDevices = [
     {
-      device = "/dev/disk/by-uuid/044520bf-eed9-498c-a382-97615c111b1f";
+      device = "/dev/disk/by-label/swap";
     }
   ];
 

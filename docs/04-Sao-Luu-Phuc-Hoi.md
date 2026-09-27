@@ -141,8 +141,8 @@ rsync -a /mnt/backup/Pictures    ~/Pictures
 
 ## Checklist khôi phục nhanh (10 phút)
 
-- [ ] `swapon --show` → có `/dev/nvme0n1p3` (10G)
-- [ ] `cat /proc/cmdline` → có `resume=UUID=...`
+- [ ] `swapon --show` → có phân vùng swap (nhãn `swap`)
+- [ ] `cat /proc/cmdline` → có `resume=/dev/disk/by-label/swap`
 - [ ] `systemctl hibernate` thử → bật lại, cửa sổ còn nguyên
 - [ ] Menu nguồn (`power-menu`) có mục `⏾ Hibernate`
 - [ ] `ssh-keygen` + add key GitHub + `ssh -T git@github.com` → "Hi dxtuyen!" (docs/03 Bước 10)
