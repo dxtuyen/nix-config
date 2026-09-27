@@ -284,13 +284,18 @@ Sau khi vào desktop (Sway), mở terminal và kiểm tra theo thứ tự:
    - Chỉ thấy `[s2idle]` → máy **không hỗ trợ** deep. Kernel tự bỏ qua tham số
      nên không lỗi gì cả; chỉ cần **xóa dòng `"mem_sleep_default=deep"`**
      trong `modules/nixos/laptop.nix` rồi rebuild cho gọn.
-8. **Thư mục người dùng đã có sẵn**: `ls ~/` phải thấy `Downloads`, `Documents`,
-   `Pictures`, `Videos`, `Music` — Home-Manager (`home/default.nix` → `xdg.userDirs`)
-   tự tạo lúc `switch`, **không cần `mkdir` tay**. Kiểm tra thêm:
+8. **Thư mục người dùng đã có sẵn**: `ls ~/` phải thấy **`Desktop`, `Documents`,
+   `Downloads`, `Music`, `Pictures`, `Public`, `Videos`** — Home-Manager
+   (`home/default.nix` → `xdg.userDirs`) tự tạo lúc `switch`, **không cần `mkdir` tay**.
+   Kiểm tra thêm:
    ```bash
    cat ~/.config/user-dirs.dirs   # file chuẩn XDG mà Chrome / Thunar / foot đọc
+   xdg-user-dir DOWNLOAD          # → /home/doxuantuyen/Downloads
    ```
    > Thư mục đã tồn tại sẵn thì Home-Manager **bỏ qua** — không đụng tới dữ liệu bên trong.
+   >
+   > `Templates` và `Projects` **cố ý đặt `null`** trong config → không tạo, không có
+   > trong `user-dirs.dirs`, các app cũng không hỏi tới.
 
 ---
 

@@ -29,7 +29,7 @@
 
 | File | Nội dung |
 |---|---|
-| `default.nix` | Entry point: import tất cả, bật `xdg` + `xdg.userDirs` (tự tạo `~/Downloads`, `~/Documents`, `~/Pictures`…), PATH `~/.local/bin`, module `direnv`/`zoxide`/`fzf` |
+| `default.nix` | Entry point: import tất cả, bật `xdg` + `xdg.userDirs` (tự tạo `~/Desktop`, `~/Documents`, `~/Downloads`, `~/Music`, `~/Pictures`, `~/Public`, `~/Videos`; `Templates`/`Projects` đặt `null` — không dùng), PATH `~/.local/bin`, module `direnv`/`zoxide`/`fzf` |
 | `git.nix` | Git identity toàn cục (tất cả repo): user `dxtuyen` + email, `defaultBranch=main`, `pull.rebase`, `pager=cat` |
 | `packages.nix` | Gói user: rofi, grim, slurp, swaylock, swayidle, google-chrome, obsidian, **foliate** (đọc sách), imv (xem ảnh), mpv (xem video), sioyek, ripgrep, fd… |
 | `sway.nix` | Cửa sổ, layout, idle/lock/sleep (swayidle), phím tắt (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)) |

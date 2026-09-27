@@ -24,6 +24,10 @@
     userDirs = {
       enable = true;
       createDirectories = true; # Tự động tạo thư mục khi switch / cài máy mới
+      # Đặt null = KHÔNG quản lý: không tạo thư mục, không có trong user-dirs.dirs
+      # → Chrome/Thunar/foot cũng không hỏi tới nữa cho gọn.
+      templates = null; # ~/Templates — không dùng
+      projects = null; # ~/Projects — không dùng
     };
   };
 
