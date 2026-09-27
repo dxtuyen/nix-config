@@ -18,8 +18,14 @@
     stateVersion = "26.05";
   };
 
-  # XDG bật một lần ở đây; module con chỉ khai nội dung.
-  xdg.enable = true;
+  # XDG base directories + user directories chuẩn.
+  xdg = {
+    enable = true;
+    userDirs = {
+      enable = true;
+      createDirectories = true; # Tự động tạo thư mục khi switch / cài máy mới
+    };
+  };
 
   imports = [
     ./packages.nix
