@@ -178,8 +178,8 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 | `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key ở `~/.config/quick-lang/api.key` |
 | `dict-toggle` | `mod+g`: bật/tắt GoldenDict float — đóng = ẩn về tray (tiến trình giữ nguyên, mở lại tức thời) |
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
-| `wallpaper-set` | `Alt+w`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Lúc đăng nhập: **giữ nguyên ảnh phiên trước** (chưa có ảnh → random 1 ảnh). **Mỗi lần đổi reset mốc 30 phút** của auto-rotate (tay hay timer đều vậy). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
-| `wallpaper-menu` | `Alt+Shift+w`: menu rofi **lưới 3×3 thumbnail 320px** (ảnh trên, tên dưới, đang dùng đánh dấu `●`, >9 ảnh tự cuộn) — icon lấy từ **cache** `~/.cache/wallpaper-thumbs/` + build list **0 spawn** (đo: 2.2s → 0.05s với 333 ảnh) → **mở tức thì**. Lần đầu / vừa thêm ảnh: mở **dựng cache nền** → lần sau tự lưới. Chế độ: `--grid` (ép lưới), `--list` (chữ thuần, nhanh nhất) |
+| `wallpaper-set` | `$mod+Shift+Tab`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Lúc đăng nhập: **giữ nguyên ảnh phiên trước** (chưa có ảnh → random 1 ảnh). ⛔ Auto-rotate 30 phút **đã TẮT** (xem mục [Tự đổi ảnh nền mỗi 30 phút](#tự-đổi-ảnh-nền-mỗi-30-phút-auto-rotate)). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
+| `wallpaper-menu` | `$mod+Shift+w`: menu rofi **lưới 3×3 thumbnail 320px** (ảnh trên, tên dưới, đang dùng đánh dấu `●`, >9 ảnh tự cuộn) — icon lấy từ **cache** `~/.cache/wallpaper-thumbs/` + build list **0 spawn** (đo: 2.2s → 0.05s với 333 ảnh) → **mở tức thì**. Lần đầu / vừa thêm ảnh: mở **dựng cache nền** → lần sau tự lưới. Chế độ: `--grid` (ép lưới), `--list` (chữ thuần, nhanh nhất) |
 | `wallpaper-thumbs` | Dựng thumbnail 320px cho menu (song song 8 luồng, ImageMagick, đếm thiếu bằng builtin không fork). Chạy nền khi menu cần; `--status` chỉ còn để tra tay. Xoá `~/.cache/wallpaper-thumbs/` bất cứ lúc nào → tự dựng lại |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
 | `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
@@ -197,7 +197,7 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 > Hệ quả: **cài máy mới phải copy ảnh vào `~/Pictures/wallpapers/`** (xem [03-Cai-May-Moi](03-Cai-May-Moi.md)), và **backup `~/Pictures` là bắt buộc** — nó là bản duy nhất (xem [04-Sao-Luu-Phuc-Hoi](04-Sao-Luu-Phuc-Hoi.md)).
 
 - **Mỗi lần đăng nhập**: giữ nguyên ảnh của phiên trước (daemon awww tự khôi phục từ cache `~/.cache/awww`) — nếu chưa có ảnh (máy mới / cache trống) mới tự random 1 ảnh
-- **Đổi ảnh bất cứ lúc nào**: `Alt+w` (random — luôn khác ảnh đang dùng) hoặc `Alt+Shift+w` (menu rofi lưới thumbnail 3×3, tên dưới ảnh, xếp lấp trái→phải, `●` là ảnh đang dùng; >9 ảnh tự cuộn)
+- **Đổi ảnh bất cứ lúc nào**: `$mod+Shift+Tab` (random — luôn khác ảnh đang dùng) hoặc `$mod+Shift+w` (menu rofi lưới thumbnail 3×3, tên dưới ảnh, xếp lấp trái→phải, `●` là ảnh đang dùng; >9 ảnh tự cuộn). Không tự đổi theo giờ nữa.
 - **Thêm/xoá ảnh**: `$mod+y` mở **yazi** popup ở thư mục hiện tại (xem [Thêm ảnh bằng yazi](#thêm-ảnh-bằng-yazi-mody))
 
 ### ⭐ Chưa có ảnh nào? Tự động dùng màu nền
@@ -217,16 +217,10 @@ awww query               # → currently displaying: image: 0x1e1e2eff
 
 ### Tự đổi ảnh nền mỗi 30 phút (auto-rotate)
 
-```bash
-systemctl --user start wallpaper-rotate.timer    # bật — chạy 1 lần sau rebuild
-systemctl --user status  wallpaper-rotate.timer  # xem lần đổi kế tiếp
-systemctl --user stop    wallpaper-rotate.timer  # tắt hẳn
-```
+⛔ **ĐÃ TẮT** — ảnh chỉ đổi khi bấm phím. Muốn bật lại: bỏ `#` ở 2 khối `wallpaper-rotate` trong `modules/nixos/desktop.nix`, rebuild, rồi `systemctl --user start wallpaper-rotate.timer`.
 
-- ⭐ **Mốc 30 phút = lần đổi ẢNH GẦN NHẤT**, kể cả đổi tay: `wallpaper-set` luôn chạy `systemctl --user try-restart wallpaper-rotate.timer` sau khi đặt ảnh → `OnActiveSec=30min` đếm lại từ đúng lúc đó. (Không dùng `OnCalendar` — nó tính từ 00:00, lệch ý.)
-- Timer **không `wantedBy`** → không tự bật khi đăng nhập; bật 1 lần rồi tự sống giữa các lần đổi. Muốn tự bật mỗi login thì thêm `wantedBy = [ "timers.target" ];` vào khối timer trong `modules/nixos/desktop.nix`.
-- Đổi do timer cũng reset mốc → chu trình tự nối tiếp; random cùng kiểu `Alt+w` (loại ảnh đang hiện, fade 1.5s).
-- Máy hibernate giữa chừng: deadline vẫn tính → quá mốc thì **đổi ngay khi mở máy** (không mất nhịp, chỉ trễ bằng thời gian ngủ).
+- Mốc 30 phút tính từ lần đổi gần nhất: `wallpaper-set` gọi `try-restart` timer sau mỗi lần đặt ảnh.
+- Timer không `wantedBy` → không tự bật khi đăng nhập, phải start tay 1 lần.
 
 **Thao tác nhanh — chọn nhanh đường đi:**
 
@@ -249,7 +243,7 @@ Cách nhanh nhất, không cần nhớ lệnh. `$mod+y` mở yazi dạng **popup
 1. Bấm **`$mod+y`** → popup yazi mở ở thư mục terminal đang ở
 2. Đi tới `~/Pictures/wallpapers`: bấm `~` (về home) → `Pictures` → `wallpapers`
 3. Tới nơi ảnh nằm (ví dụ `~/Downloads`), bấm `y` để **copy** → quay lại thư mục ảnh → `p` để **paste**
-4. `Alt+w` → ảnh mới hiện ngay
+4. `$mod+Shift+Tab` → ảnh mới hiện ngay
 
 Xoá ảnh: bấm `d` trong yazi (hỏi xác nhận) — vào **thùng rác**, nên vẫn khôi phục được bằng `g` `t` nếu lỡ. Muốn xoá hẳn luôn thì bấm `D`. Tự dọn rác cũ lúc 03:00, xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300).
 
@@ -298,7 +292,7 @@ Popup chỉ là `foot --title=yazi-popup` + rule floating theo title đó trong 
 cp ~/Downloads/hinh-moi.jpg ~/Pictures/wallpapers/hinh-moi.jpg
 ```
 
-Xong — dùng được ngay. Không sửa file `.nix` nào, không rebuild, không commit. Ảnh mới nằm trong vòng random ngay lần `Alt+w` kế tiếp.
+Xong — dùng được ngay. Không sửa file `.nix` nào, không rebuild, không commit. Ảnh mới nằm trong vòng random ngay lần `$mod+Shift+Tab` kế tiếp.
 
 ### Xóa ảnh
 
@@ -306,7 +300,7 @@ Xong — dùng được ngay. Không sửa file `.nix` nào, không rebuild, kh�
 rm ~/Pictures/wallpapers/ten-anh.jpg
 ```
 
-💡 Nếu xóa đúng ảnh **đang hiển thị**: bấm `Alt+w` đổi sang ảnh khác *trước*. (Hệ thống vẫn tự phục hồi — daemon giữ ảnh trong bộ nhớ, lần đăng nhập sau cache trỏ file mất thì `wallpaper-set --if-empty` tự rơi về random — nhưng đổi trước vẫn gọn hơn.)
+💡 Nếu xóa đúng ảnh **đang hiển thị**: bấm `$mod+Shift+Tab` đổi sang ảnh khác *trước*. (Hệ thống vẫn tự phục hồi — daemon giữ ảnh trong bộ nhớ, lần đăng nhập sau cache trỏ file mất thì `wallpaper-set --if-empty` tự rơi về random — nhưng đổi trước vẫn gọn hơn.)
 
 ### Thay thế / đổi tên ảnh
 
@@ -337,7 +331,7 @@ sudo nixos-rebuild switch --flake ~/nix-config#laptop
 |---|---|
 | `~/.local/bin/wallpaper-set` | Đổi sang ảnh random khác |
 | `~/.local/bin/wallpaper-set <đường-dẫn-ảnh>` | Đặt đúng ảnh chỉ định |
-| `~/.local/bin/wallpaper-menu` | Mở menu chọn ảnh lưới 3×3 (như `Alt+Shift+w`) |
+| `~/.local/bin/wallpaper-menu` | Mở menu chọn ảnh lưới 3×3 (như `$mod+Shift+w`) |
 | `awww query` | Xem ảnh đang hiển thị |
 | `ls ~/Pictures/wallpapers/` | Danh sách ảnh thực tế (kiểm tra sau thêm/xóa) |
 
@@ -546,7 +540,7 @@ xdg-open ~/Books/Reading/*.epub   # mở thẳng 1 cuốn
 
 - Terminal là **foot** (`$mod+Return` mở cửa sổ mới). Lý do đổi từ Alacritty: foot hỗ trợ **sixel** nên yazi xem trước ảnh thật.
 - **Hiệu ứng blur ("acrylic") không tồn tại trên Sway** — Sway không implement protocol blur nào. Foot *có* khoá `blur = yes` nhưng nó cần protocol `ext-background-effect-manager-v1` (chỉ KDE Plasma 6.1+ có) nên trên Sway foot chỉ log `disabling background blur` rồi bỏ qua; Alacritty cũng tương tự (blur chỉ chạy macOS/KDE). Ở đây chỉ có **trong suốt phẳng** (`alpha = 0.9` trong `home/foot.nix`).
-- Muốn cảm giác kính mờ: đặt sẵn **ảnh nền đã blur** vào `~/Pictures/wallpapers/` rồi đổi ảnh đó (`Alt+w`) → terminal trong suốt nằm trên nền mờ trông gần giống acrylic.
+- Muốn cảm giác kính mờ: đặt sẵn **ảnh nền đã blur** vào `~/Pictures/wallpapers/` rồi đổi ảnh đó (`$mod+Shift+Tab`) → terminal trong suốt nằm trên nền mờ trông gần giống acrylic.
 - Sửa `home/foot.nix` rồi `nh os switch` là xong. **Kiểm tra config foot không cần mở cửa sổ**: `foot -C` → in `err: config.c:…` và exit 1 nếu sai cú pháp (sai màu hay gặp nhất, xem chú thích trong `home/foot.nix`).
 
 ## Sự cố thường gặp
@@ -558,7 +552,7 @@ xdg-open ~/Books/Reading/*.epub   # mở thẳng 1 cuốn
 | Bộ gõ kẹt | `fcitx5-diagnose` |
 | Yazi không xem trước ảnh | Ảnh phải hiện (foot hỗ trợ sixel). Kiểm tra `echo $TERM` trong terminal đang chạy yazi phải ra `foot` — nếu là `xterm-256color` thì terminal khác đã mở yazi, đóng đi mở lại từ foot. Hover PDF/video/SVG thì báo lỗi là **bình thường** (xem [Mở file ≠ Xem trước](#mở-file--xem-trước-preview)) |
 | Double-click file mở app không đúng | `xdg-mime query default <mime>` xem app đang được gán; sửa `home/mimeapps.nix` rồi rebuild (đừng sửa tay `~/.config/mimeapps.list` — nó là symlink do Home-Manager quản lý) |
-| Wallpaper không đổi | `systemctl --user status awww-daemon` (daemon giữ ảnh nền); test tay: `~/.local/bin/wallpaper-set`. Script tự loại ảnh đang hiển thị nên bấm Alt+w luôn ra ảnh mới; menu Alt+Shift+w hiện lưới thumbnail 3×3, tên dưới ảnh (ảnh đang dùng có dấu `●`) |
+| Wallpaper không đổi | `systemctl --user status awww-daemon` (daemon giữ ảnh nền); test tay: `~/.local/bin/wallpaper-set`. Script tự loại ảnh đang hiển thị nên bấm `$mod+Shift+Tab` luôn ra ảnh mới; menu `$mod+Shift+w` hiện lưới thumbnail 3×3, tên dưới ảnh (ảnh đang dùng có dấu `●`). Lưu ý: auto-rotate 30 phút **đã tắt** nên nền sẽ KHÔNG tự đổi |
 | Hibernate không dậy | `cat /proc/cmdline` phải có `resume=/dev/disk/by-label/swap`; `swapon --show` phải thấy phân vùng swap (nhãn `swap`) |
 
 ## Liên quan

@@ -20,10 +20,8 @@
     networkmanagerapplet
     blueman
     google-chrome
-    # 📖 Sách: foliate đọc epub/mobi/azw3/fb2/cbz/opds (WebKitGTK → typography
-    # đẹp hơn hẳn calibre-ebook-viewer). Thư viện nằm ở ~/Books/{Textbooks,Reading}
-    # — KHÔNG dùng calibre nữa (đã gỡ), nên không có `ebook-convert` chuyển đổi:
-    # tải sách nên chọn thẳng định dạng epub/pdf.
+    # Sách: foliate đọc epub/mobi/azw3/fb2/cbz/opds (typography tốt hơn calibre
+    # đã gỡ; thư viện ở ~/Books/{Textbooks,Reading}).
     foliate
     imv # xem ảnh (nhẹ, có zoom/timeline)
     mpv # xem video/nhạc

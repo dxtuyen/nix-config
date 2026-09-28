@@ -23,9 +23,8 @@
     startupNotify = true;
     settings = {
       StartupWMClass = "sioyek";
-      # `mimeType` bị module xdg.desktopEntries dịch qua `extraConfig` — option
-      # đã bị XOÁ ở Home-Manager 26.05 → entry này không được sinh file.
-      # `settings` là option thay thế, vẫn sinh đúng dòng MimeType=.
+      # Chỉ khai `settings`, KHÔNG dùng `mimeType` (bị module dịch qua
+      # `extraConfig` — option đã bị xoá ở HM 26.05 → entry không sinh file).
       MimeType = "application/pdf;";
     };
   };

@@ -4,10 +4,8 @@
   ...
 }:
 
-# Điểm nhập chính của Home Manager cho user.
-# Mọi module trong thư mục home/ đều được import ở đây.
-#
-# Hệ thống chạy nixos-unstable nên mọi gói lấy thẳng từ `pkgs`.
+# Điểm nhập chính của Home Manager cho user — mọi module trong home/ import ở đây.
+# Hệ thống chạy nixos-unstable nên gói lấy thẳng từ `pkgs`.
 
 {
   home = {
@@ -22,8 +20,7 @@
     userDirs = {
       enable = true;
       createDirectories = true; # Tự động tạo thư mục khi switch / cài máy mới
-      # Đặt null = KHÔNG quản lý: không tạo thư mục, không có trong user-dirs.dirs
-      # → Chrome/Thunar/foot cũng không hỏi tới nữa cho gọn.
+      # null = không quản lý (không tạo, không có trong user-dirs.dirs).
       templates = null; # ~/Templates — không dùng
       projects = null; # ~/Projects — không dùng
     };
@@ -50,7 +47,7 @@
 
   programs.home-manager.enable = true;
 
-  # Tích hợp công cụ shell qua Home-Manager module (tự hook vào bash và quản lý chuẩn).
+  # Tích hợp shell qua Home-Manager module (tự hook vào bash).
   programs.direnv = {
     enable = true;
     nix-direnv.enable = true; # Cache nix-shell/flake environment, vào thư mục dev tức thì
@@ -74,7 +71,7 @@
 
       # Starship không set title nên tự phát OSC 2 mỗi prompt.
       __set_window_title() {
-        # Tách 2 bước để né tilde expansion làm title hiện full path.
+        # Tách 2 bước để né tilde expansion (title hiện full path).
         local dir="''${PWD/#$HOME/}"
         printf '\033]2;~%s\007' "$dir"
       }

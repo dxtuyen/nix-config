@@ -1,16 +1,10 @@
 { pkgs, ... }:
 
 {
-  # Ảnh nền KHÔNG nằm trong repo: người dùng tự quản lý ~/Pictures/wallpapers
-  # (cp/rm thoải mái, không rebuild, không commit). Script wallpaper-set /
-  # wallpaper-menu quét thư mục đó lúc chạy nên không cần khai báo ở đây.
-  # Thư mục được tạo bởi home.activation bên dưới (không có symlink nào tạo
-  # nó nữa) — cần cho máy mới cài từ repo.
-  # Ảnh màn hình khoá thì vẫn nằm trong repo: lockscreen/nixos.jpg.
-
-  # Tạo ~/Pictures/wallpapers + ~/Pictures/Screenshots nếu chưa có (máy mới
-  # clone repo không có symlink nào tạo sẵn thư mục này). mkdir -p idempotent
-  # nên không cần DAG, chạy trước phần script là đủ.
+  # Ảnh nền nằm NGOÀI repo (người dùng tự cp/rm ~/Pictures/wallpapers, không
+  # rebuild); script quét lúc chạy nên không khai ở đây. Thư mục tạo bởi
+  # activation bên dưới vì máy mới clone repo không có sẵn. Ảnh khoá màn hình
+  # thì nằm trong repo: lockscreen/nixos.jpg.
   home.activation.wallpaperDirs = ''
     mkdir -p "$HOME/Pictures/wallpapers" "$HOME/Pictures/Screenshots"
   '';
@@ -85,16 +79,8 @@
       text = ''
         #! /usr/bin/env bash
         # wallpaper-set [đường-dẫn-ảnh|--if-empty] — đặt ảnh nền qua awww (fade 1.5s).
-        #   wallpaper-set                  random 1 ảnh (luôn KHÁC ảnh đang hiển thị)
-        #   wallpaper-set <đường dẫn ảnh>  đặt đúng ảnh chỉ định
-        #   wallpaper-set --if-empty       GIỮ ảnh phiên trước nếu daemon đã khôi phục;
-        #                                  chưa có ảnh mới random (dùng lúc đăng nhập)
-        # KHÔNG có logic theo giờ, không chia pool: mọi ảnh trong
-        # ~/Pictures/wallpapers đều random được. Thêm ảnh mới = cp file vào đó,
-        # không cần rebuild, không cần sửa gì thêm.
-        # CHƯA CÓ ẢNH nào (máy mới / vừa xoá hết) → dự phòng bằng MÀU nền
-        # theme: awww nhận hexcode nên không cần file ảnh, 0 byte trong repo.
-        # Sway gọi lúc đăng nhập với --if-empty → bật máy ra đúng ảnh đang dùng.
+        # Không có ảnh nào → dự phòng bằng MÀU nền theme (awww nhận hexcode nên
+        # không cần file ảnh, 0 byte trong repo).
         set -u
 
         WALL_DIR="$HOME/Pictures/wallpapers"
@@ -129,11 +115,9 @@
           sleep 0.25
         done
 
-        # --if-empty (lúc đăng nhập): daemon thường đã tự khôi phục ảnh phiên
-        # trước từ cache (~/.cache/awww) → GIỮ nguyên, thoát luôn. Chờ tối đa ~1s
-        # cho ảnh kịp hiện (socket mở trước khi cache được áp — tránh quyết định
-        # quá sớm). Hết chờ vẫn trống (máy mới / cache trống / upgrade awww)
-        # → rơi xuống random bên dưới: B suy biến thành A, không bao giờ hỏng.
+        # --if-empty (lúc đăng nhập): daemon đã tự khôi phục ảnh phiên trước từ
+        # cache → giữ nguyên. Chờ ~1s cho ảnh kịp hiện; hết chờ vẫn trống thì rơi
+        # xuống random bên dưới.
         if [ "''${1:-}" = "--if-empty" ]; then
           i=0
           while [ "$i" -lt 10 ]; do
@@ -151,10 +135,7 @@
         else
           mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
           if [ "''${#imgs[@]}" -eq 0 ]; then
-            # Chưa có ảnh nào (máy mới vừa cài / vừa xoá hết) → dự phòng bằng
-            # MÀU nền theme. awww nhận thẳng hexcode nên KHÔNG cần file ảnh,
-            # không tốn byte nào trong repo. Thoát 0 để lúc đăng nhập coi như
-            # đã đặt nền thành công, không spam lỗi.
+            # Dự phòng bằng MÀU nền theme. Thoát 0 để lúc đăng nhập không spam lỗi.
             $AWWW img "$FALLBACK_COLOR" -t fade --transition-duration 1.5
             notify-send -a wallpaper "wallpaper-set" \
               "Chưa có ảnh nền — tạm dùng màu nền. Thêm ảnh: mở yazi (\$mod+y) rồi copy vào Pictures/wallpapers" 2>/dev/null || true
@@ -181,32 +162,20 @@
         $AWWW img "$img" -t fade --transition-duration 1.5
         printf '%s\n' "$img" > "$CACHE"
 
-        # Đặt lại mốc ĐỔI ẢNH GẦN NHẤT → đồng hồ auto-rotate 30 phút (timer
-        # wallpaper-rotate, modules/nixos/desktop.nix) đếm lại từ đây. Mọi cách
-        # đổi (Alt+w, menu, hay chính timer) đều đi qua script này → đúng ý
-        # "mốc 30 phút tính từ lần đổi trước, kể cả đổi tay".
-        # try-restart KHÔNG tự bật timer đang tắt → tắt bằng
-        # `systemctl --user stop wallpaper-rotate.timer` thì không lo sống lại.
+        # Reset mốc auto-rotate (timer đã TẮT ở desktop.nix → no-op vô hại).
         systemctl --user try-restart wallpaper-rotate.timer 2>/dev/null || true
       '';
     };
 
-    # ── Thumbnail cho menu wallpaper (Alt+Shift+w) ─────────────────────────
-    # Rofi cần icon ảnh cho lưới; nạp thẳng ẢNH GỐC (334 ảnh / 396MB, có file
-    # PNG 14MB) → mở menu mất vài giây vì rofi decode hết. Thay bằng thumbnail
-    # 320px trong ~/.cache/wallpaper-thumbs/ → mở tức thì, cache ~25MB.
+    # Thumbnail 320px cho menu wallpaper: rofi nạp ảnh GỐC sẽ phải decode hết
+    # mỗi lần mở → vài giây. Cache ở ~/.cache/wallpaper-thumbs/ (~25MB).
     ".local/bin/wallpaper-thumbs" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # wallpaper-thumbs [--status] — dựng thumbnail cho rofi (wallpaper-menu).
-        #   (mặc định)  ảnh thiếu/hỏng trong ~/Pictures/wallpapers →
-        #                ~/.cache/wallpaper-thumbs/<tên>.thumb (320px JPEG)
-        #   --status     chỉ IN SỐ thumbnail còn thiếu (chỉ stat, không decode)
-        #                → wallpaper-menu dùng để chọn lưới ảnh hay danh sách chữ
-        #   Xoá thư mục cache bất cứ lúc nào → tự dựng lại. Ảnh thêm mới được
-        #   dựng ở lần mở menu sau (chạy nền, không chặn).
-        # Song song 8 luồng (ImageMagick): 40 ảnh ≈ 0.5s.
+        # wallpaper-thumbs [--status] — dựng thumbnail 320px cho rofi vào
+        # ~/.cache/wallpaper-thumbs/<tên>.thumb. `--status` chỉ in số thumbnail
+        # còn thiếu. Xoá thư mục cache → tự dựng lại. 8 luồng ImageMagick.
         set -u
         WALL_DIR="$HOME/Pictures/wallpapers"
         THUMB_DIR="$HOME/.cache/wallpaper-thumbs"
@@ -249,13 +218,8 @@
         #! /usr/bin/env bash
         # wallpaper-menu [auto|--grid|--list] — chọn ảnh nền trong
         # ~/Pictures/wallpapers. Ảnh đang đặt được đánh dấu "● " ở đầu tên.
-        #
-        # ⚠️ VÌ SAO BẢN CŨ CHẬM (và đã sửa): nó nạp THẲNG ẢNH GỐC làm icon
-        # rofi (`\0icon\037<đường dẫn ảnh>`). Rofi phải decode TOÀN BỘ ảnh
-        # mỗi lần mở — với 334 ảnh / 396MB (có file PNG 14MB) là vài giây,
-        # RAM nhảy. Nay rofi ăn THUMBNAIL 320px trong ~/.cache/wallpaper-thumbs
-        # (script `wallpaper-thumbs`) → mở tức thì.
-        #
+        # Icon luôn là THUMBNAIL 320px, không dùng ảnh gốc (rofi decode ảnh gốc
+        # mỗi lần mở → vài giây, RAM nhảy).
         #   auto (mặc định)  cache đủ thumbnail → lưới ảnh; còn thiếu → danh
         #                     sách chữ (mở tức thì) + tự dựng cache nền
         #   --grid           ép lưới ảnh (dựng cache trước nếu thiếu, có báo)
@@ -279,8 +243,7 @@
         if [ -r "$CACHE" ]; then IFS= read -r cur < "$CACHE" || true; fi
         [ -z "$cur" ] && cur="$($AWWW query 2>/dev/null | sed -n 's/.*currently displaying: image: //p' | head -1)"
         # Nền MÀU TRƠN (awww trả hexcode 0x…) không phải đường dẫn file →
-        # readlink -f sẽ ra rỗng. Giữ nguyên hexcode, không so sánh được thì
-        # coi như chưa chọn ảnh nào (con trỏ về dòng đầu).
+        # coi như chưa chọn ảnh nào.
         case "$cur" in
           0x*) cur="" ;;
           *) cur="$(readlink -f -- "''${cur:-}" 2>/dev/null || true)" ;;
@@ -295,18 +258,11 @@
 
         THUMBS="$HOME/.local/bin/wallpaper-thumbs"
 
-        # ⭐ Vòng DUY NHẤT — 0 spawn process. Đây từng là nút thắt: bản cũ tốn
-        # ≈2.2s mỗi lần mở chỉ để build list (đo thật: 1.08s vòng entry vì ~1000
-        # lần `basename`/`printf` fork, 0.47s vòng sel vì 333 lần `readlink -f`,
-        # 0.61s `wallpaper-thumbs --status`). Giờ tất cả là builtin của bash:
-        # `''${f##*/}` (thay basename), so chuỗi trực tiếp (thay readlink từng file
-        # — ảnh tường quyển là file thường thì find đã ra đúng path; wallpaper
-        # dạng symlink sẽ không gắn ●, đánh đổi chấp nhận được).
-        #   sel    — index ảnh đang dùng (con trỏ sẵn cho rofi)
-        #   names  — tên hiển thị (đã gắn "● " nếu đang dùng)
-        #   thumbs — thumbnail 320px (rỗng nếu thiếu/hỏc)
-        #   missing — số thumb còn thiếu → chọn lưới/chữ ngay tại đây,
-        #             KHÔNG cần gọi `wallpaper-thumbs --status` riêng nữa.
+        # Một vòng duy nhất, toàn builtin (bản cũ fork ~1000 lần ≈ 2.2s mỗi
+        # lần mở). So sánh chuỗi trực tiếp: wallpaper symlink sẽ không gắn ●.
+        #   sel/names/thumbs — index, tên (có "● "), thumbnail; missing = số
+        #   thumb còn thiếu → chọn lưới/chữ ngay tại đây, không cần gọi
+        #   `wallpaper-thumbs --status` riêng.
         sel=0
         missing=0
         i=0
@@ -347,14 +303,8 @@
             fi ;;
         esac
 
-        # Theme -theme-str chỉ áp cho lần chạy này (không đụng ~/.config/rofi):
-        #   listview columns:3 + -l 3           → lưới 3 cột × 3 hàng (đúng 9 ô),
-        #     flow:horizontal                   → xếp lấp THEO HÀNG NGANG
-        #                                          (trái→phải, đủ 3 mới xuống hàng);
-        #     >9 ảnh                            → giữ 3 hàng, cuộn thanh ở CÁNH PHẢI;
-        #   element orientation + children order → ảnh TRÊN, tên DƯỚI;
-        #   element-text horizontal-align:center → căn giữa tên dưới ảnh;
-        #   textbox cắt 1 dòng theo ngang       → tên dài tự hiện "…".
+        # -theme-str chỉ áp cho lần chạy này (không đụng ~/.config/rofi):
+        # lưới 3 cột × 3 hàng, ảnh trên tên dưới, tên căn giữa.
         if [ "$grid" -eq 1 ]; then
           rofi_args=(-dmenu -i -show-icons -l 3 -p '🖼️ Wallpaper'
             -mesg 'Enter: đặt nền · ● = đang dùng · Esc: huỷ'
@@ -369,10 +319,7 @@
             -no-custom -format i -selected-row "$sel")
         fi
 
-        # Mỗi mục: "<tên (kể cả ● )>\0icon\x1f<thumbnail>" → rofi tự bóc metadata.
-        # Icon LUÔN là thumbnail 320px (rỗng thì bỏ icon, KHÔNG dùng ảnh gốc —
-        # lý do menu cũ mất vài giây: rofi decode cả 333 ảnh/396MB).
-        # printf là BUILTIN → vòng này 0 spawn (bản cũ: ~1000 fork ≈ 1.08s).
+        # Mỗi mục: "<tên>\0icon\x1f<thumbnail>" → rofi tự bóc metadata.
         choice_idx="$(
           i=0
           while [ "$i" -lt "''${#imgs[@]}" ]; do
@@ -395,11 +342,7 @@
       '';
     };
 
-    # ── Ảnh nền → ~/Pictures/wallpapers ──────────────────────────────────
-    # Cố ý KHÔNG khai báo ảnh nào ở đây: thư mục này ngoài repo, người dùng
-    # tự cp/rm. Thêm ảnh: cp <file> ~/Pictures/wallpapers/ (dùng được ngay, KHÔNG
-    # rebuild). Xóa ảnh: rm ~/Pictures/wallpapers/<tên>. Đổi tên tùy ý — script
-    # không theo quy ước tên, mọi ảnh .png/.jpg/.jpeg đều random như nhau.
+    # Ảnh nền: cp/rm trực tiếp trong ~/Pictures/wallpapers, không cần rebuild.
 
     ".local/bin/vm-nixos" = {
       executable = true;
@@ -432,9 +375,8 @@
           exit 1
         fi
 
-        # Firmware UEFI: nội suy lúc BUILD từ pkgs.OVMF — offline, pin theo
-        # flake.lock (trước đây gọi `nix eval nixpkgs#OVMF` lúc chạy, phụ thuộc
-        # global registry & có thể phải tải mạng).
+        # Firmware UEFI nội suy lúc BUILD từ pkgs.OVMF → offline, pin theo
+        # flake.lock.
         OVMF_CODE="${pkgs.OVMF.firmware}"
 
         ARGS=(
@@ -502,21 +444,14 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Dọn thùng rác GIO, giữ lại N ngày gần nhất.
-        #
-        # ⚠️ VÌ SAO KHÔNG DÙNG `gio trash --empty`?
-        # Lệnh đó xoá SẠCH toàn bộ. Nghĩa là file bạn lỡ tay xoá tối qua sẽ mất
-        # vĩnh viễn ngay lúc 3h sáng — không kịp khôi phục bằng `g t` trong yazi.
-        # Script này chỉ xoá mục CŨ HƠN N ngày nên vẫn có cửa sổ khôi phục.
-        #
-        # Xoá cả file lẫn .trashinfo cùng lúc: nếu chỉ xoá file, .trashinfo mồ
-        # côi sẽ làm gio/yazi báo "trash hỏng" hoặc hiện file không tồn tại.
+        # Dọn thùng rác GIO, giữ lại N ngày gần nhất (không dùng
+        # `gio trash --empty` — xoá sạch, mất luôn mục vừa xoá lỡ).
+        # Xoá cả file lẫn .trashinfo: .trashinfo mồ côi làm gio/yazi báo
+        # "trash hỏng".
         set -u
 
-        # ⭐ MẶC ĐỊNH 30 NGÀY — chọn có chủ ý, đừng để nhỏ hơn.
-        # Thùng rác đang dùng làm vùng an toàn: file lỡ xoá nhầm vẫn khôi phục
-        # được bằng `g t` trong yazi. 30 ngày là mức cân bằng giữa an toàn và
-        # dung lượng (đổi số ở ExecStart trong modules/nixos/desktop.nix).
+        # Mặc định 30 ngày: thùng rác là vùng an toàn, khôi phục bằng `g t` trong
+        # yazi. Đổi số ở ExecStart trong modules/nixos/desktop.nix.
         KEEP_DAYS="''${1:-30}"
         TRASH_DIR="''$HOME/.local/share/Trash"
         FILES_DIR="$TRASH_DIR/files"
@@ -562,30 +497,13 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Mở yazi trong cửa sổ foot NHỎ (popup, floating) — gắn $mod+y.
-        # Dùng để chọn nhanh: xem 1 file, chỉ đường dẫn, thêm/xoá ảnh.
+        # Mở yazi trong cửa sổ foot NHỎ (popup) — gắn $mod+y, chọn nhanh file /
+        # thêm-xoá ảnh. Duyệt kỹ (xem trước ảnh/PDF) thì gõ `yazi` trong terminal.
         #
-        # ⚠️ Vì sao có `--title=yazi-popup`?
-        # Yazi KHÔNG phải app riêng — nó chạy BÊN TRONG foot, nên sway chỉ thấy
-        # app_id="foot". Muốn chỉ làm CỬA SỔ NÀY floating mà không ảnh hưởng
-        # terminal thường, ta đặt title riêng rồi match theo title
-        # (xem rule `title="^yazi-popup"` trong home/sway.nix).
-        # Đây cũng chính là pattern đã dùng cho `foot --title=nvim`.
-        #
-        # ⚠️ CHỈ $mod+y gọi script này. Gõ `yazi` trong terminal thì mở cửa
-        # sổ thường, KHÔNG popup (đúng như bạn muốn).
-        # Cần yazi cửa sổ lớn để xem trước ảnh/PDF đẹp: gõ `yazi` trong
-        # terminal, hoặc thoát popup rồi mở lại bằng `yazi`.
-        #
-        # Kích thước cố định theo pixel. Muốn to hơn thì sửa 2 số này; hoặc
-        # dùng `ppt` (phần trăm) cho co theo màn hình.
-        #
-        # ⚠️ Cửa sổ nhỏ BÓP khung preview của yazi — ảnh/PDF xem thoáng qua được
-        # nhưng không sướng bằng cửa sổ tiled. Vì vậy $mod+y là popup, còn muốn
-        # duyệt file thì mở `yazi` trong terminal cho cửa sổ lớn.
+        # Yazi chạy BÊN TRONG foot nên sway chỉ thấy app_id="foot". Title riêng
+        # `yazi-popup` để chỉ cửa sổ này float (rule trong home/sway.nix).
         set -u
         TERM_BIN="${pkgs.foot}/bin/foot"
-        # ⚠️ foot dùng `WIDTHxHEIGHT` (chữ x), KHÔNG phải "1000,700".
         FOOT_SIZE="--window-size-pixels=1000x700"
 
         exec "$TERM_BIN" --title=yazi-popup $FOOT_SIZE -e yazi "$@"

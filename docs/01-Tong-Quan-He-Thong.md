@@ -47,7 +47,7 @@
 
 1. Boot → **systemd-boot** chọn generation.
 2. **greetd** (tuigreet) hiện màn hình đăng nhập → chạy Sway.
-3. Sway kích hoạt `sway-session.target`: Waybar, Fcitx5, nm-applet, wlsunset, awww-daemon + `wallpaper-set --if-empty`… và timer `wallpaper-rotate` (đổi nền random **mỗi 30 phút** — mốc tính từ lần đổi trước, bật 1 lần bằng `systemctl --user start wallpaper-rotate.timer`, ảnh lấy từ `~/Pictures/wallpapers` ngoài repo).
+3. Sway kích hoạt `sway-session.target`: Waybar, Fcitx5, nm-applet, wlsunset, awww-daemon + `wallpaper-set --if-empty`… (timer đổi nền 30 phút **đã TẮT**, xem [02](02-Van-Hanh-Hang-Ngay.md#ảnh-nền-wallpaper)).
 4. **swayidle** lo chuỗi khóa màn hình → tắt màn → suspend (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)).
 
 ## Config vs Dữ liệu (quan trọng nhất)

@@ -1,30 +1,22 @@
-# Foot — terminal mặc định (thay Alacritty), theme Catppuccin Mocha, native Wayland.
-# Chọn foot vì hỗ trợ **sixel** → yazi hiện được ảnh thật trong khung preview
-# (Alacritty không có kitty-graphics lẫn sixel). Bản foot trong nixpkgs build kèm
-# `--sixel` + terminfo (`TERM=foot`) — đúng thứ yazi cần để nhận diện Sixel driver.
+# Foot — terminal mặc định, Catppuccin Mocha, native Wayland. Chọn vì hỗ trợ
+# **sixel** → yazi hiện được ảnh thật trong khung preview; bản nixpkgs build kèm
+# `--sixel` + terminfo (`TERM=foot`).
 #
-# Sway không có blur ⇒ "acrylic" không tồn tại. Foot có khoá `blur = yes` nhưng
-# cần protocol `ext-background-effect-manager-v1` (chỉ KDE Plasma 6.1+) nên bị bỏ
-# qua. Ở đây chỉ dùng trong suốt phẳng (alpha); muốn giống kính mờ thì dùng ảnh
-# nền ĐÃ BLUR SẴN.
-#
-# ⚠️ Cú pháp màu: đơn = `RRGGBB` (6 hex, không `#`); cặp (cursor, jump-labels,
-# scrollback-indicator, search-box-*) = HAI màu hex CÁCH NHAU KHOẢNG TRẮNG,
-# thứ tự `màu-chữ màu-nền` — không dùng `/` và không dùng tên `regular0`.
-# Sai cú pháp thì foot in `err: config.c:...` ngay khi mở cửa sổ mới;
-# kiểm tra không cần mở cửa sổ bằng `foot -C`.
+# ⚠️ CÚ PHÁP MÀU: đơn = `RRGGBB` (6 hex, KHÔNG có `#`); cặp (cursor, jump-labels,
+# scrollback-indicator, search-box-*) = HAI màu hex cách nhau KHOẢNG TRẮNG, thứ
+# tự `màu-chữ màu-nền`. Sai cú pháp thì foot in `err: config.c:...`; kiểm tra
+# bằng `foot -C` không cần mở cửa sổ.
 { ... }:
 
 {
   programs.foot = {
     enable = true;
 
-    # foot đọc: $XDG_CONFIG_HOME/foot/foot.ini (sinh ra từ `settings`).
+    # Sinh ra $XDG_CONFIG_HOME/foot/foot.ini.
     settings = {
       main = {
-        # Khớp font + cỡ chữ cũ của Alacritty (default của Alacritty là 11).
+        # Khớp font + cỡ chữ cũ của Alacritty.
         font = "JetBrainsMono Nerd Font:size=11";
-        # Cùng padding với Alacritty cũ (x=10, y=8).
         pad = "10x8";
       };
 
@@ -39,25 +31,13 @@
         beam-thickness = 1.5;
       };
 
-      # Catppuccin Mocha. CỐ Ý chỉ khai 16 màu ANSI + nền/foreground/cursor — bảng 256
-      # màu (term-colors 16-255) giữ mặc định của foot, y hệt trước đây khi
-      # config Alacritty cũng chỉ khai 16 màu. Muốn khai thêm thì thêm ở đây.
-      #
-      # ⚠️ CÚ PHÁP MÀU TRONG FOOT (sai là foot in "err: config.c:..." ngay khi
-      # mở cửa sổ mới):
-      #  - Màu đơn: `RRGGBB` (6 chữ số hex, KHÔNG có dấu `#`). Ở các khoá bảng
-      #    màu (regular0..7, bright0..7) mới được dùng tên như `regular3`.
-      #  - Màu CẶP (cursor, jump-labels, scrollback-indicator, search-box-*):
-      #    HAI màu RGB hex CÁCH NHAU BỞI KHOẢNG TRẮNG, theo thứ tự
-      #    `màu-chữ màu-nền`. KHÔNG dùng `/` làm dấu phân cách, và KHÔNG dùng
-      #    tên `regular0` (foot chỉ nhận RGB hex cho các khoá này).
+      # Chỉ khai 16 màu ANSI + nền/foreground/cursor; bảng 256 màu
+      # (term-colors 16-255) giữ mặc định của foot. Muốn thêm thì khai ở đây.
       colors-dark = {
-        # Trong suốt phẳng (không có blur — xem LƯU Ý trên đầu file).
-        alpha = 0.9;
+        alpha = 0.9; # trong suốt phẳng (không có blur — xem chú thích trên đầu file)
         background = "1e1e2e";
         foreground = "cdd6f4";
-        # chữ `1e1e2e` trên nền con trỏ `f5e0dc`
-        cursor = "1e1e2e f5e0dc";
+        cursor = "1e1e2e f5e0dc"; # chữ `1e1e2e` trên nền con trỏ `f5e0dc`
         "selection-foreground" = "cdd6f4";
         "selection-background" = "585b70";
 
@@ -81,7 +61,7 @@
         bright6 = "94e2d5";
         bright7 = "a6adc8";
 
-        # Đều là cặp "chữ nền" — xem chú thích cú pháp ở trên.
+        # Đều là cặp "chữ nền".
         "jump-labels" = "1e1e2e fab387";
         "scrollback-indicator" = "1e1e2e 89b4fa";
         "search-box-match" = "1e1e2e fab387";

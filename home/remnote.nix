@@ -1,33 +1,26 @@
 { pkgs, config, ... }:
 
 # RemNote AppImage: file ngoài Nix ở ~/Apps/RemNote/ (không nhúng vào build).
-# Chi tiết: docs/REMNOTE.md. Dùng: tải file về ~/Downloads rồi `setup-remnote`.
+# Dùng: tải file về ~/Downloads rồi `setup-remnote`. Chi tiết: docs/REMNOTE.md.
 
 {
-  # (xdg.enable được bật tập trung tại entry point home/default.nix)
-
-  # Công cụ chạy AppImage + trích icon.
-  #   appimage-run        — chạy app (desktop entry dùng đường dẫn tuyệt đối)
-  #   squashfsTools       — unsquashfs, trích ĐÚNG 1 file icon
-  #   desktop-file-utils  — update-desktop-database (Rofi/GIO đọc app list)
+  # Công cụ chạy AppImage + trích icon: appimage-run · squashfsTools (unsquashfs)
+  # · desktop-file-utils (update-desktop-database, Rofi/GIO đọc app list).
   home.packages = with pkgs; [
     appimage-run
     squashfsTools
     desktop-file-utils
   ];
 
-  # Tạo desktop entry cho Rofi.
-  # `exec` dùng ĐƯỜNG DẪN TUYỆT ĐỐI: Rofi loại bỏ entry khi không tìm thấy
-  # binary trong PATH (session sway không có ~/.local/bin trong PATH).
+  # Tạo desktop entry cho Rofi. `exec` dùng ĐƯỜNG DẪN TUYỆT ĐỐI: Rofi loại bỏ
+  # entry khi không tìm thấy binary trong PATH.
   xdg.desktopEntries.remnote = {
     name = "RemNote";
     comment = "RemNote note-taking app";
     exec = "${pkgs.appimage-run}/bin/appimage-run ${config.home.homeDirectory}/Apps/RemNote/RemNote.AppImage";
 
-    # Icon nằm ở ~/.local/share/icons/hicolor/512x512/apps/remnote.png, do
-    # `setup-remnote` trích ra từ AppImage.
-    # Trỏ ĐƯỜNG DẪN TUYỆT ĐỐI thay vì tên icon: không phụ thuộc icon theme
-    # và không phụ thuộc icon cache của GTK.
+  # Icon do `setup-remnote` trích từ AppImage; trỏ đường dẫn TUYỆT ĐỐI để
+  # không phụ thuộc icon theme/cache của GTK.
     icon = "${config.home.homeDirectory}/.local/share/icons/hicolor/512x512/apps/remnote.png";
 
     terminal = false;
@@ -38,12 +31,11 @@
       "Utility"
     ];
 
-    # Lấy từ .desktop gốc trong AppImage: để window map đúng icon/app khi
-    # nhóm cửa sổ (sway/waybar) và các launcher khác.
+    # Lấy từ .desktop gốc trong AppImage: window map đúng icon/app khi nhóm cửa sổ.
     settings.StartupWMClass = "RemNote";
   };
 
-  # Script cài/cập nhật AppImage từ ~/Downloads.
+  # Cài/cập nhật AppImage từ ~/Downloads.
   home.file.".local/bin/setup-remnote" = {
     executable = true;
 
@@ -65,8 +57,7 @@
       apps_root="''${XDG_DATA_HOME:-$HOME/.local/share}/applications"
 
       # ── 1. Tìm file mới nhất trong ~/Downloads ──────────────────────────
-      # Duyệt bằng glob thay vì find | sort | head để tránh SIGPIPE khi
-      # set -o pipefail + set -e.
+      # Duyệt bằng glob thay vì find | sort | head để tránh SIGPIPE với pipefail.
       latest=""
 
       for f in "$downloads"/RemNote-*.AppImage "$downloads"/remnote-*.AppImage; do
@@ -99,8 +90,8 @@
         exit 1
       fi
 
-      # Đưa bản mới vào file tạm trong cùng thư mục.
-      # Nếu bước kiểm tra hoặc trích icon thất bại, bản đang chạy vẫn nguyên.
+      # Đưa bản mới vào file tạm trong cùng thư mục: nếu bước kiểm tra hoặc trích
+      # icon thất bại, bản đang chạy vẫn nguyên.
       mkdir -p "$apps_dir"
 
       staged="$apps_dir/.RemNote.AppImage.tmp.$$"
@@ -109,8 +100,8 @@
       chmod +x "$staged"
 
       # ── 3. Kiểm tra SquashFS + trích icon ───────────────────────────────
-      # Không dùng --appimage-extract vì nó giải nén toàn bộ image.
-      # unsquashfs chỉ đọc/trích đúng file icon cần thiết.
+      # Không dùng `--appimage-extract` (giải nén toàn bộ image); unsquashfs
+      # chỉ trích đúng file icon.
 
       icon_dir="''${HOME}/.local/share/icons/hicolor/512x512/apps"
       icon_file="$icon_dir/remnote.png"
@@ -118,9 +109,8 @@
 
       offset="$("$staged" --appimage-offset 2>/dev/null || echo "")"
 
-      # Kiểm tra superblock SquashFS nằm ở cuối file.
-      # Nhờ vậy AppImage bị tải dở/cắt cụt sẽ bị phát hiện trước khi
-      # thay thế bản đang chạy.
+      # Kiểm tra superblock SquashFS nằm ở cuối file: AppImage bị tải dở/cắt cụt
+      # sẽ bị phát hiện trước khi thay thế bản đang chạy.
       if [[ -z "$offset" ]] ||
          ! "$UNSQUASHFS" -o "$offset" -s "$staged" >/dev/null 2>&1; then
 
@@ -155,8 +145,7 @@
       fi
 
       # ── 4. Cài bản mới ─────────────────────────────────────────────────
-      # Không giữ .bak.
-      # Bản cũ bị thay thế sau khi bản mới đã vượt qua toàn bộ kiểm tra.
+      # Không giữ .bak: bản cũ bị thay sau khi bản mới vượt toàn bộ kiểm tra.
       mv -f "$staged" "$target"
 
       trap - EXIT

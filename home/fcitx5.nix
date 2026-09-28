@@ -1,10 +1,8 @@
 { ... }:
 
-# Bộ gõ tiếng Việt: Fcitx5 + Bamboo engine (fcitx5-bamboo — port chính thức
-# của BambooEngine sang fcitx5, dùng bamboo-core giống ibus-bamboo).
-# LƯU Ý: tên trong profile phải là "bamboo" CHỮ THƯỜNG — fcitx5 đặt uniqueName
-# theo tên file inputmethod/bamboo.conf của addon và tra profile phân biệt
-# hoa/thường (viết "Bamboo" hoa sẽ bị loại: "Group Item ... is not valid").
+# Bộ gõ tiếng Việt: Fcitx5 + Bamboo engine (fcitx5-bamboo).
+# Tên trong profile phải là "bamboo" chữ thường — fcitx5 tra phân biệt hoa/thường,
+# viết "Bamboo" hoa sẽ bị loại.
 {
   xdg.configFile = {
     "fcitx5/profile".text = ''

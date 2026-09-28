@@ -25,9 +25,7 @@ in
       set $term foot
       set $menu rofi -show drun
 
-      # Wallpaper: lúc đăng nhập GIỮ nguyên ảnh phiên trước (--if-empty); nếu chưa
-      # có ảnh (máy mới / cache trống) mới random. Đổi ảnh bất cứ lúc nào bằng
-      # Alt+w (random) hoặc Alt+Shift+w (menu có thumbnail).
+      # Wallpaper: --if-empty = giữ ảnh phiên trước, chưa có ảnh mới random.
       exec ~/.local/bin/wallpaper-set --if-empty
 
       # Applets & daemons
@@ -77,9 +75,7 @@ in
       for_window [class="(?i)^sioyek$"] move container to workspace current
       for_window [app_id="(?i)^sioyek$"] move container to workspace current
 
-      # Foliate: app_id đúng theo .desktop là `com.github.johnfactotum.Foliate`
-      # (đã kiểm tra trong share/applications của gói). Wayland app GTK4 nên
-      # app_id khớp luôn; `class` vẫn khai để phòng XWayland.
+      # Foliate: app_id theo .desktop; khai cả `class` để phòng XWayland.
       for_window [class="(?i)^foliate$"] move container to workspace current
       for_window [app_id="(?i)^com\.github\.johnfactotum\.foliate$"] move container to workspace current
 
@@ -87,12 +83,8 @@ in
       for_window [class="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
       for_window [app_id="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
 
-      # Yazi popup ($mod+y): mở foot với `--title=yazi-popup` (xem `yazi-open`
-      # ở home/scripts.nix).
-      # Yazi KHÔNG phải app riêng — nó chạy trong foot, nên app_id vẫn là
-      # "foot"; phải match theo TITLE mà script đặt ra.
-      # ⚠️ Chỉ cửa sổ có title này mới float — terminal thường (`$mod+Return`)
-      # không bị ảnh hưởng.
+      # Yazi chạy trong foot (app_id vẫn là "foot") → phải match theo TITLE mà
+      # script đặt ra. Chỉ cửa sổ này float, terminal thường không ảnh hưởng.
       for_window [title="(?i)^yazi-popup"] floating enable, resize set 1000 px 700 px
 
       # Dialog/popup rules
@@ -121,16 +113,10 @@ in
       bindsym $mod+d exec $menu
       bindsym $mod+Tab exec rofi -show window
 
-      # Wallpaper: Alt+w đổi ảnh random, Alt+Shift+w menu chọn ảnh.
-      # ($mod+w đã dùng cho layout tabbed.)
-      bindsym Mod1+w exec ~/.local/bin/wallpaper-set
-      bindsym Mod1+Shift+w exec ~/.local/bin/wallpaper-menu
-      # $mod+y: yazi dạng POPUP (cửa sổ nhỏ, floating) — script `yazi-open`
-      # (home/scripts.nix). CHỈ phím này là popup; gõ `yazi` trong terminal
-      # thì ra cửa sổ thường, không popup (xem trước ảnh/PDF đẹp hơn).
-      #
-      # $mod+Shift+y (mở thẳng thư mục ảnh nền) đã BỎ — vào thẳng bằng
-      #   `cd ~/Pictures/wallpapers` rồi $mod+y, hoặc dùng `wallpaper-menu`.
+      # Wallpaper: random ảnh khác / menu chọn ảnh trong ~/Pictures/wallpapers.
+      bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-menu
+      bindsym $mod+Shift+Tab exec ~/.local/bin/wallpaper-set
+      # $mod+y: yazi dạng POPUP nhỏ; gõ `yazi` trong terminal thì cửa sổ thường.
       bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
@@ -156,11 +142,8 @@ in
       bindsym $mod+Shift+Up move up
       bindsym $mod+Shift+Right move right
 
-      # Workspaces — tên tập trung ở home/workspaces.nix (sửa một chỗ).
-      # Mỗi tên ở vị trí thứ N tự sinh: phím $mod+N / $mod+Shift+N
-      # (vd tên đầu danh sách → $mod+1, thứ hai → $mod+2...).
-      # Các số còn lại đến 10 tự sinh phím trỏ tới workspace số tương ứng
-      # (phím 0 = workspace 10).
+      # Tên tập trung ở home/workspaces.nix: vị trí thứ N tự sinh $mod+N /
+      # $mod+Shift+N (tên đầu → $mod+1…). Số còn lại đến 10 sinh tương ứng (0 = 10).
       ${builtins.concatStringsSep "\n" (
         pkgs.lib.imap1 (
           i: name:
@@ -215,13 +198,8 @@ in
       # Custom Utilities & Screenshot
       bindsym $mod+p exec ~/.local/bin/pomodoro-menu
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
-      # quick-lang — bộ phím chữ "t" (xem docs/02):
-      #   t            → English sạch (smart: VI/EN/trộn tự nhận dạng; EN đã đúng
-      #                  → nguyên văn, có lỗi → sửa)
-      #   Shift+t      → tiếng Việt tự nhiên
-      #   Ctrl+Shift+t → ép sửa English (không auto-detect)
-      # Tag ngữ cảnh [phi]/[sci]/[lit]/[cas]/[lĩnh vực] đặt ở ĐẦU văn bản bôi.
-      # Gemini hết quota → script tự fallback Google Translate (không cần phím).
+      # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+Shift+t = ép
+      # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
       bindsym $mod+Ctrl+Shift+t exec ~/.local/bin/quick-lang fix
@@ -243,8 +221,8 @@ in
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
-      # swayidle chạy qua systemd (khóa 300s → tắt màn 310s → ngủ 900s khi
-      # dùng pin). Phiên Focus chạy → study stop service này, xong tự start lại.
+      # swayidle (systemd): khoá 300s → tắt màn 310s → ngủ 900s khi dùng pin.
+      # Phiên Focus chạy → study stop service này, xong tự start lại.
     '';
   };
 
