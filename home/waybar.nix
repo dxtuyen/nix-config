@@ -31,15 +31,45 @@ in
       ];
       "modules-right" = [
         "custom/inhibit"
-        "power-profiles-daemon"
-        "pulseaudio"
-        "backlight"
-        "temperature"
-        "battery"
-        "cpu"
-        "memory"
+        "group/devices"
+        "group/hardware"
+        "group/power"
         "tray"
       ];
+      "group/devices" = {
+        orientation = "horizontal";
+        modules = [
+          "network"
+          "pulseaudio"
+          "backlight"
+        ];
+      };
+      "group/hardware" = {
+        orientation = "horizontal";
+        modules = [
+          "cpu"
+          "memory"
+          "temperature"
+        ];
+      };
+      "group/power" = {
+        orientation = "horizontal";
+        modules = [
+          "power-profiles-daemon"
+          "battery"
+        ];
+      };
+      network = {
+        interval = 5;
+        format-wifi = "${faSpan ""} {signalStrength}%";
+        format-ethernet = "${faSpan ""} {ipaddr}";
+        format-disconnected = faSpan "";
+        format-disabled = faSpan "";
+        tooltip-format-wifi = "SSID: {essid}\nTín hiệu: {signalStrength}%\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}";
+        tooltip-format-ethernet = "Giao diện: {ifname}\nIP: {ipaddr}/{cidr}";
+        tooltip-format-disconnected = "Đã ngắt kết nối mạng";
+        tooltip-format-disabled = "Wi-Fi đang tắt";
+      };
       "sway/workspaces" = {
         "disable-scroll" = true;
         "warp-on-scroll" = false;
@@ -183,7 +213,23 @@ in
       #workspaces button.urgent { color: #f38ba8; border-bottom-color: #f38ba8; }
       #workspaces button.persistent.empty { color: #6c7086; }  /* overlay0 */
       #window { background: @pill-hover; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: @txt-strong; font-weight: bold; }
-      #custom-inhibit, #pulseaudio, #backlight, #temperature, #battery, #power-profiles-daemon, #cpu, #memory, #tray, #mode, #scratchpad { background: @pill; border: 1px solid @edge; border-radius: 10px; padding: 0 10px; margin: 4px 0; }
+      #custom-inhibit, #tray, #mode, #scratchpad,
+      box#devices, box#hardware, box#power {
+        background: @pill;
+        border: 1px solid @edge;
+        border-radius: 10px;
+        padding: 0 4px;
+        margin: 4px 2px;
+      }
+      box#devices > widget > *,
+      box#hardware > widget > *,
+      box#power > widget > * {
+        padding: 0 6px;
+        margin: 0;
+        border: none;
+        background: transparent;
+      }
+      #tray { padding: 0 8px; margin: 4px 4px 4px 2px; }
       #mode { color: #89b4fa; background: @pill; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 5px; }
       #scratchpad { color: @txt-strong; margin: 4px 5px; }
       #clock { color: #89b4fa; font-weight: bold; background: @pill; border: 1px solid @edge; border-radius: 10px; padding: 0 10px; margin: 4px 10px 4px 5px; }
@@ -193,9 +239,11 @@ in
       #custom-study.idle { color: #585b70; }
       #custom-inhibit.running { color: #89b4fa; }
       /* Pill chỉ có glyph (14px) thấp hơn pill chữ (18px) → thêm padding dọc. */
-      #custom-inhibit, #power-profiles-daemon { padding: 2px 10px; }
+      #custom-inhibit { padding: 2px 10px; margin: 4px 4px 4px 2px; }
+      #power-profiles-daemon { padding: 0 4px; }
       #custom-inhibit.manual { color: #fab387; }
       #custom-inhibit.idle { color: #585b70; }
+      #network.disconnected, #network.disabled { color: #f38ba8; }
       #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: #fab387; }
       #battery.critical { color: #f38ba8; }
       #temperature.critical, #cpu.critical, #memory.critical { color: #f38ba8; animation: blink 1s linear infinite; }

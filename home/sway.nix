@@ -32,7 +32,6 @@ in
       exec ~/.local/bin/wallpaper-set
 
       # Applets & daemons
-      exec nm-applet --indicator
       exec blueman-applet
       exec ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1
       exec wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8
@@ -90,6 +89,9 @@ in
       # script đặt ra. Chỉ cửa sổ này float, terminal thường không ảnh hưởng.
       for_window [title="(?i)^yazi-popup"] floating enable, resize set 1000 px 700 px
 
+      # Wi-Fi nmtui popup: mở nhanh qua $mod+n, nổi giữa màn hình
+      for_window [app_id="nmtui-wifi"] floating enable, resize set 650 px 500 px
+
       # Dialog/popup rules
       for_window [window_role="pop-up"] floating enable
       for_window [window_role="bubble"] floating enable
@@ -125,6 +127,8 @@ in
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       bindsym $mod+Shift+n exec ~/.local/bin/toggle-wlsunset
+      # $mod+n: mở nhanh menu Wi-Fi (nmtui popup) — Esc để thoát
+      bindsym $mod+n exec foot --app-id=nmtui-wifi -T "Wi-Fi" env NEWT_COLORS='actlistbox=white,blue:actsellistbox=white,blue' nmtui-connect
 
       # Focus movement
       bindsym $mod+$left focus left

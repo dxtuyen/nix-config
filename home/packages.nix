@@ -17,7 +17,6 @@
     brightnessctl
     translate-shell
     goldendict-ng
-    networkmanagerapplet
     blueman
     google-chrome
     # Sách: foliate đọc epub/mobi/azw3/fb2/cbz/opds (typography tốt hơn calibre
