@@ -24,13 +24,27 @@
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
+  # ⚠️ UUID dưới đây lấy từ /etc/nixos/hardware-configuration.nix của CHÍNH MÁY
+  # NÀY (sinh lúc cài) — đã đối chiếu lại bằng `lsblk -o NAME,UUID` và
+  # `ls /dev/disk/by-uuid/`. Trước đây file này còn UUID của máy cũ
+  # (d43ad2c4… / 78D4-38EE) → /boot không mount được
+  # ("Timed out waiting for device"), `nixos-rebuild switch` chết ở bước
+  # "Failed to install bootloader", nên systemd-boot không bao giờ được cập
+  # nhật (kernel mới không vào menu boot). Máy vẫn lên được nhờ initrd rơi về
+  # fallback dò root theo label `nixos` — may mắn, không nên trông cậy.
+  #
+  # 📌 Sang máy mới: copy lại /etc/nixos/hardware-configuration.nix từ máy mới
+  # vào đây (docs/03 Bước 7.2) rồi sửa `swapDevices` về by-label cho portable.
   fileSystems."/" = {
-    device = "/dev/disk/by-uuid/d43ad2c4-988e-4dab-9191-b92c661ef2d3";
+    device = "/dev/disk/by-uuid/06d0b498-0000-4d08-a97a-56702a562ed2";
     fsType = "ext4";
   };
 
+  # ESP = nvme0n1p1. `fmask/dmask=0077` (chặt hơn 0022 mà installer sinh) giúp
+  # file mới ghi vào ESP chỉ owner đọc/ghi → chặn cảnh báo
+  # "bootctl: random-seed file is world accessible, which is a security hole".
   fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/78D4-38EE";
+    device = "/dev/disk/by-uuid/80B5-4F15";
     fsType = "vfat";
     options = [
       "fmask=0077"
@@ -38,9 +52,10 @@
     ];
   };
 
-  # Phân vùng swap (nvme0n1p2). Có thể dùng theo nhãn /dev/disk/by-label/swap
-  # hoặc để nixos-generate-config tự sinh theo UUID swap đang bật.
-  # Tham số resume hibernate trong laptop.nix tự động nhận theo nhãn /dev/disk/by-label/swap.
+  # Swap = nvme0n1p2, dùng theo NHÃN `/dev/disk/by-label/swap` (mkswap -L swap)
+  # thay vì UUID → sang máy mới không phải sửa gì, và khớp với
+  # `boot.resumeDevice` trong `modules/nixos/laptop.nix` (hibernate cũng nhận
+  # theo nhãn này). Nhãn có thật trên máy này — đã kiểm `lsblk -o LABEL`.
   swapDevices = [
     {
       device = "/dev/disk/by-label/swap";

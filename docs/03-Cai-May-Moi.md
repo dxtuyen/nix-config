@@ -37,8 +37,12 @@ Sơ đồ phân vùng mục tiêu (`/dev/nvme0n1`):
 | Phân vùng | Kích thước | FS / Loại | Mount | Mục đích |
 |---|---|---|---|---|
 | `/dev/nvme0n1p1` | **1 GiB** | vfat (FAT32) — `EFI System` | `/boot` | systemd-boot (bootloader) |
-| `/dev/nvme0n1p2` | **~227 GiB** | ext4 — `Linux root (x86)` | `/` | Hệ điều hành |
-| `/dev/nvme0n1p3` | **10 GiB** | swap — `Linux swap` | `[SWAP]` | Swap + **Hibernate** |
+| `/dev/nvme0n1p2` | **10 GiB** | swap — `Linux swap` (nhãn `swap`) | `[SWAP]` | Swap + **Hibernate** |
+| `/dev/nvme0n1p3` | **~227 GiB** | ext4 — `Linux root (x86)` | `/` | Hệ điều hành |
+
+> ⚠️ **Thứ tự p2/p3 này khác với bản cũ của tài liệu** (trước đây ghi p2 = root,
+> p3 = swap). Trên máy đang chạy, `lsblk` cho thấy **p2 = swap 10G**,
+> **p3 = root 227.5G**. Giữ đúng thứ tự p2=swap, p3=root như bảng trên.
 
 > ⚠️ **Quy tắc vàng cho Hibernate:** phân vùng swap phải **≥ RAM** vì lúc hibernate,
 > kernel nén toàn bộ RAM vào swap rồi tắt máy. Máy có RAM 7.4 GB → swap 10 GB là đủ.
@@ -51,11 +55,22 @@ Sơ đồ phân vùng mục tiêu (`/dev/nvme0n1`):
 |---|---|---|
 | `DISK` | `/dev/nvme0n1` | Ổ đĩa gốc (NVMe đầu tiên) |
 | `EFI` | `/dev/nvme0n1p1` | Phân vùng EFI 1 GiB |
-| `ROOT` | `/dev/nvme0n1p2` | Phân vùng root (ext4) |
-| `SWAP` | `/dev/nvme0n1p3` | Phân vùng swap (10 GiB) |
-| `SWAP_LABEL` | `swap` | Nhãn (LABEL) của phân vùng swap — cấu hình `laptop.nix` tự nhận diện `boot.resumeDevice = "/dev/disk/by-label/swap"` nên không cần sửa thủ công UUID! |
+| `SWAP` | `/dev/nvme0n1p2` | Phân vùng swap (10 GiB) |
+| `ROOT` | `/dev/nvme0n1p3` | Phân vùng root (ext4) |
+| `SWAP_LABEL` | `swap` | Nhãn (LABEL) của phân vùng swap — cấu hình nhận diện hibernate tự động theo `boot.resumeDevice = "/dev/disk/by-label/swap"` nên **không cần sửa thủ công UUID** |
 
-> Nếu máy mới dùng ổ SATA (`/dev/sda`…) thì chỉ cần đổi tên thiết bị, còn UUID và các file vẫn như thường.
+> Nếu máy mới dùng ổ SATA (`/dev/sda`…) thì chỉ cần đổi tên thiết bị.
+
+> ⚠️ **Không bao giờ copy UUID root/boot từ máy này sang máy mới.** Hai UUID đó
+> (`fileSystems."/"` và `fileSystems."/boot"` trong `hardware-configuration.nix`)
+> là **ID của chính ổ đĩa**, mỗi lần format là sinh UUID mới. Dùng nhầm UUID cũ
+> thì `/boot` **không mount được** → `nixos-rebuild switch` chết ở bước
+> `Failed to install bootloader` → systemd-boot không được cập nhật (kernel mới
+> không vào menu boot). Máy có thể vẫn lên được nếu initrd rơi về fallback dò
+> root theo label `nixos`, nhưng **đó là may mắn, không nên trông cậy**.
+>
+> Cách đúng: copy nguyên file từ máy mới (Bước 7.2). Riêng `swapDevices` dùng
+> theo nhãn nên giữ nguyên, không cần sửa.
 
 ---
 
@@ -126,11 +141,15 @@ Trong giao diện `cfdisk` (chọn kiểu bảng: **`gpt`**):
 |---|---|---|
 | Bảng mới | `s` → chọn `gpt` | Bảng GPT |
 | Tạo `p1` EFI 1 GiB | `[New]` → `1G` → `[Type]` → `EFI System` | `p1` 1G |
-| Tạo `p2` root | `[New]` → nhập `227G` (hoặc để trống = hết đĩa) → `[Type]` → `Linux root (x86)` | `p2` 227G |
-| Tạo `p3` swap | `[New]` → `10G` → `[Type]` → `Linux swap` | `p3` 10G |
+| Tạo `p2` swap | `[New]` → `10G` → `[Type]` → `Linux swap` | `p2` 10G |
+| Tạo `p3` root | `[New]` → nhập `227G` (hoặc để trống = hết đĩa) → `[Type]` → `Linux root (x86)` | `p3` 227G |
 | Ghi | `[Write]` → gõ `yes` → `[Quit]` | Lưu xong thoát |
 
-> Mẹo: máy ổ to, chỉ cần `p1` + `p3` đủ kích thước, còn `p2` **để trống Size** — cfdisk sẽ lấy hết phần còn lại.
+> ⚠️ **Thứ tự bắt buộc: p1 EFI → p2 swap → p3 root.** Tạo p3 (root) **trước** rồi
+> p2 (swap) sau cũng được, nhưng nhớ đối chiếu `lsblk` với bảng ở trên để khỏi nhầm.
+
+> Mẹo: máy ổ to, phân vùng cuối cùng (root) **để trống Size** — cfdisk sẽ lấy hết
+> phần đĩa còn lại.
 
 Kiểm tra:
 
@@ -146,25 +165,31 @@ lsblk      # phải thấy nvme0n1p1 / p2 / p3 đúng size
 # p1 — EFI: FAT32 (bắt buộc cho UEFI)
 mkfs.fat -F 32 /dev/nvme0n1p1
 
-# p2 — root: ext4
-mkfs.ext4 -L nixos /dev/nvme0n1p2
+# p2 — swap (đặt nhãn 'swap' để hệ thống tự nhận diện resume device)
+mkswap -L swap /dev/nvme0n1p2
 
-# p3 — swap (đặt nhãn 'swap' để hệ thống tự nhận diện resume device)
-mkswap -L swap /dev/nvme0n1p3
+# p3 — root: ext4
+# ⚠️ `-L nixos` KHÔNG phải lựa chọn ngẫu nhiên: nếu `/boot` lỡ mount sai,
+# initrd sẽ không tìm được root theo UUID và chỉ boot được nhờ rơi về
+# fallback dò theo label này. Cứ giữ nguyên.
+mkfs.ext4 -L nixos /dev/nvme0n1p3
 
 # Kiểm tra nhãn và UUID của swap
-blkid /dev/nvme0n1p3
+blkid /dev/nvme0n1p2
 ```
 
 `blkid` in ra dạng:
 
 ```
-/dev/nvme0n1p3: LABEL="swap" UUID="044520bf-..." TYPE="swap"
+/dev/nvme0n1p2: LABEL="swap" UUID="718f6c97-..." TYPE="swap"
 ```
 
 > **LABEL = Nhãn của phân vùng**. Bằng việc đặt nhãn `swap` (`mkswap -L swap`), hệ thống
 > sẽ tự động tìm thấy thiết bị khôi phục Hibernate tại `/dev/disk/by-label/swap` mà bạn
 > **không cần phải sửa UUID thủ công** trong file config.
+>
+> Còn UUID root (`p3`) và UUID EFI (`p1`) thì **phải lấy từ chính máy mới** ở Bước 6/7.2
+> — tuyệt đối không copy từ máy cũ.
 
 ---
 
@@ -172,13 +197,13 @@ blkid /dev/nvme0n1p3
 
 ```bash
 # Mount root mới vào /mnt
-mount /dev/nvme0n1p2 /mnt
+mount /dev/nvme0n1p3 /mnt
 
 # Mount /boot bên trong
 mount --mkdir /dev/nvme0n1p1 /mnt/boot
 
 # Bật swap (để nixos-generate-config phát hiện phân vùng swap)
-swapon /dev/nvme0n1p3
+swapon /dev/nvme0n1p2
 
 # Kiểm tra mounts + swap
 findmnt /mnt
@@ -193,9 +218,17 @@ cat /mnt/etc/nixos/hardware-configuration.nix
 ```
 
 Những gì file vừa sinh chứa:
-- `fileSystems."/"` → UUID của `p2`.
-- `fileSystems."/boot"` → UUID của `p1`.
+- `fileSystems."/"` → UUID của `p3` (root).
+- `fileSystems."/boot"` → UUID của `p1` (EFI).
 - `swapDevices` → vì bạn đã `swapon` trước khi chạy `nixos-generate-config`, mục này sẽ **tự điền đúng phân vùng swap** — chính là nơi khai swap duy nhất.
+
+> ✅ **Kiểm tra ngay xem file sinh ra có đúng không** (nếu `/mnt` đã mount thì lệnh dưới chạy được):
+> ```bash
+> lsblk -o NAME,FSTYPE,LABEL,UUID
+> grep by-uuid /mnt/etc/nixos/hardware-configuration.nix
+> ```
+> Hai UUID in ra **phải trùng** với `lsblk`. Lệch là file trong repo đang
+> trỏ nhầm ổ đĩa → `/boot` sẽ không mount được.
 
 ---
 
@@ -401,14 +434,14 @@ ping -c3 google.com
 
 ```bash
 cfdisk /dev/nvme0n1    # chọn bảng gpt
-# Trong cfdisk: p1 = 1G (EFI System) → p2 = 227G (Linux root x86)
-#               → p3 = 10G (Linux swap) → [Write] gõ yes → [Quit]
+# Trong cfdisk: p1 = 1G (EFI System) → p2 = 10G (Linux swap)
+#               → p3 = 227G (Linux root x86) → [Write] gõ yes → [Quit]
 
 lsblk
 # ✅ KIỂM TRA: thấy đủ 3 dòng:
-#   nvme0n1p1   1G
-#   nvme0n1p2 227G    (hoặc hết phần đĩa còn lại)
-#   nvme0n1p3  10G
+#   nvme0n1p1   1G    vfat
+#   nvme0n1p2  10G    swap
+#   nvme0n1p3 227G    ext4    (hoặc hết phần đĩa còn lại)
 # ❌ thiếu p3 / size sai → vào lại cfdisk sửa NGAY trước khi format
 ```
 
@@ -416,29 +449,38 @@ lsblk
 
 ```bash
 mkfs.fat -F 32 /dev/nvme0n1p1    # EFI — in "mkfs.fat 4.2 ..." là xong
-mkfs.ext4 -L nixos /dev/nvme0n1p2
+mkswap -L swap /dev/nvme0n1p2
+mkfs.ext4 -L nixos /dev/nvme0n1p3
 # ✅ KIỂM TRA: khối "Creating filesystem with ... blocks" chạy xong không báo lỗi
 
-mkswap -L swap /dev/nvme0n1p3
-blkid /dev/nvme0n1p3
+blkid /dev/nvme0n1p2
 # ✅ KIỂM TRA: in ra có LABEL="swap"
 # Nhãn "swap" này giúp hệ thống tự nhận diện resume device mà không cần sửa UUID tay!
+
+blkid /dev/nvme0n1p1 /dev/nvme0n1p3
+# ✅ KIỂM TRA: ghi lại 2 UUID này — Bước 7.2 sẽ dùng
+# ⚠️ 2 UUID này KHÔNG copy từ máy cũ. Chỉ `swapDevices` mới dùng theo nhãn.
 ```
 
 ### Chặng 3 — Mount + sinh config phần cứng (Bước 6)
 
 ```bash
-mount /dev/nvme0n1p2 /mnt
+mount /dev/nvme0n1p3 /mnt
 mount --mkdir /dev/nvme0n1p1 /mnt/boot
-swapon /dev/nvme0n1p3
+swapon /dev/nvme0n1p2
 
-findmnt /mnt          # ✅ SOURCE=/dev/nvme0n1p2, FSTYPE=ext4
+findmnt /mnt          # ✅ SOURCE=/dev/nvme0n1p3, FSTYPE=ext4
 findmnt /mnt/boot     # ✅ SOURCE=/dev/nvme0n1p1, FSTYPE=vfat
-swapon --show         # ✅ có /dev/nvme0n1p3, SIZE 10G
+swapon --show         # ✅ có /dev/nvme0n1p2, SIZE 10G
 
 nixos-generate-config --root /mnt
 # ✅ KIỂM TRA: in "writing /mnt/etc/nixos/hardware-configuration.nix" (không warning swap)
 # ❌ file không có swapDevices → quên swapon ở trên; bật lại rồi chạy generate lần nữa
+
+# ✅ ĐỐI CHIẾU UUID (quan trọng — sai là /boot không mount):
+grep by-uuid /mnt/etc/nixos/hardware-configuration.nix
+lsblk -o NAME,FSTYPE,UUID
+# Hai UUID phải TRÙNG nhau. Lệch → file trong repo trỏ nhầm ổ.
 ```
 
 ### Chặng 4 — Clone repo + ĐẶT MẬT KHẨU (Bước 7)
@@ -504,7 +546,10 @@ git pull --rebase && git push
 |---|---|---|
 | Boot không thấy menu / không vào NixOS | Quên phân vùng EFI, hoặc bảng `dos` thay `gpt` | Làm lại Bước 4: bảng **GPT**, `p1` loại `EFI System` |
 | `nixos-install` báo lỗi unit swap | `swapDevices` khai sai / trùng | Chỉ khai swap trong `hardware-configuration.nix` (file mới sinh tự đúng) |
-| `nixos-generate-config` không thấy swap | Chưa `swapon` | Chạy `swapon /dev/nvme0n1p3` rồi sinh lại |
+| `nixos-generate-config` không thấy swap | Chưa `swapon` | Chạy `swapon /dev/nvme0n1p2` rồi sinh lại |
+| **`nixos-rebuild switch` chết ở `Failed to install bootloader`** | `/boot` không mount được — UUID sai, thường do copy `hardware-configuration.nix` từ **máy khác** | `lsblk -o NAME,UUID` đối chiếu với `fileSystems."/boot"` trong `hardware-configuration.nix`; copy lại file từ máy mới (Bước 7.2) |
+| `journalctl -b \| grep "Timed out waiting for device"` | Cùng nguyên nhân: `/boot` trỏ nhầm UUID | Xem dòng trên |
+| Máy vẫn boot được dù `/boot` hỏng | Initrd rơi về fallback dò root theo **label `nixos`** | **Đừng trông cậy** — hãy sửa UUID cho đúng ngay |
 | Hibernate không dậy được | Chưa đặt đúng nhãn `swap` hoặc swap < RAM | Kiểm tra `lsblk -f` xem swap có `LABEL="swap"` chưa, chạy `mkswap -L swap /dev/...` nếu thiếu nhãn |
 | Swap nhỏ hơn RAM → hibernate lỗi | Vi phạm quy tắc vàng | Tăng swap ≥ RAM (Bước 4) |
 | Ngủ tốn pin bất thường | Máy không hỗ trợ S3 → rơi về s2idle | Kiểm tra `cat /sys/power/mem_sleep`; xóa `"mem_sleep_default=deep"` trong `laptop.nix` (Bước 9 mục 6). Muốn tiết kiệm pin hơn: thử hibernate hoặc kiểm tra BIOS có bản cập nhật bật S3 |
