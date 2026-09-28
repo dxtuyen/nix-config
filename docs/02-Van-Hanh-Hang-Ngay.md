@@ -127,8 +127,47 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | List các generation | `nixos-rebuild list-generations` |
 | Quay lại bản ngon (đang boot ở bản ngon) | `/run/current-system/bin/switch-to-configuration boot` |
 | Dọn rác store | `nix-collect-garbage -d` (GC tự động hàng tuần theo `core.nix`) |
+| Dọn generation cũ + đánh số lại **về 1** | `sudo bash scripts/reset-generations.sh` — xem [Đánh số lại generation](#đánh-số-lại-generation-về-1) |
 | Xem log Sway | `journalctl -b -u sway` / `journalctl --user -u sway` |
 | Tìm file / tìm trong nội dung | `fd -e pdf` · `rg -g '*.md' 'từ_khoá'` (thay `find`/`grep`) |
+
+## Đánh số lại generation về 1
+
+Xoá generation cũ **không** làm số nhỏ đi: nix đánh số mới = *số lớn nhất còn lại*
++ 1 (`system-1`..`system-17` xoá hết, chỉ còn `system-18-link` → bản mới vẫn là 19).
+Muốn profile về đúng **generation 1** (để rebuild sau đó là 2, 3...) thì phải
+**đổi tên link** — script `scripts/reset-generations.sh` làm hết trong 1 lần chạy:
+
+```bash
+sudo bash scripts/reset-generations.sh          # flake = thư mục repo, host = laptop
+# hoặc chỉ định: sudo bash scripts/reset-generations.sh /đường/dẫn/flake tên-host
+```
+
+Nó chạy 4 bước: **(1)** xoá mọi generation trừ bản đang chạy
+(`nix-env -p /nix/var/nix/profiles/system --delete-generations old`) → **(2)**
+`mv system-<N>-link system-1-link` + sửa symlink `system` trỏ vào nó → **(3)**
+`nixos-rebuild switch` (tạo generation 2, đồng thời ghi lại boot entry) → **(4)**
+`nix-collect-garbage -d`.
+
+**Vì sao có bước rebuild:** builder systemd-boot **xoá sạch mọi entry `nixos*`**
+trong `/boot/loader/entries` rồi ghi lại theo danh sách generation hiện có ⇒ entry
+của generation đã xoá tự được dọn, không cần xoá tay.
+
+> ⚠️ Sau khi chạy **không rollback được về các bản cũ** (đã xoá vĩnh viễn).
+
+**2 chốt an toàn script tự kiểm** (đừng bỏ qua):
+
+1. **`/boot` phải đang mount** — không thì bước 3 chết đúng ở
+   `Failed to install bootloader` (đã từng xảy ra khi `/etc/fstab` còn UUID của
+   máy khác). Kiểm: `mountpoint -q /boot && echo ok`.
+2. **Không bao giờ để 0 generation** — builder systemd-boot từ chối chạy khi
+   danh sách generation rỗng ("refusing to remove all boot loader entries") vì sẽ
+   xoá sạch kernel/initrd trên ESP → máy không boot được. Script luôn giữ lại bản
+   đang chạy.
+
+**Lưới an toàn còn lại:** generation 1 (bản đang chạy) + `boot.loader.systemd-boot.configurationLimit = 10`
+(menu boot giữ tối đa 10 entry) + GC tự động hàng tuần với `--delete-older-than 7d`
+(`core.nix`) tự dọn generation cũ hơn 7 ngày.
 
 ## Scripts quan trọng (`~/.local/bin`)
 
