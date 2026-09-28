@@ -25,8 +25,11 @@ in
       set $term foot
       set $menu rofi -show drun
 
-      # Wallpaper: --if-empty = giữ ảnh phiên trước, chưa có ảnh mới random.
-      exec ~/.local/bin/wallpaper-set --if-empty
+      # Wallpaper: mỗi lần bật máy vào Sway → đổi ảnh nền random (khác
+      # ảnh đang hiển thị). KHÔNG dùng --if-empty nữa (cờ đó = giữ ảnh phiên
+      # trước). Script tự start + chờ awww-daemon sẵn sàng, nên gọi thẳng
+      # ở đây là an toàn.
+      exec ~/.local/bin/wallpaper-set
 
       # Applets & daemons
       exec nm-applet --indicator

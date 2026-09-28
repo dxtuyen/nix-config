@@ -303,7 +303,7 @@ Sau khi vào desktop (Sway), mở terminal và kiểm tra theo thứ tự:
 3. **Phân vùng đúng**: `lsblk -f`.
 4. **Clone repo về máy** để lần sau rebuild tại chỗ: `git clone https://github.com/dxtuyen/nix-config.git ~/nix-config`.
 5. **Ảnh nền (tuỳ chọn)** — ảnh nền **KHÔNG nằm trong repo** (chỉ `lockscreen/nixos.jpg` là ảnh duy nhất được commit).
-   - **Bỏ qua bước này cũng được**: khi thư mục ảnh rỗng, hệ thống tự dùng **màu nền Catppuccin Mocha `#1e1e2e`** → không có màn đen, không lỗi.
+   - **Bỏ qua bước này cũng được**: khi thư mục ảnh rỗng, hệ thống tự dùng **ảnh mặc định `lockscreen/nixos.jpg`** (đã có sẵn trong repo, cùng ảnh khoá màn hình) → có nền ảnh thật ngay, không có màn đen, không lỗi.
    - Muốn có ảnh thật thì copy từ máy cũ / USB / backup:
      ```bash
      mkdir -p ~/Pictures/wallpapers

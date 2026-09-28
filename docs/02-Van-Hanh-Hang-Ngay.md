@@ -178,8 +178,8 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 | `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key ở `~/.config/quick-lang/api.key` |
 | `dict-toggle` | `mod+g`: bật/tắt GoldenDict float — đóng = ẩn về tray (tiến trình giữ nguyên, mở lại tức thời) |
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
-| `wallpaper-set` | `$mod+r`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Lúc đăng nhập: **giữ nguyên ảnh phiên trước** (chưa có ảnh → random 1 ảnh). ⛔ Auto-rotate 30 phút **đã TẮT** (xem mục [Tự đổi ảnh nền mỗi 30 phút](#tự-đổi-ảnh-nền-mỗi-30-phút-auto-rotate)). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
-| `wallpaper-menu` | `$mod+Shift+r`: menu rofi **lưới 3×3 thumbnail 320px** (ảnh trên, tên dưới, đang dùng đánh dấu `●`, >9 ảnh tự cuộn) — icon lấy từ **cache** `~/.cache/wallpaper-thumbs/` + build list **0 spawn** (đo: 2.2s → 0.05s với 333 ảnh) → **mở tức thì**. Lần đầu / vừa thêm ảnh: mở **dựng cache nền** → lần sau tự lưới. Chế độ: `--grid` (ép lưới), `--list` (chữ thuần, nhanh nhất)<br>**Phím duyệt ảnh:** `←` `→` **sang cột** · `↑` `↓` lên/xuống hàng · `Tab`/`Shift+Tab` hàng trước/sau · `Page_Up`/`Page_Down` trang trước/sau · `Home`/`End` ảnh đầu/cuối · lưới hết cuối **vòng lại đầu** (`cycle`). Bản `Alt+` tương ứng cho bàn phím không có phím mũi tên: `Alt+h/j/k/l`, `Alt+u/i/o/p`<br>**Đã sửa lỗi "dính chùng điều hướng với con trỏ gõ chữ":** rofi mặc định gán `Left`/`Right` cho **con trỏ trong ô filter**, còn `Ctrl+Page_Up/Down` mới sang cột → **không bao giờ sang được cột 2, 3** của lưới (với `keyd` còn tệ hơn: `Ctrl` phải bấm qua `CapsLock`, dễ lỡ tay thành `Esc` là đóng mất menu). Menu này **đổi chỗ** — `←`/`→` sang cột, con trỏ gõ chuyển sang `Alt+←`/`Alt+→` (vẫn đủ `Alt+b/f`, `Ctrl+←/→`, `Ctrl+a/e`, `BackSpace`) nên **không mất phím nào**. Chỉ áp cho menu này, không đụng `rofi -show drun/window` |
+| `wallpaper-set` | `$mod+r`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Mỗi lần bật máy vào Sway: **tự đổi ảnh random** (không giữ ảnh phiên trước); thư mục ảnh rỗng → dùng ảnh mặc định trong repo. ⛔ Auto-rotate 30 phút **đã TẮT** (xem mục [Tự đổi ảnh nền mỗi 30 phút](#tự-đổi-ảnh-nền-mỗi-30-phút-auto-rotate)). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
+| `wallpaper-menu` | `$mod+Shift+r`: menu rofi **lưới 3×3 thumbnail 320px** (ảnh trên, tên dưới, đang dùng đánh dấu `●`, >9 ảnh tự cuộn) — icon lấy từ **cache** `~/.cache/wallpaper-thumbs/` + build list **0 spawn** (đo: 2.2s → 0.05s với 333 ảnh) → **mở tức thì**. Lần đầu / vừa thêm ảnh: mở **dựng cache nền** → lần sau tự lưới. Chế độ: `--grid` (ép lưới), `--list` (chữ thuần, nhanh nhất)<br>**Phím duyệt ảnh:** `←` `→` **sang cột** · `↑` `↓` lên/xuống hàng · `Tab`/`Shift+Tab` hàng trước/sau · `Page_Up`/`Page_Down` trang trước/sau · `Home`/`End` ảnh đầu/cuối · lưới hết cuối **vòng lại đầu**. Bản `Alt+` tương ứng: `Alt+h/j/k/l`, `Alt+u/i/o/p`. Menu này **đổi chỗ** so với mặc định của rofi: `←`/`→` sang cột, con trỏ gõ chuyển sang `Alt+←`/`Alt+→` (không mất phím nào). Chỉ áp cho menu này, không đụng `rofi -show drun/window` |
 | `wallpaper-thumbs` | Dựng thumbnail 320px cho menu (song song 8 luồng, ImageMagick, đếm thiếu bằng builtin không fork). Chạy nền khi menu cần; `--status` chỉ còn để tra tay. Xoá `~/.cache/wallpaper-thumbs/` bất cứ lúc nào → tự dựng lại |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
 | `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
@@ -192,28 +192,24 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 
 **Không có logic theo giờ, không chia pool:** mọi ảnh trong `~/Pictures/wallpapers/` đều random như nhau.
 
-> 📁 **Ảnh nền nằm NGOÀI repo.** Thư mục `~/Pictures/wallpapers/` do bạn tự quản lý — `cp`/`rm` thoải mái, **không rebuild, không commit, không ai ghi đè**. Repo chỉ giữ đúng **một** file ảnh: `lockscreen/nixos.jpg` (ảnh khoá màn hình, tên cố định, chèn thẳng vào script `lock-screen`).
+> 📁 **Ảnh nền nằm NGOÀI repo.** Thư mục `~/Pictures/wallpapers/` do bạn tự quản lý — `cp`/`rm` thoải mái, **không rebuild, không commit, không ai ghi đè**. Repo chỉ giữ đúng **một** file ảnh: `lockscreen/nixos.jpg` — dùng làm **ảnh khoá màn hình** (`lock-screen`) *và* **ảnh nền dự phòng** khi máy mới chưa có ảnh nào trong `~/Pictures/wallpapers/`.
 >
 > Hệ quả: **cài máy mới phải copy ảnh vào `~/Pictures/wallpapers/`** (xem [03-Cai-May-Moi](03-Cai-May-Moi.md)), và **backup `~/Pictures` là bắt buộc** — nó là bản duy nhất (xem [04-Sao-Luu-Phuc-Hoi](04-Sao-Luu-Phuc-Hoi.md)).
 
-- **Mỗi lần đăng nhập**: giữ nguyên ảnh của phiên trước (daemon awww tự khôi phục từ cache `~/.cache/awww`) — nếu chưa có ảnh (máy mới / cache trống) mới tự random 1 ảnh
+- **Mỗi lần bật máy vào Sway**: tự đổi ảnh nền **random** (luôn khác ảnh phiên trước). Nếu `~/Pictures/wallpapers/` rỗng (máy mới) → dùng ảnh mặc định trong repo (xem [Chưa có ảnh nào?](#-chua-co-anh-nao-tu-dung-anh-mac-dinh))
 - **Đổi ảnh bất cứ lúc nào**: `$mod+r` (random — luôn khác ảnh đang dùng) hoặc `$mod+Shift+r` (menu rofi lưới thumbnail 3×3, tên dưới ảnh, xếp lấp trái→phải, `●` là ảnh đang dùng; >9 ảnh tự cuộn, phím `←→↑↓` duyệt ảnh). Không tự đổi theo giờ nữa.
 - **Thêm/xoá ảnh**: `$mod+y` mở **yazi** popup ở thư mục hiện tại (xem [Thêm ảnh bằng yazi](#thêm-ảnh-bằng-yazi-mody))
 
-### ⭐ Chưa có ảnh nào? Tự động dùng màu nền
+### ⭐ Chưa có ảnh nào? Tự động dùng ảnh mặc định trong repo
 
-**Không bao giờ thấy màn đen.** Khi `~/Pictures/wallpapers/` rỗng (máy mới vừa cài, hoặc vừa xoá hết ảnh), `wallpaper-set` tự đặt nền là **màu Catppuccin Mocha `#1e1e2e`** — màu nền dùng ở mọi nơi trong config.
+**Không bao giờ thấy màn đen.** Khi `~/Pictures/wallpapers/` rỗng (máy mới, hoặc vừa xoá hết ảnh), `wallpaper-set` tự đặt nền là **`lockscreen/nixos.jpg`** — ảnh mặc định đã có sẵn trong repo, **cùng ảnh dùng cho khoá màn hình** nên nhìn rất nhất quán.
 
-```bash
-awww img 0x1e1e2e        # awww nhận thẳng HEXCODE, không cần file ảnh
-awww query               # → currently displaying: image: 0x1e1e2eff
-```
-
-- ✅ **0 byte** trong repo — không lo repo phình
-- ✅ Máy mới cài xong đăng nhập là có nền đẹp, không lỗi, không phải copy ảnh gì cả
+- ✅ **0 byte thêm vào repo** — ảnh này vốn đã nằm trong repo cho `lock-screen`, script chỉ trỏ `store path` vào nó, không copy ra `~/`
+- ✅ Máy mới cài xong đăng nhập là có **nền ảnh thật**, không phải mảng màu
+- ⚠️ Dự phòng cuối: store path biến mất sau nâng cấp `nixpkgs` → rơi về **màu Catppuccin Mocha `#1e1e2e`**
 - ✅ Báo qua `notify-send` hướng dẫn thêm ảnh
 
-> Khi đang ở chế độ màu, `wallpaper-menu` báo *"chưa có ảnh nào — thêm bằng yazi"* thay vì lỗi. Script cũng tự nhận ra giá trị hexcode và **không** cố `readlink` nó như đường dẫn file.
+> Ở chế độ màu, `wallpaper-menu` báo *"chưa có ảnh nào — thêm bằng yazi"* thay vì lỗi. Script cũng tự nhận ra giá trị hexcode và **không** cố `readlink` nó như đường dẫn file.
 
 ### Tự đổi ảnh nền mỗi 30 phút (auto-rotate)
 
@@ -300,7 +296,7 @@ Xong — dùng được ngay. Không sửa file `.nix` nào, không rebuild, kh�
 rm ~/Pictures/wallpapers/ten-anh.jpg
 ```
 
-💡 Nếu xóa đúng ảnh **đang hiển thị**: bấm `$mod+r` đổi sang ảnh khác *trước*. (Hệ thống vẫn tự phục hồi — daemon giữ ảnh trong bộ nhớ, lần đăng nhập sau cache trỏ file mất thì `wallpaper-set --if-empty` tự rơi về random — nhưng đổi trước vẫn gọn hơn.)
+💡 Nếu xóa đúng ảnh **đang hiển thị**: bấm `$mod+r` đổi sang ảnh khác *trước*. (Hệ thống vẫn tự phục hồi — daemon giữ ảnh trong bộ nhớ, lần đăng nhập sau Sway tự đổi ảnh random — nhưng đổi trước vẫn gọn hơn.)
 
 ### Thay thế / đổi tên ảnh
 

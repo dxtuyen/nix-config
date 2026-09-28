@@ -79,14 +79,18 @@
       text = ''
         #! /usr/bin/env bash
         # wallpaper-set [đường-dẫn-ảnh|--if-empty] — đặt ảnh nền qua awww (fade 1.5s).
-        # Không có ảnh nào → dự phòng bằng MÀU nền theme (awww nhận hexcode nên
-        # không cần file ảnh, 0 byte trong repo).
+        # Chưa có ảnh nào (máy mới) → dùng ảnh mặc định trong repo, dự phòng
+        # cuối là màu nền theme.
         set -u
 
         WALL_DIR="$HOME/Pictures/wallpapers"
         CACHE="$HOME/.cache/wallpaper-current"
         AWWW=${pkgs.awww}/bin/awww
-        FALLBACK_COLOR="0x1e1e2e" # nền Catppuccin Mocha — dùng khi chưa có ảnh nào
+        FALLBACK_COLOR="0x1e1e2eff" # nền Catppuccin Mocha — khi cả ảnh mặc định cũng hỏng
+        # Cùng ảnh với lock-screen, trỏ thẳng store path (không copy ra ~/, không
+        # phình thêm — ảnh này vốn đã nằm trong repo).
+        DEFAULT_IMG=${./../lockscreen/nixos.jpg}
+        AWWW_IMG_ARGS=(-t fade --transition-duration 1.5)
 
         # realpath ảnh đang hiển thị: ưu tiên awww (chính xác), dự phòng cache.
         current_resolved() {
@@ -135,10 +139,16 @@
         else
           mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
           if [ "''${#imgs[@]}" -eq 0 ]; then
-            # Dự phòng bằng MÀU nền theme. Thoát 0 để lúc đăng nhập không spam lỗi.
-            $AWWW img "$FALLBACK_COLOR" -t fade --transition-duration 1.5
+            # Máy mới / vừa xoá hết ảnh → ảnh mặc định trong repo, không có thì
+            # rơi về màu nền theme.
+            if [ -f "$DEFAULT_IMG" ]; then
+              $AWWW img "$DEFAULT_IMG" "''${AWWW_IMG_ARGS[@]}"
+              printf '%s\n' "$DEFAULT_IMG" > "$CACHE"
+            else
+              $AWWW img "$FALLBACK_COLOR" "''${AWWW_IMG_ARGS[@]}"
+            fi
             notify-send -a wallpaper "wallpaper-set" \
-              "Chưa có ảnh nền — tạm dùng màu nền. Thêm ảnh: mở yazi (\$mod+y) rồi copy vào Pictures/wallpapers" 2>/dev/null || true
+              "Chưa có ảnh nền — tạm dùng ảnh mặc định. Thêm ảnh: mở yazi (\$mod+y) rồi copy vào Pictures/wallpapers" 2>/dev/null || true
             exit 0
           fi
 
@@ -158,12 +168,9 @@
           img="''${cands[$((RANDOM % ''${#cands[@]}))]}"
         fi
 
-        # Đặt nền với transition fade 1.5s + ghi nhớ ảnh hiện tại.
-        $AWWW img "$img" -t fade --transition-duration 1.5
+        # Đặt nền + ghi nhớ ảnh hiện tại.
+        $AWWW img "$img" "''${AWWW_IMG_ARGS[@]}"
         printf '%s\n' "$img" > "$CACHE"
-
-        # Reset mốc auto-rotate (timer đã TẮT ở desktop.nix → no-op vô hại).
-        systemctl --user try-restart wallpaper-rotate.timer 2>/dev/null || true
       '';
     };
 
@@ -303,16 +310,10 @@
             fi ;;
         esac
 
-        # Phím điều hướng — TÁCH con trỏ gõ khỏi điều hướng lưới.
-        # Vì sao: rofi mặc định gán Left/Right cho kb-move-char-* (con trỏ
-        # trong ô filter) và chỉ để kb-row-left/right là Control+Page_Up/Down
-        # → không bao giờ sang được cột 2, 3 của lưới 3×3. Tệ hơn, keyd đã
-        # gán CapsLock = overload(control, esc) nên Control+Page_Up phải
-        # bấm CapsLock+Page_Up — dễ lỡ tay thành Esc (đóng menu).
-        # Cách sửa: đổi chỗ con trỏ sang Alt+Left/Right, nhả Left/Right cho
-        # di chuyển cột. KHÔNG mất binding nào — con trỏ vẫn còn 5 cách:
-        # Alt+←/→ (ký tự), Alt+b/f + Ctrl+←/→ (từ), Ctrl+a/e (đầu/cuối).
-        # Alt+h/j/k/l + Alt+u/i/o/p cho khớp keyd nav layer (Tab + h/j/k/l).
+        # Phím điều hướng: rofi mặc định gán Left/Right cho con trỏ trong ô
+        # filter, nên không sang được cột 2, 3 của lưới. Đổi con trỏ sang
+        # Alt+Left/Right, nhả Left/Right cho di chuyển cột. Alt+h/j/k/l và
+        # Alt+u/i/o/p khớp keyd nav layer.
         kb=(
           -kb-move-char-back 'Alt+Left,Control+b'
           -kb-move-char-forward 'Alt+Right,Control+f'
@@ -326,8 +327,7 @@
 
         # -theme-str chỉ áp cho lần chạy này (không đụng ~/.config/rofi):
         # lưới 3 cột × 3 hàng, ảnh trên tên dưới, tên căn giữa.
-        # cycle: vòng lại khi lưới hết ảnh, thay vì kẹt cứng ở ảnh cuối
-        # (thư mục có 334 ảnh).
+        # cycle: vòng lại khi lưới hết ảnh thay vì kẹt ở ảnh cuối.
         if [ "$grid" -eq 1 ]; then
           rofi_args=(-dmenu -i -show-icons -l 3 -p '🖼️ Wallpaper'
             -mesg 'Enter: đặt nền · ←→↑↓: duyệt · ● = đang dùng · Esc: huỷ'
