@@ -14,14 +14,14 @@
       width = 350;
       height = 600;
       default-timeout = 5000;
-      background-color = "#1a1b26";
-      text-color = "#c0caf5";
-      border-color = "#7aa2f7";
+      background-color = "#1e1e2e";
+      text-color = "#cdd6f4";
+      border-color = "#89b4fa";
       border-radius = 8;
       # timeout riêng từng app.
       # Dịch tự tắt sau ~2 phút; bấm trái tắt sớm.
       "app-name=quick-lang".default-timeout = 120000;
-      "app-name=quick-lang".border-color = "#bb9af7";
+      "app-name=quick-lang".border-color = "#cba6f7";
       # Click trái tắt thông báo dịch.
       "app-name=quick-lang".on-button-left = "dismiss";
       "app-name=volume".default-timeout = 2000;
@@ -30,7 +30,7 @@
       "app-name=power-profiles".default-timeout = 2000;
       "app-name=toggle-touchpad".default-timeout = 2000;
       # Focus: viền theo màu đồng hồ Waybar.
-      "app-name=focus".border-color = "#7aa2f7";
+      "app-name=focus".border-color = "#89b4fa";
       "app-name=focus".default-timeout = 5000;
       "app-name=screenshot".default-timeout = 2000;
       "app-name=power".default-timeout = 2000;

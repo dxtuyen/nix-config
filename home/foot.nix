@@ -1,4 +1,4 @@
-# Foot — terminal mặc định (thay Alacritty), theme Tokyo Night, native Wayland.
+# Foot — terminal mặc định (thay Alacritty), theme Catppuccin Mocha, native Wayland.
 # Chọn foot vì hỗ trợ **sixel** → yazi hiện được ảnh thật trong khung preview
 # (Alacritty không có kitty-graphics lẫn sixel). Bản foot trong nixpkgs build kèm
 # `--sixel` + terminfo (`TERM=foot`) — đúng thứ yazi cần để nhận diện Sixel driver.
@@ -39,7 +39,7 @@
         beam-thickness = 1.5;
       };
 
-      # Tokyo Night. CỐ Ý chỉ khai 16 màu ANSI + nền/foreground/cursor — bảng 256
+      # Catppuccin Mocha. CỐ Ý chỉ khai 16 màu ANSI + nền/foreground/cursor — bảng 256
       # màu (term-colors 16-255) giữ mặc định của foot, y hệt trước đây khi
       # config Alacritty cũng chỉ khai 16 màu. Muốn khai thêm thì thêm ở đây.
       #
@@ -54,38 +54,38 @@
       colors-dark = {
         # Trong suốt phẳng (không có blur — xem LƯU Ý trên đầu file).
         alpha = 0.9;
-        background = "1a1b26";
-        foreground = "c0caf5";
-        # chữ `1a1b26` trên nền con trỏ `c0caf5`
-        cursor = "1a1b26 c0caf5";
-        "selection-foreground" = "c0caf5";
-        "selection-background" = "364a82";
+        background = "1e1e2e";
+        foreground = "cdd6f4";
+        # chữ `1e1e2e` trên nền con trỏ `f5e0dc`
+        cursor = "1e1e2e f5e0dc";
+        "selection-foreground" = "cdd6f4";
+        "selection-background" = "585b70";
 
-        # ANSI 0-7
-        regular0 = "15161e";
-        regular1 = "f7768e";
-        regular2 = "9ece6a";
-        regular3 = "e0af68";
-        regular4 = "7aa2f7";
-        regular5 = "bb9af7";
-        regular6 = "73daca";
-        regular7 = "a9b1d6";
+        # ANSI 0-7 (Catppuccin Mocha: crust/surface + màu chính)
+        regular0 = "45475a";
+        regular1 = "f38ba8";
+        regular2 = "a6e3a1";
+        regular3 = "f9e2af";
+        regular4 = "89b4fa";
+        regular5 = "cba6f7";
+        regular6 = "94e2d5";
+        regular7 = "bac2de";
 
         # ANSI 8-15
-        bright0 = "414868";
-        bright1 = "f7768e";
-        bright2 = "9ece6a";
-        bright3 = "e0af68";
-        bright4 = "7aa2f7";
-        bright5 = "bb9af7";
-        bright6 = "73daca";
-        bright7 = "acb0d0";
+        bright0 = "585b70";
+        bright1 = "f38ba8";
+        bright2 = "a6e3a1";
+        bright3 = "f9e2af";
+        bright4 = "89b4fa";
+        bright5 = "cba6f7";
+        bright6 = "94e2d5";
+        bright7 = "a6adc8";
 
         # Đều là cặp "chữ nền" — xem chú thích cú pháp ở trên.
-        "jump-labels" = "15161e e0af68";
-        "scrollback-indicator" = "15161e 7aa2f7";
-        "search-box-match" = "15161e e0af68";
-        "search-box-no-match" = "15161e f7768e";
+        "jump-labels" = "1e1e2e fab387";
+        "scrollback-indicator" = "1e1e2e 89b4fa";
+        "search-box-match" = "1e1e2e fab387";
+        "search-box-no-match" = "1e1e2e f38ba8";
       };
     };
   };

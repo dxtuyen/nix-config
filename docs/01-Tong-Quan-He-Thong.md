@@ -2,7 +2,7 @@
 
 ## Máy này là gì
 
-- **NixOS 26.05** (x86_64) chạy **Sway** (Wayland) + **Waybar** + **Mako** (thông báo) + **Foot** (terminal) + **Starship** (prompt), theme **Tokyo Night** đồng bộ toàn hệ thống.
+- **NixOS unstable** (x86_64, rolling release) chạy **Sway** (Wayland) + **Waybar** + **Mako** (thông báo) + **Foot** (terminal) + **Starship** (prompt), theme **Catppuccin Mocha** đồng bộ toàn hệ thống (GTK dùng adw-gtk3-dark trung tính).
 - Toàn bộ cấu hình nằm trong repo `nix-config` (được version bằng git) — không cài "theo kiểu Ubuntu" mà **khai báo rồi build** ra hệ thống.
 
 ## Hai tầng cấu hình

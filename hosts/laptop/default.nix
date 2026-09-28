@@ -1,6 +1,5 @@
 {
   inputs,
-  unstablePkgs,
   userName,
   ...
 }:
@@ -22,7 +21,7 @@
     useGlobalPkgs = true;
     useUserPackages = true;
     backupFileExtension = "backup"; # đè file cũ thành *.backup thay vì lỗi build
-    extraSpecialArgs = { inherit inputs unstablePkgs userName; };
+    extraSpecialArgs = { inherit inputs userName; };
     users.${userName} = import ../../home;
   };
 

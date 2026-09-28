@@ -5,7 +5,7 @@
 | Thuật ngữ | Ý nghĩa |
 |---|---|
 | **Nix** | Trình quản lý gói + ngôn ngữ cấu hình. Repo này toàn file `.nix` |
-| **nixpkgs** | Kho package chính (pinned `nixos-26.05` trong `flake.lock`) |
+| **nixpkgs** | Kho package chính (pinned `nixos-unstable` trong `flake.lock`) |
 | **Flake** | Dự án Nix tự chứa (inputs + outputs). `flake.nix` ở gốc repo |
 | **Store** | `/nix/store` — nơi chứa mọi gói/build, content-addressed |
 | **Generation** | Snapshot hoàn chỉnh của hệ thống; mỗi rebuild tạo 1 bản |
@@ -13,7 +13,7 @@
 | **Module** | File `.nix` khai báo một phần của OS (`modules/nixos/*.nix`) |
 | **nixos-rebuild** | Lệnh build + kích hoạt hệ thống (`switch`/`boot`/`test`) |
 | **nh** | Nix helper (wrapper `nixos-rebuild`, bật trong `core.nix`) |
-| **stateVersion** | `26.05` — giữ các default tương thích ngược |
+| **stateVersion** | `26.05` — giữ các default tương thích ngược (KHÔNG đổi theo channel, kẹt ở bản lúc cài) |
 | **allowUnfree** | Cho phép gói không tự do (Chrome...) |
 
 ## Swap / Hibernate
@@ -33,7 +33,7 @@
 | **Sway** | Tiling window manager cho Wayland (`home/sway.nix`) |
 | **Greetd / Tuigreet** | Display manager nhẹ + màn hình đăng nhập TUI |
 | **Waybar / Mako** | Thanh trạng thái / daemon thông báo |
-| **Foot** | Terminal mặc định (theme Tokyo Night). Chọn foot vì hỗ trợ **sixel** → yazi xem trước ảnh thật (Alacritty không có kitty-graphics/sixel) |
+| **Foot** | Terminal mặc định (theme Catppuccin Mocha). Chọn foot vì hỗ trợ **sixel** → yazi xem trước ảnh thật (Alacritty không có kitty-graphics/sixel) |
 | **Sixel** | Chuẩn vẽ ảnh trong terminal (ô ký tự). Foot hỗ trợ → yazi hiện ảnh xem trước không cần gói phụ |
 | **Sway không có blur** | Hiệu ứng "acrylic" (blur nền cửa sổ) **không tồn tại** trên Sway — kể cả Alacritty (blur chỉ chạy macOS/KDE). Chỉ có trong suốt phẳng; muốn giống kính mờ thì dùng **ảnh nền đã blur sẵn** |
 | **Starship** | Prompt shell tối giản (directory + git, không user@hostname) |

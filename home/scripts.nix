@@ -100,14 +100,14 @@
         WALL_DIR="$HOME/Pictures/wallpapers"
         CACHE="$HOME/.cache/wallpaper-current"
         AWWW=${pkgs.awww}/bin/awww
-        FALLBACK_COLOR="0x1a1b26" # nền Tokyo Night — dùng khi chưa có ảnh nào
+        FALLBACK_COLOR="0x1e1e2e" # nền Catppuccin Mocha — dùng khi chưa có ảnh nào
 
         # realpath ảnh đang hiển thị: ưu tiên awww (chính xác), dự phòng cache.
         current_resolved() {
           local cur
           cur="$($AWWW query 2>/dev/null | sed -n 's/.*currently displaying: image: //p' | head -1)"
           [ -z "$cur" ] && cur="$(cat "$CACHE" 2>/dev/null || true)"
-          # awww trả về hexcode (vd 0x1a1b26ff) khi nền là MÀU TRƠN, không phải
+          # awww trả về hexcode (vd 0x1e1e2eff) khi nền là MÀU TRƠN, không phải
           # đường dẫn file — readlink -f sẽ ra rỗng và phá logic so sánh.
           case "$cur" in
             0x*) printf '%s\n' "$cur"; return 0 ;;

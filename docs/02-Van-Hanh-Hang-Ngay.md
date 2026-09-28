@@ -1,5 +1,112 @@
 # 02 — Vận hành hằng ngày
 
+> Triết lý vận hành của repo này học theo thread
+> [Tips & Tricks for NixOS Desktop của matklad](https://discourse.nixos.org/t/tips-tricks-for-nixos-desktop/28488):
+> dùng **unstable** cho desktop, tìm **option** trước package,
+> không `nix-env`, và hỏng thì **boot vào generation ngon** thay vì rollback mù.
+
+## 1. Use NixOS-unstable
+
+Hệ thống chạy **nixos-unstable** (`flake.nix` → `nixpkgs.url = .../nixos-unstable`).
+"Unstable" là misnomer — thực chất là rolling release được gate bởi test suite,
+khá ổn định, app luôn mới (yazi có Trash bin, foliate/chrome/vscode mới...).
+Lỡ hỏng thì boot generation cũ ở menu systemd-boot là xong
+(`configurationLimit = 10` trong `modules/nixos/core.nix` luôn giữ bản ngon).
+
+## 2. Đừng rollback — hãy boot vào bản ngon rồi ghim nó
+
+Khi config hỏng, **đừng** đứng ở bản hỏng rồi đoán lùi mấy đời:
+
+```bash
+# ❌ KHÔNG làm thế này khi đang ở config hỏng:
+nixos-rebuild switch --rollback
+```
+
+Làm theo matklad — boot vào generation đang chạy tốt (chọn ở menu systemd-boot
+lúc khởi động), rồi ghim nó thành mặc định:
+
+```bash
+/run/current-system/bin/switch-to-configuration boot
+```
+
+Xong — lần boot sau máy vào thẳng bản ngon, không cần đếm generation.
+
+> ⚠️ 2 caveat từ chính thread (post #5 bjornfor + #6 matklad, #9 Nebucatnetzer):
+> - `switch-to-configuration boot` chạy standalone **không luôn tạo boot entry đúng** ([issue #82851](https://github.com/NixOS/nixpkgs/issues/82851)). matklad confirm **trên systemd-boot thì work** (repo này dùng systemd-boot nên đúng đường), còn GRUB có thể khác (có người mất generations trên GRUB).
+> - Boot bản ngon **không rollback state** (VD app dùng database đã migrate) — chỉ rollback hệ thống + config.
+
+```bash
+nixos-rebuild list-generations   # xem các bản còn giữ
+```
+
+## 3. Tìm package ở search.nixos.org, tìm option trước package
+
+- Tìm gói: [search.nixos.org/packages](https://search.nixos.org/packages) —
+  nhanh và chuẩn hơn `nox` hay mò trên CLI. Trên máy thì `nix search nixpkgs <tên>`
+  (kể cả flake khác) hoặc vào `nix repl` rồi `:load-flake` để mò attr path.
+- Việc gì cũng **tìm option trước** (`search.nixos.org/options`): docker/emacs/
+  sway/thunar... có option riêng kèm systemd daemon + tích hợp hệ thống,
+  ngon hơn cài package trần. Repo này đã theo hướng đó
+  (`programs.sway/thunar`, `services.pipewire/gvfs`, `i18n.inputMethod.fcitx5`...).
+  Dev lib để per-project (`nix develop` + `direnv`, xem `home/default.nix`).
+
+## 4. Không dùng nix-env — mọi gói đều khai báo trong repo
+
+- Cần thử 1 lần: `nix shell nixpkgs#ffmpeg` (dùng xong vứt, không để lại rác).
+- Cần quá 2 lần: thêm vào `home/packages.nix` (gói user) hoặc
+  `environment.systemPackages` (gói hệ thống) rồi rebuild.
+- Home-Manager ở đây quản lý **dotfiles** (sway/foot/waybar/mimeapps/scripts...),
+  không phải chỉ để cài package user — nên giữ, đừng dồn hết lên system.
+  (matklad ngại HM vì ông ấy single-user không cần package user-specific, dotfiles
+  ông ấy symlink tay bằng script `xtool` — post #3/#4. Repo này chọn HM vì nó còn
+  lo systemd user service, xdg/mime/gtk/dconf và `${pkgs...}` chèn vào script,
+  những việc symlink tay không làm được.)
+
+## 5. Chạy binary ngoài: nix-ld (canonical) + distrobox + appimage-run
+
+Thay cho `buildFHSUserEnv` thủ công thời 2023, repo dùng stack hiện đại.
+`nix-ld` là giải pháp **canonical** hiện nay (bittner 2024), kèm `steam-run` /
+`nix-alien` cho việc nhanh-gọn:
+
+| Việc | Công cụ (đã khai sẵn) |
+|---|---|
+| Binary biên dịch sẵn (VS Code server, JetBrains...) chạy không cần patch | `programs.nix-ld` (`modules/nixos/system-tweaks.nix`) |
+| Chạy nhanh 1 lệnh không cần setup | `steam-run ./binary` |
+| Môi trường Fedora/Ubuntu | `distrobox` + `podman` (`home/packages.nix`, `modules/nixos/development.nix`) |
+| AppImage (RemNote) | `appimage-run` + script `setup-remnote` (`home/remnote.nix`) |
+
+Chỉ dựng FHS custom khi gặp đúng 1 binary closed-source cứng đầu
+không chạy được qua 4 đường trên.
+
+## 6. Vá nóng unstable: cherry-pick PR chưa merge (matklad #14)
+
+Sống trên unstable thì thỉnh thoảng có gói vỡ đã có PR sửa nhưng chưa merge.
+Thay vì chờ, cherry-pick thẳng diff vào nixpkgs của mình bằng `applyPatches`:
+
+```nix
+# flake.nix — mẫu, KHÔNG bật sẵn. Khi cần thì copy vào `outputs`:
+# 1. Thêm patch (chưa biết hash thì điền dummy, đọc hash từ lỗi rồi sửa).
+# 2. Khi PR được merge vào unstable, patch apply fail → biết để xóa.
+let
+  patches = [
+    {
+      url = "https://patch-diff.githubusercontent.com/raw/NixOS/nixpkgs/pull/292148.diff";
+      sha256 = "sha256-gaH4UxKi2s7auoaTmbBwo0t4HuT7MwBuNvC/z2vvugE=";
+    }
+  ];
+  originPkgs = inputs.nixpkgs.legacyPackages."x86_64-linux";
+  patchedNixpkgs = originPkgs.applyPatches {
+    name = "nixpkgs-patched";
+    src = inputs.nixpkgs;
+    patches = map originPkgs.fetchpatch patches;
+  };
+  nixosSystem = import (patchedNixpkgs + "/nixos/lib/eval-config.nix");
+in
+{
+  # nixosConfigurations.laptop = nixosSystem { ... };
+}
+```
+
 ## Áp dụng thay đổi (rebuild)
 
 ```bash
@@ -16,9 +123,9 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 
 | Việc | Lệnh |
 |---|---|
-| Cập nhật nixpkgs / home-manager | `nix flake update` |
+| Cập nhật nixpkgs-unstable / home-manager | `nix flake update` |
 | List các generation | `nixos-rebuild list-generations` |
-| Quay lại generation cũ | `nixos-rebuild switch --rollback` |
+| Quay lại bản ngon (đang boot ở bản ngon) | `/run/current-system/bin/switch-to-configuration boot` |
 | Dọn rác store | `nix-collect-garbage -d` (GC tự động hàng tuần theo `core.nix`) |
 | Xem log Sway | `journalctl -b -u sway` / `journalctl --user -u sway` |
 | Tìm file / tìm trong nội dung | `fd -e pdf` · `rg -g '*.md' 'từ_khoá'` (thay `find`/`grep`) |
@@ -55,11 +162,11 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 
 ### ⭐ Chưa có ảnh nào? Tự động dùng màu nền
 
-**Không bao giờ thấy màn đen.** Khi `~/Pictures/wallpapers/` rỗng (máy mới vừa cài, hoặc vừa xoá hết ảnh), `wallpaper-set` tự đặt nền là **màu Tokyo Night `#1a1b26`** — màu nền dùng ở mọi nơi trong config.
+**Không bao giờ thấy màn đen.** Khi `~/Pictures/wallpapers/` rỗng (máy mới vừa cài, hoặc vừa xoá hết ảnh), `wallpaper-set` tự đặt nền là **màu Catppuccin Mocha `#1e1e2e`** — màu nền dùng ở mọi nơi trong config.
 
 ```bash
-awww img 0x1a1b26        # awww nhận thẳng HEXCODE, không cần file ảnh
-awww query               # → currently displaying: image: 0x1a1b26ff
+awww img 0x1e1e2e        # awww nhận thẳng HEXCODE, không cần file ảnh
+awww query               # → currently displaying: image: 0x1e1e2eff
 ```
 
 - ✅ **0 byte** trong repo — không lo repo phình
@@ -108,7 +215,7 @@ Popup chỉ là `foot --title=yazi-popup` + rule floating theo title đó trong 
 |---|---|
 | `yazi.toml` | Hành vi: opener (mở `.txt` bằng foot+nvim), luật mở app theo phần mở rộng, tỉ lệ cột |
 | `keymap.toml` | Phím tắt ghi đè: `<Enter>` → smart-enter (sửa lỗi Enter vào folder ra nvim) |
-| `theme.toml` | Màu Tokyonight |
+| `theme.toml` | Màu Catppuccin Mocha |
 
 #### Plugin `smart-enter` (`<Enter>`)
 

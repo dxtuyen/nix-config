@@ -76,8 +76,8 @@ Sơ đồ phân vùng mục tiêu (`/dev/nvme0n1`):
 
 ## ✅ Bước 0 — Chuẩn bị
 
-1. Tải **ISO NixOS minimal** (26.05):
-   > https://channels.nixos.org/nixos-26.05/latest-nixos-minimal-x86_64-linux.iso
+1. Tải **ISO NixOS minimal** (unstable):
+   > https://channels.nixos.org/nixos-unstable/latest-nixos-minimal-x86_64-linux.iso
 2. USB ≥ 2 GB.
 3. Có mạng (wifi dùng `iwctl`, xem Bước 2).
 
@@ -90,7 +90,7 @@ Sơ đồ phân vùng mục tiêu (`/dev/nvme0n1`):
 lsblk
 
 # Ghi ISO (thay /dev/sdX bằng tên USB của bạn)
-sudo dd if=nixos-minimal-26.05-x86_64.iso of=/dev/sdX bs=4M status=progress conv=fsync
+sudo dd if=nixos-minimal-unstable-x86_64.iso of=/dev/sdX bs=4M status=progress conv=fsync
 ```
 
 ---
@@ -303,7 +303,7 @@ Sau khi vào desktop (Sway), mở terminal và kiểm tra theo thứ tự:
 3. **Phân vùng đúng**: `lsblk -f`.
 4. **Clone repo về máy** để lần sau rebuild tại chỗ: `git clone https://github.com/dxtuyen/nix-config.git ~/nix-config`.
 5. **Ảnh nền (tuỳ chọn)** — ảnh nền **KHÔNG nằm trong repo** (chỉ `lockscreen/nixos.jpg` là ảnh duy nhất được commit).
-   - **Bỏ qua bước này cũng được**: khi thư mục ảnh rỗng, hệ thống tự dùng **màu nền Tokyo Night `#1a1b26`** → không có màn đen, không lỗi.
+   - **Bỏ qua bước này cũng được**: khi thư mục ảnh rỗng, hệ thống tự dùng **màu nền Catppuccin Mocha `#1e1e2e`** → không có màn đen, không lỗi.
    - Muốn có ảnh thật thì copy từ máy cũ / USB / backup:
      ```bash
      mkdir -p ~/Pictures/wallpapers

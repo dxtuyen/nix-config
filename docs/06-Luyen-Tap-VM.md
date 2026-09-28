@@ -3,6 +3,11 @@
 > Thực hành toàn bộ quy trình ở [03 — Cài máy mới](03-Cai-May-Moi.md) trong
 > **máy ảo** trước khi chạy trên máy thật. An toàn 100%, làm lại bao nhiêu lần cũng được.
 
+> Alternative nhẹ hơn VM: chạy NixOS desktop trong container **Incus**
+> (LXD đã fork thành Incus, NixOS có sẵn package) — nhẹ hơn VM, remote qua
+> xrdp/Remmina (JimJ92120 #11, stottm #15). VM QEMU bên dưới vẫn là đường chính
+> của tài liệu này vì giống máy thật nhất (UEFI + GPT + install thật).
+
 ## Vì sao nên luyện trên VM
 
 - **Không rủi ro**: đĩa ảo sai/mất hư giả chỉ cần xoá file là xong, máy thật không đụng.
@@ -31,7 +36,7 @@ nix eval --raw nixpkgs#OVMF.firmware; echo
 ```bash
 mkdir -p ~/VMs/iso ~/VMs/disk
 cd ~/VMs/iso
-curl -LO https://channels.nixos.org/nixos-26.05/latest-nixos-minimal-x86_64-linux.iso
+curl -LO https://channels.nixos.org/nixos-unstable/latest-nixos-minimal-x86_64-linux.iso
 ```
 
 ## Bước 2 — Tạo đĩa ảo (30G)

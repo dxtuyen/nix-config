@@ -1,6 +1,6 @@
 { pkgs, ... }:
 
-# Gói user: stable (pinned trong flake.lock). TickTick dùng bản web/PWA (xem docs/02).
+# Gói user: nixos-unstable (pinned trong flake.lock). TickTick dùng bản web/PWA (xem docs/02).
 {
 
   home.packages = with pkgs; [

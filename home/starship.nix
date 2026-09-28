@@ -16,9 +16,9 @@
       format = "$directory$git_branch$git_status$cmd_duration\n$character";
 
       directory = {
-        # Tokyo Night blue
-        style = "bold #7aa2f7";
-        read_only_style = "#f7768e";
+        # Catppuccin Mocha blue
+        style = "bold #89b4fa";
+        read_only_style = "#f38ba8";
         truncation_length = 3;
         truncate_to_repo = true;
         home_symbol = "~";
@@ -27,19 +27,19 @@
 
       git_branch = {
         symbol = "";
-        style = "#bb9af7";
+        style = "#cba6f7";
         format = "[$symbol$branch]($style) ";
       };
 
       git_status = {
         format = "([$all_status$ahead_behind]($style) )";
-        style = "#565f89";
+        style = "#6c7086";
 
-        modified = "[✱](#e0af68)";
-        deleted = "[✖](#f7768e)";
-        untracked = "[?](#7aa2f7)";
-        renamed = "[»](#bb9af7)";
-        conflicted = "[=](#f7768e)";
+        modified = "[✱](#fab387)";
+        deleted = "[✖](#f38ba8)";
+        untracked = "[?](#89b4fa)";
+        renamed = "[»](#cba6f7)";
+        conflicted = "[=](#f38ba8)";
 
         # Ẩn trạng thái ít dùng cho gọn prompt.
         stashed = "";
@@ -51,14 +51,14 @@
 
       cmd_duration = {
         min_time = 2000; # chỉ hiện khi lệnh chạy ≥ 2s
-        style = "#e0af68";
+        style = "#fab387";
         format = "[ $duration]($style) ";
       };
 
       character = {
-        success_symbol = "[❯](bold #9ece6a)";
-        error_symbol = "[❯](bold #f7768e)";
-        vicmd_symbol = "[❮](bold #73daca)";
+        success_symbol = "[❯](bold #a6e3a1)";
+        error_symbol = "[❯](bold #f38ba8)";
+        vicmd_symbol = "[❮](bold #94e2d5)";
       };
     };
   };

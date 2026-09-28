@@ -14,22 +14,15 @@
 # định. Cố ý KHÔNG dùng `yazi.override { settings = … }` — option đó thay
 # cả thư mục config nên sẽ mất sạch phím tắt mặc định của Yazi.
 #
-# ⭐ VÌ SAO `yazi` LẤY TỪ `unstablePkgs` (nixpkgs-unstable) CÒN MỌI GÓI KHÁC
-# LẤY TỪ `pkgs` (nixos-26.05):
-# nixpkgs 26.05 đóng gói yazi 26.5.6 — bản này CHƯA có tính năng "Trash bin".
-# Hai lỗi đã kiểm chứng trên máy, đều do `remove` không biết mình đang ở
-# trong thùng rác hay không:
-#   • `d` trong thùng rác không xoá, mà GHI LẠI vào thùng rác — file thành
-#     `X.2`, `X.2.2`, ... kèm `.trashinfo` mới (crate `trash-rs` tự sinh tên).
-#   • `D` xoá file nhưng để lại `.trashinfo` mồ côi (đã dư 52 file rác).
-# unstable có yazi 26.9.1 (có sẵn trong binary cache, không phải build):
-#   • `g t` mở thùng rác thật (scheme `trash://`), có cột đường dẫn gốc
-#   • `D` xoá sạch cả file lẫn `.trashinfo`
-# ⚠️ Chỉ gói yazi lấy từ unstable. Đổi sang bản khác = sửa `home/yazi/keymap.toml`.
-{ pkgs, unstablePkgs, ... }:
+# ⭐ Hệ thống chạy nixos-unstable nên `yazi` lấy thẳng từ `pkgs`.
+# (Trước đây kẹp unstable vì nixpkgs 26.05 đóng gói yazi 26.5.6 — bản này
+# CHƯA có "Trash bin", `d` trong thùng rác ghi lại thành `X.2`..., `D`
+# để lại `.trashinfo` mồ côi. Giờ unstable đã có bản mới, không cần kẹp.)
+# ⚠️ Đổi sang bản khác = sửa `home/yazi/keymap.toml`.
+{ pkgs, ... }:
 
 {
-  home.packages = [ unstablePkgs.yazi ];
+  home.packages = [ pkgs.yazi ];
 
   # Yazi tự merge 3 file này với config mặc định của nó.
   # yazi.toml:   hành vi (opener, tỉ lệ cột, luật mở app theo loại file).
@@ -58,6 +51,6 @@
   # ⚠️ `smart-enter` KHÔNG cần `setup()` — chỉ cần khi muốn `open_multi = true`
   # (mở cả nhóm file đang tick thay vì đúng 1 file đang trỏ).
   #
-  # ⚠️ Lấy `yaziPlugins` từ unstable, KHỚP phiên bản yazi 26.9.1.
-  xdg.configFile."yazi/plugins/smart-enter.yazi".source = unstablePkgs.yaziPlugins.smart-enter;
+  # ⚠️ Lấy `yaziPlugins` từ `pkgs`, KHỚP phiên bản yazi đang dùng.
+  xdg.configFile."yazi/plugins/smart-enter.yazi".source = pkgs.yaziPlugins.smart-enter;
 }

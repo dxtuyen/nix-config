@@ -1,10 +1,10 @@
 # 🖥️ NixOS Config — Doxuan Tuyen
 
-Cấu hình **NixOS + Home-Manager** cho laptop cá nhân, chạy **Sway** (Wayland), theme **Tokyo Night** đồng bộ toàn bộ.
+Cấu hình **NixOS + Home-Manager** cho laptop cá nhân, chạy **Sway** (Wayland), theme **Catppuccin Mocha** đồng bộ toàn bộ (GTK dùng adw-gtk3-dark trung tính).
 
 | | |
 |---|---|
-| 🌐 Hệ thống | NixOS 26.05 (x86_64-linux) |
+| 🌐 Hệ thống | NixOS unstable (x86_64-linux, rolling release) |
 | 🪟 Desktop | Sway + Waybar + Mako (thông báo) |
 | 🎨 Terminal | Foot + Starship |
 | 🖼️ Xem ảnh / video | imv (ảnh) • mpv (video) • foliate (sách điện tử) • sioyek (PDF) |

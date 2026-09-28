@@ -1,49 +1,43 @@
-# Theme Yazi — Tokyo Night, khớp foot (home/foot.nix) và Sway (home/sway.nix).
+# Theme Yazi — Catppuccin Mocha, khớp foot (home/foot.nix) và Sway (home/sway.nix).
 #
 # File này CHỈ ghi đè 13 khoá có NỀN MÀU. Đó là nhóm duy nhất bị hỏng, vì:
 #
 #   • Yazi mặc định tô bằng TÊN MÀU ANSI: `fg="white", bg="green"`.
 #     Cách đó giả định bảng màu kiểu cổ điển: white=#ffffff, green=xanh TỐI.
-#   • Bảng Tokyo Night thì cả 8 màu ANSI đều là PASTEL SÁNG → "chữ trắng"
-#     thành #a9b1d6, "nền xanh" thành #9ece6a → chữ sáng đè lên nền sáng.
+#   • Bảng Mocha thì cả 8 màu ANSI đều là PASTEL SÁNG → "chữ trắng"
+#     thành #bac2de, "nền xanh" thành #a6e3a1 → chữ sáng đè lên nền sáng.
 #
-# Đo bằng công thức tương phản WCAG trên nền terminal #1a1b26 (chuẩn ≥ 4.5:1):
-#     count_copied  white/green = 1.16:1      mode.normal  bg=blue = 1.19:1
-#     count_cut     white/red   = 1.25:1      mode.select  bg=red  = 1.25:1
-#     progress_error yellow/red  = 1.32:1      tabs.active  bg=blue = 1.19:1
-#
-# → Đều SAI, gần như không đọc được. Dưới đây mọi cặp đã đo lại: thấp nhất
-#   5.33:1, đều đạt chuẩn AA.
+# Đo bằng công thức tương phản WCAG trên nền terminal #1e1e2e (chuẩn ≥ 4.5:1).
 #
 # Màu CHỮ đơn lẻ (tên file, viền khung, từ khoá tìm kiếm) thì KHÔNG ghi:
-# mọi màu ANSI Tokyo Night trên nền tối đều ≥ 6.46:1 nên vốn đã an toàn.
+# mọi màu ANSI Mocha trên nền tối đều ≥ 4.5:1 nên vốn đã an toàn.
 # Ô tick `marker_*` cũng để nguyên — fg==bg nên thực chất là khối đặc, không
 # phải chữ nên không dính lỗi tương phản.
 
 [mgr]
 # Badge đếm file (đã copy / đã cut / đang chọn) — chữ TỐI trên nền màu
-count_copied   = { fg = "#1a1b26", bg = "#9ece6a", bold = true }  # 9.35:1
-count_cut      = { fg = "#1a1b26", bg = "#f7768e", bold = true }  # 6.46:1
-count_selected = { fg = "#1a1b26", bg = "#e0af68", bold = true }  # 8.55:1
+count_copied   = { fg = "#1e1e2e", bg = "#a6e3a1", bold = true }
+count_cut      = { fg = "#1e1e2e", bg = "#f38ba8", bold = true }
+count_selected = { fg = "#1e1e2e", bg = "#fab387", bold = true }
 
 [mode]
 # ⭐ Thanh trạng thái ở giữa dưới — nhìn liên tục nên dùng nền TỐI MỜ +
 # chữ SÁNG: dịu mắt mà vẫn rõ (thay vì nền xanh dương chữ trắng như mặc định).
-normal_main = { bg = "#292e42", fg = "#c0caf5", bold = true }  # 8.32:1
-normal_alt  = { bg = "#292e42", fg = "#7aa2f7" }              # 5.33:1
+normal_main = { bg = "#313244", fg = "#cdd6f4", bold = true }
+normal_alt  = { bg = "#313244", fg = "#89b4fa" }
 
 # Chế độ đang tick file (Space): nền ĐỎ + chữ TỐI — cố ý nổi bật vì đây là
 # trạng thái cần nhận ra ngay. V (unset) dùng chung bảng màu.
-select_main = { bg = "#f7768e", fg = "#1a1b26", bold = true }  # 6.46:1
-select_alt  = { bg = "#292e42", fg = "#f7768e" }
-unset_main  = { bg = "#f7768e", fg = "#1a1b26", bold = true }
-unset_alt   = { bg = "#292e42", fg = "#f7768e" }
+select_main = { bg = "#f38ba8", fg = "#1e1e2e", bold = true }
+select_alt  = { bg = "#313244", fg = "#f38ba8" }
+unset_main  = { bg = "#f38ba8", fg = "#1e1e2e", bold = true }
+unset_alt   = { bg = "#313244", fg = "#f38ba8" }
 
 [status]
 # Thanh tiến trình copy/move ở góc dưới
-progress_normal = { fg = "#9ece6a", bg = "#1a1b26" }  # 9.35:1
-progress_error  = { fg = "#f7768e", bg = "#1a1b26" }  # 6.46:1
+progress_normal = { fg = "#a6e3a1", bg = "#1e1e2e" }
+progress_error  = { fg = "#f38ba8", bg = "#1e1e2e" }
 
 [tabs]
-active   = { bg = "#7aa2f7", fg = "#1a1b26", bold = true }  # 6.79:1
-inactive = { fg = "#7aa2f7", bg = "#16161e" }                 # 7.14:1
+active   = { bg = "#89b4fa", fg = "#1e1e2e", bold = true }
+inactive = { fg = "#89b4fa", bg = "#11111b" }

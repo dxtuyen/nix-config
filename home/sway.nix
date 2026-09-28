@@ -48,7 +48,7 @@ in
       seat * hide_cursor 7000
       seat * xcursor_theme Bibata-Modern-Classic 24
 
-      # Tokyo Night style
+      # Catppuccin Mocha style
       gaps inner 7
       gaps outer 4
       gaps top 0
@@ -59,12 +59,12 @@ in
       focus_follows_mouse yes
       smart_borders off
 
-      client.focused           #7aa2f7 #364a82 #c0caf5 #bb9af7 #7aa2f7
-      client.focused_inactive  #a9b1d6 #1a1b26 #c0caf5 #a9b1d6 #a9b1d6
-      client.unfocused         #414868 #1a1b26 #565f89 #414868 #414868
-      client.urgent            #ff9e64 #1a1b26 #ff9e64 #565f89 #ff9e64
-      client.placeholder       #1a1b26 #1a1b26 #c0caf5 #565f89 #565f89
-      client.background        #1a1b26
+      client.focused           #89b4fa #313244 #cdd6f4 #cba6f7 #89b4fa
+      client.focused_inactive  #bac2de #1e1e2e #cdd6f4 #bac2de #bac2de
+      client.unfocused         #585b70 #1e1e2e #6c7086 #585b70 #585b70
+      client.urgent            #fab387 #1e1e2e #fab387 #6c7086 #fab387
+      client.placeholder       #1e1e2e #1e1e2e #cdd6f4 #6c7086 #6c7086
+      client.background        #1e1e2e
 
       # Floating rules
       for_window [app_id="pavucontrol"] floating enable, resize set width 30 ppt height 40 ppt
