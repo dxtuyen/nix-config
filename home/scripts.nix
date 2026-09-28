@@ -303,20 +303,46 @@
             fi ;;
         esac
 
+        # Phím điều hướng — TÁCH con trỏ gõ khỏi điều hướng lưới.
+        # Vì sao: rofi mặc định gán Left/Right cho kb-move-char-* (con trỏ
+        # trong ô filter) và chỉ để kb-row-left/right là Control+Page_Up/Down
+        # → không bao giờ sang được cột 2, 3 của lưới 3×3. Tệ hơn, keyd đã
+        # gán CapsLock = overload(control, esc) nên Control+Page_Up phải
+        # bấm CapsLock+Page_Up — dễ lỡ tay thành Esc (đóng menu).
+        # Cách sửa: đổi chỗ con trỏ sang Alt+Left/Right, nhả Left/Right cho
+        # di chuyển cột. KHÔNG mất binding nào — con trỏ vẫn còn 5 cách:
+        # Alt+←/→ (ký tự), Alt+b/f + Ctrl+←/→ (từ), Ctrl+a/e (đầu/cuối).
+        # Alt+h/j/k/l + Alt+u/i/o/p cho khớp keyd nav layer (Tab + h/j/k/l).
+        kb=(
+          -kb-move-char-back 'Alt+Left,Control+b'
+          -kb-move-char-forward 'Alt+Right,Control+f'
+          -kb-row-left 'Left,Alt+h'
+          -kb-row-right 'Right,Alt+l'
+          -kb-row-first 'Home,KP_Home,Alt+u'
+          -kb-row-last 'End,KP_End,Alt+i'
+          -kb-page-prev 'Page_Up,Alt+o'
+          -kb-page-next 'Page_Down,Alt+p'
+        )
+
         # -theme-str chỉ áp cho lần chạy này (không đụng ~/.config/rofi):
         # lưới 3 cột × 3 hàng, ảnh trên tên dưới, tên căn giữa.
+        # cycle: vòng lại khi lưới hết ảnh, thay vì kẹt cứng ở ảnh cuối
+        # (thư mục có 334 ảnh).
         if [ "$grid" -eq 1 ]; then
           rofi_args=(-dmenu -i -show-icons -l 3 -p '🖼️ Wallpaper'
-            -mesg 'Enter: đặt nền · ● = đang dùng · Esc: huỷ'
+            -mesg 'Enter: đặt nền · ←→↑↓: duyệt · ● = đang dùng · Esc: huỷ'
             -no-custom -format i -selected-row "$sel"
-            -theme-str 'listview { columns: 3; spacing: 10px; flow: horizontal; }'
+            "''${kb[@]}"
+            -theme-str 'listview { columns: 3; spacing: 10px; flow: horizontal; cycle: true; }'
             -theme-str 'element { orientation: vertical; children: [element-icon, element-text]; padding: 6px; spacing: 6px; }'
             -theme-str 'element-icon { size: 10em; border-radius: 10px; }'
             -theme-str 'element-text { horizontal-align: center; }')
         else
           rofi_args=(-dmenu -i -l 10 -p '🖼️ Wallpaper'
-            -mesg 'Enter: đặt nền · ● = đang dùng · Esc: huỷ'
-            -no-custom -format i -selected-row "$sel")
+            -mesg 'Enter: đặt nền · ↑↓: duyệt · ● = đang dùng · Esc: huỷ'
+            -no-custom -format i -selected-row "$sel"
+            "''${kb[@]}"
+            -theme-str 'listview { cycle: true; }')
         fi
 
         # Mỗi mục: "<tên>\0icon\x1f<thumbnail>" → rofi tự bóc metadata.

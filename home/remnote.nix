@@ -19,8 +19,8 @@
     comment = "RemNote note-taking app";
     exec = "${pkgs.appimage-run}/bin/appimage-run ${config.home.homeDirectory}/Apps/RemNote/RemNote.AppImage";
 
-  # Icon do `setup-remnote` trích từ AppImage; trỏ đường dẫn TUYỆT ĐỐI để
-  # không phụ thuộc icon theme/cache của GTK.
+    # Icon do `setup-remnote` trích từ AppImage; trỏ đường dẫn TUYỆT ĐỐI để
+    # không phụ thuộc icon theme/cache của GTK.
     icon = "${config.home.homeDirectory}/.local/share/icons/hicolor/512x512/apps/remnote.png";
 
     terminal = false;

@@ -166,7 +166,8 @@ in
 
       /* Màu phân tầng theo vai trò: pill · stat (@txt) · title window bold ·
          accent #89b4fa. GTK CSS không có var() nên dùng @define-color. */
-      @define-color pill-hover rgba(49, 50, 68, 1);  /* surface0 đục — nền title */
+      @define-color pill rgba(30, 30, 46, 0.75);   /* Catppuccin base, hơi trong */
+      @define-color pill-hover rgba(49, 50, 68, 1);  /* surface0 đục hẳn — nền title không trong suốt */
       @define-color edge rgba(69, 71, 90, 0.45);     /* surface1, viền mờ */
       @define-color txt #bac2de;                     /* subtext1 */
       @define-color txt-strong #bac2de;              /* subtext1 */

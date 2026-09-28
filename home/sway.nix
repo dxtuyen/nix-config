@@ -111,11 +111,12 @@ in
       bindsym $mod+Return exec $term
       bindsym $mod+Shift+q kill
       bindsym $mod+d exec $menu
-      bindsym $mod+Tab exec rofi -show window
+      bindsym $mod+Shift+w exec rofi -show window
 
-      # Wallpaper: random ảnh khác / menu chọn ảnh trong ~/Pictures/wallpapers.
-      bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-menu
-      bindsym $mod+Shift+Tab exec ~/.local/bin/wallpaper-set
+      # Wallpaper: r = random ảnh khác · Shift+r = menu chọn ảnh trong
+      # ~/Pictures/wallpapers (lưới thumbnail, phím ←→↑↓ duyệt ảnh).
+      bindsym $mod+r exec ~/.local/bin/wallpaper-set
+      bindsym $mod+Shift+r exec ~/.local/bin/wallpaper-menu
       # $mod+y: yazi dạng POPUP nhỏ; gõ `yazi` trong terminal thì cửa sổ thường.
       bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
@@ -185,16 +186,6 @@ in
       bindsym $mod+Shift+minus move scratchpad
       bindsym $mod+minus scratchpad show
 
-      mode "resize" {
-        bindsym $left resize shrink width 20px
-        bindsym $down resize grow height 20px
-        bindsym $up resize shrink height 20px
-        bindsym $right resize grow width 20px
-        bindsym Escape mode "default"
-        bindsym Return mode "default"
-      }
-      bindsym $mod+r mode "resize"
-
       # Custom Utilities & Screenshot
       bindsym $mod+p exec ~/.local/bin/pomodoro-menu
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
@@ -203,7 +194,6 @@ in
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
       bindsym $mod+Ctrl+Shift+t exec ~/.local/bin/quick-lang fix
-      bindsym $mod+Shift+r exec ~/.local/bin/quick-net-reload
       # dict-toggle: bật/tắt GoldenDict float; đóng = ẩn về tray
       bindsym $mod+g exec ~/.local/bin/dict-toggle
       bindsym $mod+Mod1+t exec ~/.local/bin/toggle-touchpad
