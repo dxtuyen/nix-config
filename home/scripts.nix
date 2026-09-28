@@ -180,6 +180,66 @@
         # Đặt nền với transition fade 1.5s + ghi nhớ ảnh hiện tại.
         $AWWW img "$img" -t fade --transition-duration 1.5
         printf '%s\n' "$img" > "$CACHE"
+
+        # Đặt lại mốc ĐỔI ẢNH GẦN NHẤT → đồng hồ auto-rotate 30 phút (timer
+        # wallpaper-rotate, modules/nixos/desktop.nix) đếm lại từ đây. Mọi cách
+        # đổi (Alt+w, menu, hay chính timer) đều đi qua script này → đúng ý
+        # "mốc 30 phút tính từ lần đổi trước, kể cả đổi tay".
+        # try-restart KHÔNG tự bật timer đang tắt → tắt bằng
+        # `systemctl --user stop wallpaper-rotate.timer` thì không lo sống lại.
+        systemctl --user try-restart wallpaper-rotate.timer 2>/dev/null || true
+      '';
+    };
+
+    # ── Thumbnail cho menu wallpaper (Alt+Shift+w) ─────────────────────────
+    # Rofi cần icon ảnh cho lưới; nạp thẳng ẢNH GỐC (334 ảnh / 396MB, có file
+    # PNG 14MB) → mở menu mất vài giây vì rofi decode hết. Thay bằng thumbnail
+    # 320px trong ~/.cache/wallpaper-thumbs/ → mở tức thì, cache ~25MB.
+    ".local/bin/wallpaper-thumbs" = {
+      executable = true;
+      text = ''
+        #! /usr/bin/env bash
+        # wallpaper-thumbs [--status] — dựng thumbnail cho rofi (wallpaper-menu).
+        #   (mặc định)  ảnh thiếu/hỏng trong ~/Pictures/wallpapers →
+        #                ~/.cache/wallpaper-thumbs/<tên>.thumb (320px JPEG)
+        #   --status     chỉ IN SỐ thumbnail còn thiếu (chỉ stat, không decode)
+        #                → wallpaper-menu dùng để chọn lưới ảnh hay danh sách chữ
+        #   Xoá thư mục cache bất cứ lúc nào → tự dựng lại. Ảnh thêm mới được
+        #   dựng ở lần mở menu sau (chạy nền, không chặn).
+        # Song song 8 luồng (ImageMagick): 40 ảnh ≈ 0.5s.
+        set -u
+        WALL_DIR="$HOME/Pictures/wallpapers"
+        THUMB_DIR="$HOME/.cache/wallpaper-thumbs"
+
+        if [ ! -d "$WALL_DIR" ]; then
+          [ "''${1:-}" = "--status" ] && echo 0
+          exit 0
+        fi
+
+        missing=()
+        while IFS= read -r -d $'\0' f; do
+          t="$THUMB_DIR/''${f##*/}.thumb"  # builtin — không fork basename
+          [ -f "$t" ] && [ "$t" -nt "$f" ] && continue
+          missing+=("$f")
+        done < <(find "$WALL_DIR" -maxdepth 1 -type f \
+            \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -print0 2>/dev/null)
+
+        if [ "''${1:-}" = "--status" ]; then
+          echo "''${#missing[@]}"
+          exit 0
+        fi
+        [ "''${#missing[@]}" -eq 0 ] && exit 0
+
+        mkdir -p "$THUMB_DIR"
+        make_thumb() {
+          # -auto-orient: ảnh điện thoại xoay theo EXIF; -thumbnail 320x320:
+          # vừa khung 10em của rofi. Ảnh hỏng → bỏ qua (menu tự hiện tên chữ).
+          ${pkgs.imagemagick}/bin/magick "$1" -auto-orient -thumbnail 320x320 \
+            -quality 80 "$THUMB_DIR/''${1##*/}.thumb" 2>/dev/null || true
+        }
+        export -f make_thumb
+        export THUMB_DIR
+        printf '%s\0' "''${missing[@]}" | xargs -0 -P 8 -I{} bash -c 'make_thumb "$@"' _ {}
       '';
     };
 
@@ -187,17 +247,37 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # wallpaper-menu — rofi hiện THUMBNAIL từng ảnh trong ~/Pictures/wallpapers
-        # để nhìn ảnh mà chọn. Lưới 3 cột × 3 hàng (≈780px, vừa màn 1080p): ảnh 10em
-        # bo góc TRÊN, tên file DƯỚI ảnh (dài quá tự hiện "…"). Quá 9 ảnh → tự cuộn.
-        # Ảnh đang đặt được đánh dấu "● " ở đầu tên.
+        # wallpaper-menu [auto|--grid|--list] — chọn ảnh nền trong
+        # ~/Pictures/wallpapers. Ảnh đang đặt được đánh dấu "● " ở đầu tên.
+        #
+        # ⚠️ VÌ SAO BẢN CŨ CHẬM (và đã sửa): nó nạp THẲNG ẢNH GỐC làm icon
+        # rofi (`\0icon\037<đường dẫn ảnh>`). Rofi phải decode TOÀN BỘ ảnh
+        # mỗi lần mở — với 334 ảnh / 396MB (có file PNG 14MB) là vài giây,
+        # RAM nhảy. Nay rofi ăn THUMBNAIL 320px trong ~/.cache/wallpaper-thumbs
+        # (script `wallpaper-thumbs`) → mở tức thì.
+        #
+        #   auto (mặc định)  cache đủ thumbnail → lưới ảnh; còn thiếu → danh
+        #                     sách chữ (mở tức thì) + tự dựng cache nền
+        #   --grid           ép lưới ảnh (dựng cache trước nếu thiếu, có báo)
+        #   --list           ép danh sách chữ, không icon (nhanh nhất, gõ lọc)
         set -u
         WALL_DIR="$HOME/Pictures/wallpapers"
         CACHE="$HOME/.cache/wallpaper-current"
         AWWW=${pkgs.awww}/bin/awww
+        THUMB_DIR="$HOME/.cache/wallpaper-thumbs"
 
-        cur="$($AWWW query 2>/dev/null | sed -n 's/.*currently displaying: image: //p' | head -1)"
-        [ -z "$cur" ] && cur="$(cat "$CACHE" 2>/dev/null || true)"
+        mode="auto"
+        case "''${1:-}" in
+          --grid) mode="grid" ;;
+          --list) mode="list" ;;
+        esac
+
+        # Ảnh hiện tại: đọc ~/.cache/wallpaper-current bằng `read` BUILTIN
+        # (0 spawn) — wallpaper-set ghi file này mỗi lần đổi nên luôn đúng.
+        # Chỉ hỏi awww khi cache trống (máy mới / chưa đổi lần nào).
+        cur=""
+        if [ -r "$CACHE" ]; then IFS= read -r cur < "$CACHE" || true; fi
+        [ -z "$cur" ] && cur="$($AWWW query 2>/dev/null | sed -n 's/.*currently displaying: image: //p' | head -1)"
         # Nền MÀU TRƠN (awww trả hexcode 0x…) không phải đường dẫn file →
         # readlink -f sẽ ra rỗng. Giữ nguyên hexcode, không so sánh được thì
         # coi như chưa chọn ảnh nào (con trỏ về dòng đầu).
@@ -213,38 +293,96 @@
           exit 0
         fi
 
-        # Con trỏ sẵn trên ảnh đang dùng: rofi trả về INDEX 0-based của dòng được
-        # chọn ("-format i" + "-no-custom" chặn nhập tay) → bền với mọi tên file
-        # lạ, không còn cắt chuỗi "● " như cách cũ.
+        THUMBS="$HOME/.local/bin/wallpaper-thumbs"
+
+        # ⭐ Vòng DUY NHẤT — 0 spawn process. Đây từng là nút thắt: bản cũ tốn
+        # ≈2.2s mỗi lần mở chỉ để build list (đo thật: 1.08s vòng entry vì ~1000
+        # lần `basename`/`printf` fork, 0.47s vòng sel vì 333 lần `readlink -f`,
+        # 0.61s `wallpaper-thumbs --status`). Giờ tất cả là builtin của bash:
+        # `''${f##*/}` (thay basename), so chuỗi trực tiếp (thay readlink từng file
+        # — ảnh tường quyển là file thường thì find đã ra đúng path; wallpaper
+        # dạng symlink sẽ không gắn ●, đánh đổi chấp nhận được).
+        #   sel    — index ảnh đang dùng (con trỏ sẵn cho rofi)
+        #   names  — tên hiển thị (đã gắn "● " nếu đang dùng)
+        #   thumbs — thumbnail 320px (rỗng nếu thiếu/hỏc)
+        #   missing — số thumb còn thiếu → chọn lưới/chữ ngay tại đây,
+        #             KHÔNG cần gọi `wallpaper-thumbs --status` riêng nữa.
         sel=0
-        idx=0
+        missing=0
+        i=0
         for f in "''${imgs[@]}"; do
-          if [ -n "$cur" ] && [ "$(readlink -f -- "$f")" = "$cur" ]; then sel=$idx; break; fi
-          idx=$((idx + 1))
+          name="''${f##*/}"
+          mark=""
+          if [ -n "$cur" ] && [ "$f" = "$cur" ]; then mark="● "; sel=$i; fi
+          t="$THUMB_DIR/$name.thumb"
+          if [ ! -f "$t" ] || [ "$t" -ot "$f" ]; then
+            t=""
+            missing=$((missing + 1))
+          fi
+          names[i]="$mark$name"
+          thumbs[i]="$t"
+          i=$((i + 1))
         done
 
-        # Mỗi mục gửi rofi: "<tên ảnh>\0icon\x1f<đường dẫn>" → rofi tự bóc metadata
-        # khỏi kết quả và dùng icon làm thumbnail. Theme -theme-str chỉ áp cho lần
-        # chạy này (không đụng ~/.config/rofi):
+        # Chọn chế độ theo cache thumbnail:
+        #   grid = icon = file 320px trong ~/.cache/wallpaper-thumbs
+        #         (rofi KHÔNG decode ảnh gốc vài MB nữa → mở tức thì)
+        #   list = chữ thuần, không icon (nhanh nhất, gõ để lọc)
+        grid=0
+        case "$mode" in
+          list) ;;
+          grid)
+            if [ "$missing" -gt 0 ]; then
+              notify-send -a wallpaper "wallpaper-menu" "Đang dựng thumbnail ($missing ảnh)…"
+              "$THUMBS" >/dev/null 2>&1 || true
+            fi
+            grid=1 ;;
+          auto)
+            if [ "$missing" -eq 0 ]; then
+              grid=1
+            else
+              # Lần đầu (hoặc vừa thêm ảnh): mở DANH SÁCH CHỮ ngay — không chờ
+              # decode — dựng cache nền; lần mở sau tự thành lưới ảnh.
+              nohup "$THUMBS" >/dev/null 2>&1 &
+            fi ;;
+        esac
+
+        # Theme -theme-str chỉ áp cho lần chạy này (không đụng ~/.config/rofi):
         #   listview columns:3 + -l 3           → lưới 3 cột × 3 hàng (đúng 9 ô),
         #     flow:horizontal                   → xếp lấp THEO HÀNG NGANG
         #                                          (trái→phải, đủ 3 mới xuống hàng);
         #     >9 ảnh                            → giữ 3 hàng, cuộn thanh ở CÁNH PHẢI;
         #   element orientation + children order → ảnh TRÊN, tên DƯỚI;
         #   element-text horizontal-align:center → căn giữa tên dưới ảnh;
-        #   textbox cắt 1 dòng theo ngang         → tên dài tự hiện "…".
+        #   textbox cắt 1 dòng theo ngang       → tên dài tự hiện "…".
+        if [ "$grid" -eq 1 ]; then
+          rofi_args=(-dmenu -i -show-icons -l 3 -p '🖼️ Wallpaper'
+            -mesg 'Enter: đặt nền · ● = đang dùng · Esc: huỷ'
+            -no-custom -format i -selected-row "$sel"
+            -theme-str 'listview { columns: 3; spacing: 10px; flow: horizontal; }'
+            -theme-str 'element { orientation: vertical; children: [element-icon, element-text]; padding: 6px; spacing: 6px; }'
+            -theme-str 'element-icon { size: 10em; border-radius: 10px; }'
+            -theme-str 'element-text { horizontal-align: center; }')
+        else
+          rofi_args=(-dmenu -i -l 10 -p '🖼️ Wallpaper'
+            -mesg 'Enter: đặt nền · ● = đang dùng · Esc: huỷ'
+            -no-custom -format i -selected-row "$sel")
+        fi
+
+        # Mỗi mục: "<tên (kể cả ● )>\0icon\x1f<thumbnail>" → rofi tự bóc metadata.
+        # Icon LUÔN là thumbnail 320px (rỗng thì bỏ icon, KHÔNG dùng ảnh gốc —
+        # lý do menu cũ mất vài giây: rofi decode cả 333 ảnh/396MB).
+        # printf là BUILTIN → vòng này 0 spawn (bản cũ: ~1000 fork ≈ 1.08s).
         choice_idx="$(
-          for f in "''${imgs[@]}"; do
-            mark=""
-            if [ -n "$cur" ] && [ "$(readlink -f -- "$f")" = "$cur" ]; then mark="● "; fi
-            printf '%s%s\0icon\037%s\n' "$mark" "$(basename -- "$f")" "$f"
-          done | rofi -dmenu -i -show-icons -l 3 -p '🖼️ Wallpaper' \
-            -mesg 'Enter: đặt nền · ● = đang dùng · Esc: huỷ' \
-            -no-custom -format i -selected-row "$sel" \
-            -theme-str 'listview { columns: 3; spacing: 10px; flow: horizontal; }' \
-            -theme-str 'element { orientation: vertical; children: [element-icon, element-text]; padding: 6px; spacing: 6px; }' \
-            -theme-str 'element-icon { size: 10em; border-radius: 10px; }' \
-            -theme-str 'element-text { horizontal-align: center; }'
+          i=0
+          while [ "$i" -lt "''${#imgs[@]}" ]; do
+            if [ "$grid" -eq 1 ] && [ -n "''${thumbs[i]}" ]; then
+              printf '%s\0icon\037%s\n' "''${names[i]}" "''${thumbs[i]}"
+            else
+              printf '%s\n' "''${names[i]}"
+            fi
+            i=$((i + 1))
+          done | rofi "''${rofi_args[@]}"
         )" || exit 0
 
         if ! [[ "$choice_idx" =~ ^[0-9]+$ ]] || [ "$choice_idx" -ge "''${#imgs[@]}" ]; then exit 0; fi

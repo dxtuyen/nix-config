@@ -139,8 +139,9 @@ sudo nixos-rebuild switch --flake .#laptop    # hoặc: nh os switch
 | `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key ở `~/.config/quick-lang/api.key` |
 | `dict-toggle` | `mod+g`: bật/tắt GoldenDict float — đóng = ẩn về tray (tiến trình giữ nguyên, mở lại tức thời) |
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
-| `wallpaper-set` | `Alt+w`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Lúc đăng nhập: **giữ nguyên ảnh phiên trước** (chưa có ảnh → random 1 ảnh). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
-| `wallpaper-menu` | `Alt+Shift+w`: menu rofi **hiện thumbnail** dạng lưới 3 cột × 3 hàng — ảnh trên, tên file dưới (dài quá tự cắt `…`), ảnh đang dùng đánh dấu `●`; xếp lấp từ trái sang phải (đủ 3 mới xuống hàng), quá 9 ảnh giữ 3 hàng và cuộn (thanh bên phải) |
+| `wallpaper-set` | `Alt+w`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Lúc đăng nhập: **giữ nguyên ảnh phiên trước** (chưa có ảnh → random 1 ảnh). **Mỗi lần đổi reset mốc 30 phút** của auto-rotate (tay hay timer đều vậy). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
+| `wallpaper-menu` | `Alt+Shift+w`: menu rofi **lưới 3×3 thumbnail 320px** (ảnh trên, tên dưới, đang dùng đánh dấu `●`, >9 ảnh tự cuộn) — icon lấy từ **cache** `~/.cache/wallpaper-thumbs/` + build list **0 spawn** (đo: 2.2s → 0.05s với 333 ảnh) → **mở tức thì**. Lần đầu / vừa thêm ảnh: mở **dựng cache nền** → lần sau tự lưới. Chế độ: `--grid` (ép lưới), `--list` (chữ thuần, nhanh nhất) |
+| `wallpaper-thumbs` | Dựng thumbnail 320px cho menu (song song 8 luồng, ImageMagick, đếm thiếu bằng builtin không fork). Chạy nền khi menu cần; `--status` chỉ còn để tra tay. Xoá `~/.cache/wallpaper-thumbs/` bất cứ lúc nào → tự dựng lại |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
 | `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
 | `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → chỉ ⏸/▶ + ↺; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
@@ -174,6 +175,19 @@ awww query               # → currently displaying: image: 0x1e1e2eff
 - ✅ Báo qua `notify-send` hướng dẫn thêm ảnh
 
 > Khi đang ở chế độ màu, `wallpaper-menu` báo *"chưa có ảnh nào — thêm bằng yazi"* thay vì lỗi. Script cũng tự nhận ra giá trị hexcode và **không** cố `readlink` nó như đường dẫn file.
+
+### Tự đổi ảnh nền mỗi 30 phút (auto-rotate)
+
+```bash
+systemctl --user start wallpaper-rotate.timer    # bật — chạy 1 lần sau rebuild
+systemctl --user status  wallpaper-rotate.timer  # xem lần đổi kế tiếp
+systemctl --user stop    wallpaper-rotate.timer  # tắt hẳn
+```
+
+- ⭐ **Mốc 30 phút = lần đổi ẢNH GẦN NHẤT**, kể cả đổi tay: `wallpaper-set` luôn chạy `systemctl --user try-restart wallpaper-rotate.timer` sau khi đặt ảnh → `OnActiveSec=30min` đếm lại từ đúng lúc đó. (Không dùng `OnCalendar` — nó tính từ 00:00, lệch ý.)
+- Timer **không `wantedBy`** → không tự bật khi đăng nhập; bật 1 lần rồi tự sống giữa các lần đổi. Muốn tự bật mỗi login thì thêm `wantedBy = [ "timers.target" ];` vào khối timer trong `modules/nixos/desktop.nix`.
+- Đổi do timer cũng reset mốc → chu trình tự nối tiếp; random cùng kiểu `Alt+w` (loại ảnh đang hiện, fade 1.5s).
+- Máy hibernate giữa chừng: deadline vẫn tính → quá mốc thì **đổi ngay khi mở máy** (không mất nhịp, chỉ trễ bằng thời gian ngủ).
 
 **Thao tác nhanh — chọn nhanh đường đi:**
 

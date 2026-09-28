@@ -157,6 +157,33 @@ in
     wantedBy = [ "timers.target" ];
   };
 
+  # ── Tự đổi ảnh nền mỗi 30 phút ─────────────────────────────────────────────
+  # ⭐ MỐC 30 PHÚT = LẦN ĐỔI GẦN NHẤT (kể cả đổi tay): mọi lần chạy
+  # wallpaper-set (Alt+w, menu Alt+Shift+w, hay chính timer này) đều
+  # `systemctl --user try-restart wallpaper-rotate.timer` → OnActiveSec đếm
+  # lại từ lúc ảnh vừa đặt. Không dùng OnCalendar vì nó tính từ 00:00, lệch ý.
+  # Sống qua sleep: TIMER ĐÁNG TIN (AccuracySec 1min, WakeSystem không cần —
+  # systemd-timer lần trước vẫn còn dính khi mở máy lại).
+  systemd.user.services.wallpaper-rotate = {
+    description = "Đổi ảnh nền ngẫu nhiên (auto-rotate)";
+    serviceConfig = {
+      Type = "oneshot";
+      # wallpaper-set tự random (loại ảnh đang hiện), ghi cache + reset mốc timer.
+      ExecStart = "%h/.local/bin/wallpaper-set";
+    };
+  };
+
+  systemd.user.timers.wallpaper-rotate = {
+    description = "Đổi ảnh nền 30 phút kể từ lần đổi trước";
+    timerConfig = {
+      OnActiveSec = "30min"; # tính từ lúc timer active (được try-restart sau MỖI lần đổi)
+      AccuracySec = "1min";
+    };
+    # KHÔNG wantedBy: timer không tự bật khi đăng nhập — bật 1 lần sau rebuild
+    # (hoặc sau mỗi lần `systemctl --user stop`): systemctl --user start wallpaper-rotate.timer
+    # Từ đó tự sống giữa các lần đổi. Tắt hẳn: stop + để nguyên.
+  };
+
   # Gộp: khai chung khối systemd.user.services với fcitx5 để đọc gọn 1 chỗ.
   systemd.user.services.fcitx5-daemon = {
     description = "Fcitx5 input method daemon";

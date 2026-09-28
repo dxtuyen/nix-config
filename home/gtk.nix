@@ -13,6 +13,9 @@
 #     tranh tông (`#89b4fa` vs `#7aa2f7` cũ).
 {
   home.pointerCursor = {
+    # Bắt buộc từ HM 25.11+ (unstable): thiếu dòng này sẽ hiện warning
+    # "Relying on `home.pointerCursor` to enable cursor config generation is deprecated".
+    enable = true;
     name = "Bibata-Modern-Classic";
     package = pkgs.bibata-cursors;
     size = 24;
