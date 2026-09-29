@@ -115,9 +115,11 @@ in
       bindsym $mod+Return exec $term
       bindsym $mod+Shift+q kill
       bindsym $mod+d exec $menu
-      # Mod+Tab: quay lại cửa sổ vừa dùng; Mod+m: menu MRU.
+      # Mod+Tab: quay lại cửa sổ vừa dùng; Mod+m: menu MRU;
+      # Mod+Shift+m: chọn cửa sổ cần đóng.
       bindsym $mod+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+m exec ${pkgs.swayr}/bin/swayr switch-window
+      bindsym $mod+Shift+m exec ${pkgs.swayr}/bin/swayr quit-window
 
       # Wallpaper: r = random ảnh khác · Shift+r = menu chọn ảnh trong
       # ~/Pictures/wallpapers (lưới thumbnail, phím ←→↑↓ duyệt ảnh).
