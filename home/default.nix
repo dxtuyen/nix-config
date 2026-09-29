@@ -76,6 +76,20 @@
         printf '\033]2;~%s\007' "$dir"
       }
       PROMPT_COMMAND="__set_window_title''${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+
+      # y: mở yazi, thoát ra (`q`) thì shell cd theo thư mục cuối cùng đứng trong
+      # yazi (yazi ghi nó vào --cwd-file). Bổ sung cho phím `b`/`B` trong yazi —
+      # chúng đi hướng NGƯỢC (yazi → shell), còn hàm này đi hướng shell → yazi →
+      # shell. Cố ý viết thủ công thay vì `programs.yazi.enableBashIntegration`:
+      # module đó kéo theo finalPackage override (xem home/yazi.nix).
+      function y() {
+        local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+        yazi "$@" --cwd-file="$tmp"
+        if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+          builtin cd -- "$cwd"
+        fi
+        rm -f -- "$tmp"
+      }
     '';
   };
 }

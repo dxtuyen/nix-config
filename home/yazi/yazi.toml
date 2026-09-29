@@ -13,6 +13,17 @@ edit = [
 { run = 'foot --title=nvim nvim %s', for = "unix", orphan = true, desc = "Edit" },
 ]
 
+# ⚠️ `orphan = true` bắt buộc cho `open` (và `reveal`): preset Linux của yazi
+# 26.9.1 KHÔNG đặt orphan cho 2 opener này (chỉ đặt cho `play` và bản Windows)
+# → app mở bằng xdg-open (Chrome/Calc/sioyek qua prepend_rules dưới) bị SIGKILL
+# khi bấm `q` thoát yazi. Giữ nguyên `%s1`/`%d1` như preset, chỉ thêm orphan.
+open = [
+{ run = "xdg-open %s1", desc = "Open", for = "linux", orphan = true },
+]
+reveal = [
+{ run = "xdg-open %d1", desc = "Reveal", for = "linux", orphan = true },
+]
+
 [open]
 # ⭐ Để Enter mở app thật thay vì nhảy vào nvim.
 # Yazi đoán mime bằng `file -bL --mime-type`, hàm này trả "text/plain" cho cả
