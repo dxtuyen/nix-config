@@ -89,11 +89,11 @@ in
     # Quick Phrase is part of Fcitx5 itself, so this explicitly controls whether
     # its addon is loaded. Set `my.fcitx5.quickPhrase.enable = false` in a host
     # module to turn it off on that machine.
-      i18n.inputMethod.fcitx5.settings.globalOptions.Behavior =
-        if quickPhraseEnabled then
-          { EnabledAddons = "quickphrase"; }
-        else
-          { DisabledAddons = "quickphrase"; };
+    i18n.inputMethod.fcitx5.settings.globalOptions.Behavior =
+      if quickPhraseEnabled then
+        { EnabledAddons = "quickphrase"; }
+      else
+        { DisabledAddons = "quickphrase"; };
 
     # Mod+grave opens the terminal scratchpad in Sway, so move Quick Phrase to
     # Mod+Shift+grave while retaining its alternate Mod+semicolon trigger.
