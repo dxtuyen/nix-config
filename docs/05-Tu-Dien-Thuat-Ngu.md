@@ -30,7 +30,7 @@
 | Thuật ngữ | Ý nghĩa |
 |---|---|
 | **Wayland** | Giao thức hiển thị hiện đại (thay X11) |
-| **Sway** | Tiling window manager cho Wayland (`home/sway.nix`) |
+| **Sway** | Tiling window manager cho Wayland (`home/config/sway.nix`) |
 | **Greetd / Tuigreet** | Display manager nhẹ + màn hình đăng nhập TUI |
 | **Waybar / Mako** | Thanh trạng thái / daemon thông báo |
 | **Foot** | Terminal mặc định (theme Catppuccin Mocha). Chọn foot vì hỗ trợ **sixel** → yazi xem trước ảnh thật (Alacritty không có kitty-graphics/sixel) |
@@ -48,9 +48,9 @@
 | Thuật ngữ | Ý nghĩa |
 |---|---|
 | **Home Manager** | Công cụ khai báo config user (`~/.config`, `~/.local/bin`, gói user) |
-| **home.packages** | Gói user trong `home/packages.nix` |
+| **home.packages** | Gói user trong `home/config/packages.nix` |
 | **xdg.enable** | Bật `xdg.configFile`, `xdg.desktopEntries` |
-| **xdg.mimeApps** | App mặc định theo mime — **mặc định `enable = false`**, quên bật thì mọi khai báo bị bỏ qua im lặng (`home/mimeapps.nix`) |
+| **xdg.mimeApps** | App mặc định theo mime — **mặc định `enable = false`**, quên bật thì mọi khai báo bị bỏ qua im lặng (`home/config/mimeapps.nix`) |
 | **desktop entry** | File `.desktop` mô tả app cho menu / file manager |
 | **AppImage** | Gói app tự chứa (RemNote), chạy bằng `appimage-run` |
 

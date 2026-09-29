@@ -35,11 +35,13 @@ nix-config/
 │   ├── default.nix              # Import modules + gắn home-manager
 │   └── hardware-configuration.nix  # Tự sinh khi cài máy
 ├── home/                        # Home Manager (user-level)
-│   ├── default.nix              # Entry point: imports + PATH ~/.local/bin
-│   ├── git.nix                  # Git identity toàn cục (user/email, pull.rebase…)
-│   ├── sway.nix                 # Sway: cửa sổ, phím tắt, idle/lock/sleep
-│   ├── scripts.nix              # Script ~/.local/bin (power-menu, quick-lang…)
-│   └── ...                      # waybar, foot, starship, gtk, mako, fcitx5, pomodoro (focus), thunar, yazi ($mod+y), mimeapps, remnote
+│   ├── default.nix              # Thiết lập user + imports ba nhóm bên dưới
+│   ├── config/                  # Cấu hình desktop, gói user và ứng dụng mặc định
+│   ├── apps/                    # Tích hợp từng ứng dụng (Pomodoro, RemNote, Yazi…)
+│   └── script/                  # Mọi lệnh ~/.local/bin, mỗi lệnh một file riêng
+│       ├── default.nix          # Danh sách import các script
+│       ├── quick-lang.nix       # Model, prompt và Gemini API
+│       └── ...                  # study, setup-remnote, wallpaper-set…
 ├── modules/nixos/               # Module NixOS (system-level)
 │   ├── core.nix                 # Nền tảng: Nix/flake, boot, mạng, user
 │   ├── desktop.nix              # Sway/greetd, PipeWire, Fcitx5, fonts

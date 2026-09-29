@@ -71,7 +71,6 @@
     wget
     unzip
     zip
-    neovim
     htop
     file # xem nhanh định dạng file
   ];

@@ -1,7 +1,4 @@
-{ ... }:
-
-# Focus: một chế độ duy nhất, không break. Rảnh → nhập 1–480 / preset
-# 🍅 30/60/120; có phiên → chỉ ⏸/▶ + ↺. Phiên chạy → dừng swayidle.
+{ pkgs, ... }:
 
 {
   home.file = {
@@ -9,14 +6,33 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Usage: study {start|pause|resume|toggle|reset|status|inhibit|...|daemon}
+        # Usage: study {start|add|pause|resume|toggle|reset|status|inhibit|...|daemon}
 
         STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
         STATE_FILE="$STATE_DIR/study-state"
+        # Keep the lock under persistent state even when STATE_DIR is runtime-only.
+        LOCK_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/study-state.lock"
+        FLOCK="${pkgs.util-linux}/bin/flock"
         SLEEP_MARKER="$STATE_DIR/study-sleep-paused"
         MANUAL_FLAG="$STATE_DIR/inhibit-manual"
         HISTORY_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/pomodoro-history.log"
-        mkdir -p "$STATE_DIR" "$(dirname "$HISTORY_FILE")"
+        mkdir -p "$STATE_DIR" "$(dirname "$LOCK_FILE")" "$(dirname "$HISTORY_FILE")"
+        exec 9>>"$LOCK_FILE"
+
+        # Serialize state transitions shared by Waybar, the menu and the timer daemon.
+        state_lock() {
+          "$FLOCK" -x 9 || {
+            echo "study: cannot acquire state lock" >&2
+            exit 1
+          }
+        }
+
+        state_unlock() {
+          "$FLOCK" -u 9 || {
+            echo "study: cannot release state lock" >&2
+            exit 1
+          }
+        }
 
         read_state() {
           if [ -f "$STATE_FILE" ]; then
@@ -41,8 +57,18 @@
         }
 
         write_state() {
-          printf 'DURATION="%s"\nRUNNING="%s"\nEND_TIME="%s"\nREMAINING="%s"\n' \
-            "$DURATION" "$RUNNING" "$END_TIME" "$REMAINING" > "$STATE_FILE"
+          local tmp
+          # Same-directory rename keeps readers from seeing a partially written state.
+          tmp=$(mktemp "$STATE_FILE.XXXXXX") || return 1
+          if ! printf 'DURATION="%s"\nRUNNING="%s"\nEND_TIME="%s"\nREMAINING="%s"\n' \
+            "$DURATION" "$RUNNING" "$END_TIME" "$REMAINING" > "$tmp"; then
+            rm -f -- "$tmp"
+            return 1
+          fi
+          if ! mv -f -- "$tmp" "$STATE_FILE"; then
+            rm -f -- "$tmp"
+            return 1
+          fi
           sync_idle_inhibit
         }
 
@@ -112,6 +138,7 @@
 
         daemon_loop() {
           while true; do
+            # Atomic rename makes this snapshot safe without locking every second.
             read_state
             if [ "$RUNNING" != "true" ] || [ -z "$END_TIME" ]; then
               exit 0
@@ -119,18 +146,27 @@
             now=$(date +%s)
             remaining=$((END_TIME - now))
             if [ "$remaining" -le 0 ]; then
-              finished_duration="$DURATION"
-              DURATION=""
-              RUNNING="false"
-              END_TIME=""
-              REMAINING=""
-              write_state
-              play_sound
-              notify-send -a focus -i "chronometer" -t 10000 -u critical \
-                "Focus" "Phiên tập trung kết thúc! $finished_duration phút 🍅"
-              log_history "focus" "$finished_duration"
-              notify_waybar
-              exit 0
+              state_lock
+              read_state
+              finished_duration=""
+              finalize_if_expired || {
+                state_unlock
+                exit 1
+              }
+              still_running="$RUNNING"
+              still_has_end_time="$END_TIME"
+              state_unlock
+              if [ -n "$finished_duration" ]; then
+                play_sound
+                notify-send -a focus -i "chronometer" -t 10000 -u critical \
+                  "Focus" "Phiên tập trung kết thúc! $finished_duration phút 🍅"
+                log_history "focus" "$finished_duration"
+                notify_waybar
+                exit 0
+              fi
+              if [ "$still_running" != "true" ] || [ -z "$still_has_end_time" ]; then
+                exit 0
+              fi
             fi
             # Mỗi giây chỉ refresh đồng hồ.
             notify_clock
@@ -141,12 +177,29 @@
         # Luôn thay daemon cũ bằng daemon mới (tránh race pause → treo timer).
         ensure_daemon() {
           pkill -f "study daemon" 2>/dev/null || true
-          nohup "$HOME/.local/bin/study" daemon >/dev/null 2>&1 &
+          nohup "$HOME/.local/bin/study" daemon 9>&- >/dev/null 2>&1 &
         }
 
         # Xóa dấu "ngủ tự pause" khi người dùng thao tác tay.
         clear_sleep_marker() {
           rm -f "$SLEEP_MARKER" 2>/dev/null || true
+        }
+
+        # Must be called under state_lock; only one caller can finalize a session.
+        finalize_if_expired() {
+          if [ "$RUNNING" != "true" ] || [ -z "$END_TIME" ]; then
+            return 0
+          fi
+          now=$(date +%s)
+          [ "$END_TIME" -gt "$now" ] && return 0
+
+          finished_duration="$DURATION"
+          DURATION=""
+          RUNNING="false"
+          END_TIME=""
+          REMAINING=""
+          write_state || return 1
+          pkill -f "study daemon" 2>/dev/null || true
         }
 
         case "''${1:-status}" in
@@ -157,6 +210,7 @@
               echo "Usage: study start <1-480>" >&2
               exit 1
             fi
+            state_lock
             read_state
             maybe_log_current "focus"
             clear_sleep_marker
@@ -165,14 +219,62 @@
             RUNNING="true"
             END_TIME=$((now + minutes * 60))
             REMAINING=""
-            write_state
+            write_state || exit 1
             ensure_daemon
+            state_unlock
             notify_waybar
             notify-send -a focus -i "chronometer" -t 3000 \
               "Focus" "Phiên tập trung $minutes phút bắt đầu 🍅"
             ;;
 
+          add)
+            minutes="''${2:-}"
+            if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
+              echo "Usage: study add <1-480>" >&2
+              exit 1
+            fi
+            # Finalize first if the session elapsed while its menu was open.
+            "$0" status >/dev/null
+            state_lock
+            read_state
+            if [ -z "$DURATION" ]; then
+              state_unlock
+              notify-send -a focus -i "dialog-error" -t 4000 \
+                "Focus" "Không có phiên để cộng thời gian."
+              exit 1
+            fi
+            new_duration=$((DURATION + minutes))
+            if [ "$new_duration" -gt 480 ]; then
+              state_unlock
+              notify-send -a focus -i "dialog-error" -t 4000 \
+                "Focus" "Tổng thời lượng tối đa là 480 phút (hiện tại $DURATION phút)."
+              exit 1
+            fi
+            remaining=$(get_remaining)
+            if [ "$remaining" -le 0 ]; then
+              state_unlock
+              "$0" status >/dev/null
+              exit 1
+            fi
+            clear_sleep_marker
+            DURATION="$new_duration"
+            if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
+              END_TIME=$((END_TIME + minutes * 60))
+            else
+              REMAINING=$((remaining + minutes * 60))
+            fi
+            write_state || exit 1
+            if [ "$RUNNING" = "true" ]; then
+              ensure_daemon
+            fi
+            state_unlock
+            notify_waybar
+            notify-send -a focus -i "chronometer" -t 3000 \
+              "Focus" "Đã cộng $minutes phút · tổng phiên $DURATION phút"
+            ;;
+
           pause)
+            state_lock
             read_state
             if [ "$RUNNING" = "true" ]; then
               now=$(date +%s)
@@ -180,29 +282,37 @@
               [ "$REMAINING" -lt 0 ] && REMAINING=0
               RUNNING="false"
               END_TIME=""
-              write_state
+              write_state || exit 1
               # Kill daemon ngay (không chờ tự thoát).
               pkill -f "study daemon" 2>/dev/null || true
+              state_unlock
               notify_waybar
               notify-send -a focus -i "chronometer" -t 2000 "Focus" "Tạm dừng ⏸"
+            else
+              state_unlock
             fi
             ;;
 
           resume)
+            state_lock
             read_state
             clear_sleep_marker
             if [ "$RUNNING" != "true" ] && [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
               now=$(date +%s)
               END_TIME=$((now + REMAINING))
               RUNNING="true"
-              write_state
+              write_state || exit 1
               ensure_daemon
+              state_unlock
               notify_waybar
               notify-send -a focus -i "chronometer" -t 2000 "Focus" "Tiếp tục ▶"
+            else
+              state_unlock
             fi
             ;;
 
           toggle)
+            state_lock
             read_state
             clear_sleep_marker
             if [ "$RUNNING" = "true" ]; then
@@ -211,23 +321,28 @@
               [ "$REMAINING" -lt 0 ] && REMAINING=0
               RUNNING="false"
               END_TIME=""
-              write_state
+              write_state || exit 1
               # Kill daemon ngay (không chờ tự thoát).
               pkill -f "study daemon" 2>/dev/null || true
+              state_unlock
               notify_waybar
               notify-send -a focus -i "chronometer" -t 2000 "Focus" "Tạm dừng ⏸"
             elif [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
               now=$(date +%s)
               END_TIME=$((now + REMAINING))
               RUNNING="true"
-              write_state
+              write_state || exit 1
               ensure_daemon
+              state_unlock
               notify_waybar
               notify-send -a focus -i "chronometer" -t 2000 "Focus" "Tiếp tục ▶"
+            else
+              state_unlock
             fi
             ;;
 
           reset)
+            state_lock
             read_state
             maybe_log_current "focus"
             clear_sleep_marker
@@ -235,8 +350,9 @@
             RUNNING="false"
             END_TIME=""
             REMAINING=""
-            write_state
+            write_state || exit 1
             pkill -f "study daemon" 2>/dev/null || true
+            state_unlock
             notify_waybar
             ;;
 
@@ -246,27 +362,27 @@
 
           status)
             read_state
-            # Daemon chết → finalize phiên hết hạn hoặc hồi sinh daemon.
+            finished_duration=""
+            # Lock only on expiry or daemon recovery; routine Waybar polls are lock-free.
             if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
-              if [ "$((END_TIME - $(date +%s)))" -le 0 ]; then
-                finished_duration="$DURATION"
-                DURATION=""
-                RUNNING="false"
-                END_TIME=""
-                REMAINING=""
-                write_state
-                pkill -f "study daemon" 2>/dev/null || true
-                play_sound
-                notify-send -a focus -i "chronometer" -t 10000 -u critical \
-                  "Focus" "Phiên tập trung kết thúc! $finished_duration phút 🍅"
-                log_history "focus" "$finished_duration"
-                notify_waybar
-              elif ! pgrep -f "study daemon" >/dev/null 2>&1; then
-                ensure_daemon
-                sync_idle_inhibit
+              if [ "$((END_TIME - $(date +%s)))" -le 0 ] || ! pgrep -f "study daemon" >/dev/null 2>&1; then
+                state_lock
+                read_state
+                if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
+                  finalize_if_expired || {
+                    state_unlock
+                    exit 1
+                  }
+                  if [ -z "$finished_duration" ] && ! pgrep -f "study daemon" >/dev/null 2>&1; then
+                    ensure_daemon
+                    sync_idle_inhibit
+                  fi
+                fi
+                state_unlock
               fi
-              read_state
             fi
+            # Refresh from the latest complete snapshot after any locked transition.
+            read_state
             remaining=$(get_remaining)
             if [ -z "$DURATION" ]; then
               text="⏱"
@@ -284,6 +400,13 @@
               fi
               text="🍅 $(format_time "$remaining") $s_icon"
               tooltip="Focus $DURATION min\\n$s_label · $(format_time "$remaining")"
+            fi
+            if [ -n "$finished_duration" ]; then
+              play_sound
+              notify-send -a focus -i "chronometer" -t 10000 -u critical \
+                "Focus" "Phiên tập trung kết thúc! $finished_duration phút 🍅"
+              log_history "focus" "$finished_duration"
+              notify_waybar
             fi
             printf '{"text": "%s", "class": "%s", "tooltip": "%s"}\n' \
               "$text" "$class" "$tooltip"
@@ -310,6 +433,7 @@
 
           inhibit-toggle)
             # Bật/tắt chống idle thủ công. Phiên chạy → tắt tay hiệu lực sau khi phiên dừng.
+            state_lock
             read_state
             if [ -f "$MANUAL_FLAG" ]; then
               rm -f "$MANUAL_FLAG"
@@ -319,6 +443,7 @@
               toggle_msg="Bật"
             fi
             sync_idle_inhibit
+            state_unlock
             notify_waybar
             if [ "$RUNNING" = "true" ] && [ "$toggle_msg" = "Tắt" ]; then
               notify-send -a focus -i "dialog-information" -t 3000 \
@@ -331,7 +456,9 @@
 
           sleep-pause)
             # Máy ngủ: tạm dừng phiên, giữ REMAINING để thời gian ngủ không bị trừ.
+            state_lock
             read_state
+            sleep_paused=0
             if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
               now=$(date +%s)
               REMAINING=$((END_TIME - now))
@@ -339,203 +466,62 @@
               RUNNING="false"
               END_TIME=""
               touch "$SLEEP_MARKER"
-              write_state
+              write_state || exit 1
               pkill -f "study daemon" 2>/dev/null || true
+              sleep_paused=1
+            fi
+            state_unlock
+            if [ "$sleep_paused" -eq 1 ]; then
               notify_waybar
             fi
             ;;
 
           sleep-resume)
             # Máy dậy: còn marker → tiếp tục phiên; hết giờ lúc ngủ → finalize.
+            state_lock
             read_state
+            resumed=0
+            finished_duration=""
             if [ -f "$SLEEP_MARKER" ]; then
               rm -f "$SLEEP_MARKER" 2>/dev/null || true
               if [ "$RUNNING" != "true" ] && [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
                 now=$(date +%s)
                 END_TIME=$((now + REMAINING))
                 RUNNING="true"
-                write_state
+                write_state || exit 1
                 ensure_daemon
-                notify-send -a focus -i "chronometer" -t 3000 \
-                  "Focus" "Máy vừa thức dậy — phiên tiếp tục ▶"
+                resumed=1
               elif [ -n "$DURATION" ] && [ "$REMAINING" = "0" ]; then
                 finished_duration="$DURATION"
                 DURATION=""
                 RUNNING="false"
                 END_TIME=""
                 REMAINING=""
-                write_state
+                write_state || exit 1
                 pkill -f "study daemon" 2>/dev/null || true
-                play_sound
-                notify-send -a focus -i "chronometer" -t 10000 -u critical \
-                  "Focus" "Phiên tập trung kết thúc trong lúc máy ngủ! $finished_duration phút 🍅"
-                log_history "focus" "$finished_duration"
               fi
             else
               sync_idle_inhibit
+            fi
+            state_unlock
+            if [ "$resumed" -eq 1 ]; then
+              notify-send -a focus -i "chronometer" -t 3000 \
+                "Focus" "Máy vừa thức dậy — phiên tiếp tục ▶"
+            elif [ -n "$finished_duration" ]; then
+              play_sound
+              notify-send -a focus -i "chronometer" -t 10000 -u critical \
+                "Focus" "Phiên tập trung kết thúc trong lúc máy ngủ! $finished_duration phút 🍅"
+              log_history "focus" "$finished_duration"
             fi
             notify_waybar
             ;;
 
           *)
-            echo "Usage: study {start <1-480>|pause|resume|toggle|reset|status|inhibit|inhibit-toggle|sleep-pause|sleep-resume|daemon}" >&2
+            echo "Usage: study {start <1-480>|add <1-480>|pause|resume|toggle|reset|status|inhibit|inhibit-toggle|sleep-pause|sleep-resume|daemon}" >&2
             exit 1
             ;;
         esac
       '';
-    };
-
-    ".local/bin/pomodoro-menu" = {
-      executable = true;
-      text = ''
-        #! /usr/bin/env bash
-        # Rofi một đồng hồ Focus, không break: rảnh → khởi động, có phiên → toggle + reset.
-        set -u
-
-        STUDY="$HOME/.local/bin/study"
-        STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
-
-        format_time() {
-          local secs=$1
-          printf "%02d:%02d" $((secs / 60)) $((secs % 60))
-        }
-
-        # `status` tự finalize/hồi sinh trước khi dựng menu.
-        "$STUDY" status >/dev/null
-
-        DURATION=""
-        RUNNING="false"
-        END_TIME=""
-        REMAINING=""
-        if [ -f "$STATE_DIR/study-state" ]; then
-          # shellcheck disable=SC1090
-          . "$STATE_DIR/study-state"
-        fi
-
-        if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
-          r=$((END_TIME - $(date +%s)))
-          [ "$r" -lt 0 ] && r=0
-        elif [ -n "$REMAINING" ]; then
-          r="$REMAINING"
-        else
-          r=0
-        fi
-
-        # Rảnh → dòng khởi động; có phiên → chỉ toggle + reset.
-        if [ -n "$DURATION" ]; then
-          if [ "$RUNNING" = "true" ]; then
-            ITEMS=("⏸ $(format_time "$r")")
-          else
-            ITEMS=("▶ $(format_time "$r")")
-          fi
-          ITEMS+=("↺ Reset")
-        else
-          ITEMS=("⌨ Minutes (1–480)...")
-          ITEMS+=("🍅 30")
-          ITEMS+=("🍅 60")
-          ITEMS+=("🍅 120")
-        fi
-
-        choice=$(printf '%s\n' "''${ITEMS[@]}" | rofi -dmenu -i -p "Focus" \
-          -mesg "⌨ minutes 1–480 · 🍅 30/60/120 · ⏸/▶ pause/resume · ↺ reset")
-
-        # Hủy (rỗng) → thoát im lặng; sai định dạng → báo lỗi.
-        ask_minutes() {
-          local minutes
-          minutes=$(rofi -dmenu -p "Focus — minutes (1–480)")
-          if [ -z "$minutes" ]; then
-            exit 0
-          fi
-          if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
-            notify-send -a focus -i "dialog-error" -t 4000 \
-              "Focus" "Invalid minutes: $minutes (need 1–480)"
-            exit 1
-          fi
-          echo "$minutes"
-        }
-
-        case "$choice" in
-          "⌨ Minutes (1–480)...")
-            m=$(ask_minutes) && [ -n "$m" ] && exec "$STUDY" start "$m"
-            ;;
-          "🍅 30") exec "$STUDY" start 30 ;;
-          "🍅 60") exec "$STUDY" start 60 ;;
-          "🍅 120") exec "$STUDY" start 120 ;;
-          "⏸ "*) exec "$STUDY" toggle ;;
-          "▶ "*) exec "$STUDY" toggle ;;
-          "↺ Reset") exec "$STUDY" reset ;;
-        esac
-      '';
-    };
-
-    ".local/bin/focus-sleep-watch" = {
-      executable = true;
-      text = ''
-        #! /usr/bin/env bash
-        # Watcher pause khi ngủ / tiếp tục khi dậy (nghe logind PrepareForSleep).
-        # END_TIME wall-clock nên phải giữ REMAINING, không thì timer nhảy cóc.
-        set -u
-        set -o pipefail
-
-        STATE_DIR="''${XDG_STATE_HOME:-$HOME/.local/state}"
-
-        log() {
-          printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" \
-            >> "$STATE_DIR/focus-sleep-watch.log"
-        }
-
-        log "watcher khởi động (đang theo dõi PrepareForSleep trên system bus)"
-
-        pending=0
-        dbus-monitor --system \
-          "type='signal',interface='org.freedesktop.login1.Manager',member='PrepareForSleep',sender='org.freedesktop.login1'" 2>/dev/null |
-        while IFS= read -r line; do
-          case "$line" in
-            *"member=PrepareForSleep"*)
-              pending=1
-              ;;
-            *"boolean true"*)
-              if [ "${"pending:-0"}" -eq 1 ]; then
-                pending=0
-                log "máy chuẩn bị ngủ → sleep-pause"
-                "$HOME/.local/bin/study" sleep-pause \
-                  >> "$STATE_DIR/focus-sleep-watch.log" 2>&1
-              fi
-              ;;
-            *"boolean false"*)
-              if [ "${"pending:-0"}" -eq 1 ]; then
-                pending=0
-                log "máy vừa dậy → sleep-resume"
-                "$HOME/.local/bin/study" sleep-resume \
-                  >> "$STATE_DIR/focus-sleep-watch.log" 2>&1
-              fi
-              ;;
-          esac
-        done
-      '';
-    };
-  };
-
-  # Watcher chạy qua systemd (tự hồi sinh, log journald, dừng theo phiên Sway).
-  systemd.user.services.focus-sleep-watch = {
-    Unit = {
-      Description = "Auto pause/resume Focus timer on system sleep/wake (logind PrepareForSleep)";
-      After = [ "sway-session.target" ];
-      PartOf = [ "sway-session.target" ];
-      StartLimitIntervalSec = 60;
-    };
-    Service = {
-      Type = "simple";
-      # PATH cho dbus-monitor + study.
-      Environment = [
-        "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
-      ];
-      Restart = "on-failure";
-      RestartSec = 3;
-      ExecStart = "%h/.local/bin/focus-sleep-watch";
-    };
-    Install = {
-      WantedBy = [ "sway-session.target" ];
     };
   };
 }

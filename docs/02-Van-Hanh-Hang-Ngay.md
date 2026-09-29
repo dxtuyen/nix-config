@@ -53,7 +53,7 @@ nixos-rebuild list-generations   # xem các bản còn giữ
 ## 4. Không dùng nix-env — mọi gói đều khai báo trong repo
 
 - Cần thử 1 lần: `nix shell nixpkgs#ffmpeg` (dùng xong vứt, không để lại rác).
-- Cần quá 2 lần: thêm vào `home/packages.nix` (gói user) hoặc
+- Cần quá 2 lần: thêm vào `home/config/packages.nix` (gói user) hoặc
   `environment.systemPackages` (gói hệ thống) rồi rebuild.
 - Home-Manager ở đây quản lý **dotfiles** (sway/foot/waybar/mimeapps/scripts...),
   không phải chỉ để cài package user — nên giữ, đừng dồn hết lên system.
@@ -72,8 +72,8 @@ Thay cho `buildFHSUserEnv` thủ công thời 2023, repo dùng stack hiện đ�
 |---|---|
 | Binary biên dịch sẵn (VS Code server, JetBrains...) chạy không cần patch | `programs.nix-ld` (`modules/nixos/system-tweaks.nix`) |
 | Chạy nhanh 1 lệnh không cần setup | `steam-run ./binary` |
-| Môi trường Fedora/Ubuntu | `distrobox` + `podman` (`home/packages.nix`, `modules/nixos/development.nix`) |
-| AppImage (RemNote) | `appimage-run` + script `setup-remnote` (`home/remnote.nix`) |
+| Môi trường Fedora/Ubuntu | `distrobox` + `podman` (`home/config/packages.nix`, `modules/nixos/development.nix`) |
+| AppImage (RemNote) | `appimage-run` + script `setup-remnote` (`home/script/setup-remnote.nix`) |
 
 Chỉ dựng FHS custom khi gặp đúng 1 binary closed-source cứng đầu
 không chạy được qua 4 đường trên.
@@ -175,7 +175,7 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 |---|---|
 | `power-menu` | Menu nguồn: Poweroff / Reboot / Suspend / **Hibernate** / Lock / Power Profile / Reload |
 | `power-profile-menu` | Đổi battery-saver / balanced / performance |
-| `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key ở `~/.config/quick-lang/api.key` |
+| `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key nằm ở `~/.config/quick-lang/api.key` trên từng máy; không cần sửa file Nix |
 | `dict-toggle` | `mod+g`: bật/tắt GoldenDict float — đóng = ẩn về tray (tiến trình giữ nguyên, mở lại tức thời) |
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
 | `wallpaper-set` | `$mod+r`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Mỗi lần bật máy vào Sway: **tự đổi ảnh random** (không giữ ảnh phiên trước); thư mục ảnh rỗng → dùng ảnh mặc định trong repo. ⛔ Auto-rotate 30 phút **đã TẮT** (xem mục [Tự đổi ảnh nền mỗi 30 phút](#tự-đổi-ảnh-nền-mỗi-30-phút-auto-rotate)). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
@@ -184,10 +184,10 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
 | `Wi-Fi popup` | `$mod+n`: mở nhanh danh sách Wi-Fi dạng popup (`wifitui` trong Foot), hỗ trợ phím `r` bật/tắt Wi-Fi, `/` tìm kiếm fuzzy, `s` quét lại sóng, `Enter` kết nối, `q`/`Esc` để đóng |
 | `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
-| `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → chỉ ⏸/▶ + ↺; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
+| `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → ⏸/▶, ↺ reset, ＋ cộng phút; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
 
-> Các phím tắt chi tiết được khai trong `home/sway.nix` — tra cứu tại đó khi cần.
+> Các phím tắt chi tiết được khai trong `home/config/sway.nix` — tra cứu tại đó khi cần.
 
 ## Ảnh nền (wallpaper)
 
@@ -244,7 +244,7 @@ Cách nhanh nhất, không cần nhớ lệnh. `$mod+y` mở yazi dạng **popup
 
 Xoá ảnh: bấm `d` trong yazi (hỏi xác nhận) — vào **thùng rác**, nên vẫn khôi phục được bằng `g` `t` nếu lỡ. Muốn xoá hẳn luôn thì bấm `D`. Tự dọn rác cũ lúc 03:00, xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300).
 
-Config yazi gồm 3 file cùng thư mục `home/yazi/`, Yazi tự merge với mặc định nên không mất phím tắt nào. Đã đối chiếu từng khoá với `yazi-default.toml` + `keymap-default.toml` bản 26.5.6 (khoá không có trong đó thì yazi **lặng lẽ bỏ qua**).
+Config yazi gồm 3 file cùng thư mục `home/apps/yazi/`, Yazi tự merge với mặc định nên không mất phím tắt nào. Đã đối chiếu từng khoá với `yazi-default.toml` + `keymap-default.toml` bản 26.5.6 (khoá không có trong đó thì yazi **lặng lẽ bỏ qua**).
 
 **Cách mở — 2 kiểu khác nhau:**
 
@@ -253,7 +253,7 @@ Config yazi gồm 3 file cùng thư mục `home/yazi/`, Yazi tự merge với m�
 | `$mod+y` | **Popup** nhỏ (1000×700, floating) | Chọn nhanh: xem 1 file, thêm/xoá ảnh |
 | Gõ `yazi` trong terminal | Cửa sổ thường, **không** popup | Duyệt file kỹ — preview ảnh/PDF bằng sixel đẹp hơn nhiều |
 
-Popup chỉ là `foot --title=yazi-popup` + rule floating theo title đó trong `home/sway.nix` (yazi chạy **bên trong** foot nên phải match theo title chứ không phải app_id). Không có phím tắt riêng cho file picker — upload dùng hộp thoại native của trình duyệt.
+Popup chỉ là `foot --title=yazi-popup` + rule floating theo title đó trong `home/config/sway.nix` (yazi chạy **bên trong** foot nên phải match theo title chứ không phải app_id). Không có phím tắt riêng cho file picker — upload dùng hộp thoại native của trình duyệt.
 
 | File | Chứa gì |
 |---|---|
@@ -267,7 +267,7 @@ Popup chỉ là `foot --title=yazi-popup` + rule floating theo title đó trong 
 
 **Vì sao cần plugin này** (lỗi thật, đã test lỗi trước và sau khi sửa): preset yazi khai `{ mime = "folder/*", use = ["edit", "open", "reveal"] }` — `edit` đứng **đầu**; mà ta ghi đè opener `edit` thành nvim. Hai thứ ghép lại khiến **Enter vào thư mục lại ra nvim**. `smart-enter` bỏ qua bảng `use` với thư mục nên sửa đúng gốc, vẫn giữ nguyên thói quen bấm `<Enter>` để mở file.
 
-- Cài gói `yaziPlugins.smart-enter`, link thành `~/.config/yazi/plugins/smart-enter.yazi` — khai trong `home/yazi.nix`.
+- Cài gói `yaziPlugins.smart-enter`, link thành `~/.config/yazi/plugins/smart-enter.yazi` — khai trong `home/apps/yazi.nix`.
 - Plugin này **không cần** `setup()`. Mặc định nó truyền `--hovered` nên chỉ mở **đúng 1 file đang trỏ**, không mở cả nhóm đang chọn (khớp hành vi `enter`, tránh mở nhầm). Muốn mở cả nhóm thì thêm `require("smart-enter"):setup { open_multi = true }`.
 - ⚠️ **Không xoá `init.lua`.** File đó đang tồn tại và **bắt buộc cho plugin `recycle-bin`** (xem bên dưới): `require("recycle-bin"):setup()`. Thiếu nó thì `config` = nil → các lệnh dùng `config.trash_dir` sẽ lỗi. Nội dung hiện tại đúng là chỉ dòng trên.
 
@@ -343,14 +343,15 @@ Chỉ MỘT chế độ, KHÔNG break. Rảnh hoàn toàn → menu khởi độn
 🍅 120
 ```
 
-Đang có phiên (đang chạy hoặc tạm dừng) → menu chỉ còn ĐÚNG 2 dòng:
+Đang có phiên (đang chạy hoặc tạm dừng) → menu có 3 lựa chọn:
 
 ```
 ⏸ 87:12    ← bấm để pause (khi pause: ▶ bấm để resume)
 ↺ Reset
+＋ Add minutes...
 ```
 
-- **Mỗi dòng tự giải thích**: rảnh → dòng khởi động; có phiên → menu ẩn preset, chỉ còn `⏸`/`▶` toggle + `↺ Reset`. Muốn đổi mốc → `↺ Reset` rồi mở lại menu.
+- **Mỗi dòng tự giải thích**: rảnh → dòng khởi động; có phiên → menu ẩn preset, hiện `⏸`/`▶` pause/resume, `↺ Reset` và `＋ Add minutes...`. Cộng phút giữ nguyên thời gian đã tập trung, tối đa tổng phiên 480 phút; dùng được cả khi phiên đang tạm dừng.
 - **Không mất lịch sử**: đổi phiên giữa chừng bằng CLI (`study start …`) vẫn ghi phần đã tập trung ≥ 1 phút vào lịch sử.
 - **Tự động chống idle** (giống bật nút idle_inhibitor trên Waybar): phiên đang chạy → swayidle tạm dừng — **không khóa màn 300s, không tắt màn 310s, không ngủ 900s**; pause / reset / hết giờ → swayidle tự bật lại, mọi thứ về như bình thường. (Đóng nắp laptop vẫn ngủ như cũ.)
 - **Icon chống idle trên bar là NÚT ĐỘC LẬP** (như idle_inhibitor cũ), đồng bộ với phiên: phiên chạy → mắt mở **xanh** (tự động); bấm tay → mắt mở **vàng** (thủ công, giữ cả khi không có phiên); không nguồn nào → mắt gạch mờ (màn hình khóa/tắt/ngủ bình thường). **Bấm icon = bật/tắt chống idle thủ công**; tắt tay khi phiên đang chạy sẽ chỉ có hiệu lực sau khi phiên dừng (thông báo sẽ nhắc).
@@ -361,6 +362,7 @@ Chỉ MỘT chế độ, KHÔNG break. Rảnh hoàn toàn → menu khởi độn
 ```bash
 study start 30     # preset 🍅 30
 study start 45     # tự nhập 45 phút (1–480)
+study add 15       # cộng 15 phút vào phiên hiện tại (tổng tối đa 480)
 study toggle       # pause/resume
 ```
 
@@ -409,14 +411,14 @@ Hai việc khác nhau, dùng cơ chế khác nhau — đừng lẫn:
 
 | Việc | Làm gì | Cần gì | Cấu hình ở đâu |
 |---|---|---|---|
-| **Mở** file | Mở app thật, cửa sổ riêng | App theo mime: imv / mpv / sioyek / foliate / Chrome / nvim | `home/mimeapps.nix` |
-| **Xem trước** | Vẽ ảnh nhỏ **tại chỗ** (khung phải trong yazi, ảnh thu nhỏ trong Thunar) | Ảnh: terminal hỗ trợ **sixel** (foot ✅) · Thunar: `tumbler` | `home/foot.nix`, `modules/nixos/desktop.nix` |
+| **Mở** file | Mở app thật, cửa sổ riêng | App theo mime: imv / mpv / sioyek / foliate / Chrome / nvim | `home/config/mimeapps.nix` |
+| **Xem trước** | Vẽ ảnh nhỏ **tại chỗ** (khung phải trong yazi, ảnh thu nhỏ trong Thunar) | Ảnh: terminal hỗ trợ **sixel** (foot ✅) · Thunar: `tumbler` | `home/config/foot.nix`, `modules/nixos/desktop.nix` |
 
 **Trong yazi preview được ẢNH, PDF, video và SVG.** Không cần cài gì thêm: gói `yazi` của nixpkgs đã đóng gói sẵn `poppler-utils`, `ffmpeg`, `resvg`, `imagemagick`, `chafa`… và wrapper tự thêm chúng vào PATH mỗi khi chạy yazi. (Vì vậy `command -v pdftoppm` ở terminal báo *không có* — nhưng bên trong yazi thì có.) Ảnh hiển thị đẹp nhờ foot hỗ trợ **sixel**.
 
 Bấm `Enter` vẫn mở app thật (`sioyek` / `mpv` / `imv`), preview chỉ là xem nhanh. Muốn xác nhận các lệnh trên có thật không: chạy `yazi --debug` rồi xem PATH của tiến trình.
 
-Đổi app mặc định cho 1 loại file: sửa `home/mimeapps.nix` → `nh os switch` → kiểm tra `xdg-mime query default image/jpeg`. **Đừng sửa tay `~/.config/mimeapps.list`** — nó là symlink do Home-Manager quản lý, sẽ bị ghi đè.
+Đổi app mặc định cho 1 loại file: sửa `home/config/mimeapps.nix` → `nh os switch` → kiểm tra `xdg-mime query default image/jpeg`. **Đừng sửa tay `~/.config/mimeapps.list`** — nó là symlink do Home-Manager quản lý, sẽ bị ghi đè.
 
 ## Thunar (file manager đồ hoạ)
 
@@ -425,7 +427,7 @@ Dùng khi cần chuột + kéo thả giữa các nơi (yazi vẫn là chính cho
 | Việc | Cách |
 |---|---|
 | Ảnh thu nhỏ trong danh sách | Có sẵn nhờ `tumbler` (`programs.thunar.plugins`). Vào **Icon view** mới thấy rõ |
-| Mở terminal tại thư mục đang xem | Nút phải chuột → *Open Terminal Here* — tự mở **foot** (đọc `TerminalEmulator` trong `home/thunar.nix`) |
+| Mở terminal tại thư mục đang xem | Nút phải chuột → *Open Terminal Here* — tự mở **foot** (đọc `TerminalEmulator` trong `home/apps/thunar.nix`) |
 | Xoá file | *Move to Trash* → vào thùng rác (xem mục dưới) |
 | Nén / giải nén | Dùng lệnh `7z` (`p7zip`) — **không** có plugin giải nén trong menu |
 | Cắm USB / thẻ nhớ | Thunar **không** tự mount — mount tay theo [04 — Sao lưu](04-Sao-Luu-Phuc-Hoi.md) |
@@ -440,7 +442,7 @@ Thùng rác GIO **luôn hoạt động** vì `services.gvfs.enable` (khai ở `m
 | `D` | Xoá **vĩnh viễn** — không khôi phục được, dùng khi dọn file rác chắc chắn |
 | `g` `t` | Menu thùng rác (xem bên dưới) |
 
-> ⚠️ **Bản yazi 26.5.6 CHƯA có sẵn** scheme `trash://` lẫn phím `g t` gốc — đó là tính năng của bản nightly (đã kiểm trực tiếp binary: không có chuỗi nào). Nên `g t` ở đây là **plugin `recycle-bin`** khai trong `home/yazi.nix` + `home/yazi/keymap.toml`, cần gói `trash-cli`. Nếu xoá 2 chỗ đó, `g t` sẽ hết tác dụng (nhưng `d` vẫn xoá mềm bình thường). Phím `g t` là **đúng preset chính thức của yazi** (đã grep preset `main` trên GitHub: `{ on = ["g","t"], run = "plugin trash", desc = "Go to trash bin" }`), cùng nhóm với `g h`/`g c`/`g d`/`g f`.
+> ⚠️ **Bản yazi 26.5.6 CHƯA có sẵn** scheme `trash://` lẫn phím `g t` gốc — đó là tính năng của bản nightly (đã kiểm trực tiếp binary: không có chuỗi nào). Nên `g t` ở đây là **plugin `recycle-bin`** khai trong `home/apps/yazi.nix` + `home/apps/yazi/keymap.toml`, cần gói `trash-cli`. Nếu xoá 2 chỗ đó, `g t` sẽ hết tác dụng (nhưng `d` vẫn xoá mềm bình thường). Phím `g t` là **đúng preset chính thức của yazi** (đã grep preset `main` trên GitHub: `{ on = ["g","t"], run = "plugin trash", desc = "Go to trash bin" }`), cùng nhóm với `g h`/`g c`/`g d`/`g f`.
 >
 > Nếu không muốn dùng plugin, xem thẳng `~/.local/share/Trash/files` trong yazi cũng được — đó là thư mục thật, chỉ thiếu chức năng khôi phục tự động.
 
@@ -485,7 +487,7 @@ journalctl --user -u trash-clean.service -n 20   # log
 
 ## Xem ảnh • video • sách điện tử
 
-Mỗi loại file có **app riêng**, khai ở `home/mimeapps.nix` (`xdg.mimeApps`). Không mở ảnh/video local bằng Chrome — Chrome nặng, mỗi tấm 1 tab, không có zoom/timeline/tua nhanh.
+Mỗi loại file có **app riêng**, khai ở `home/config/mimeapps.nix` (`xdg.mimeApps`). Không mở ảnh/video local bằng Chrome — Chrome nặng, mỗi tấm 1 tab, không có zoom/timeline/tua nhanh.
 
 | Loại file | App | Phím tắt / ghi chú |
 |---|---|---|
@@ -521,24 +523,24 @@ yazi ~/Books/Reading     # duyệt cả thư viện
 xdg-open ~/Books/Reading/*.epub   # mở thẳng 1 cuốn
 ```
 
-**Cấu hình foliate: KHÔNG quản lý bằng Nix** — repo chỉ cài gói (`home/packages.nix`) và khai app mặc định (`home/mimeapps.nix`). Mọi tuỳ chọn đọc (font, cỡ chữ, nền, giãn dòng) chỉnh trực tiếp trong app: `~` trong yazi rồi `Enter` trên 1 file epub, hoặc chạy thẳng `foliate ~/Books/Reading/*.epub`.
+**Cấu hình foliate: KHÔNG quản lý bằng Nix** — repo chỉ cài gói (`home/config/packages.nix`) và khai app mặc định (`home/config/mimeapps.nix`). Mọi tuỳ chọn đọc (font, cỡ chữ, nền, giãn dòng) chỉnh trực tiếp trong app: `~` trong yazi rồi `Enter` trên 1 file epub, hoặc chạy thẳng `foliate ~/Books/Reading/*.epub`.
 
 > ⚠️ **Lưu ý khi bật "Căn đều 2 mép" (justify):** WebKitGTK (engine render) hardcode tìm từ điển ngắt từ ở `/usr/share/hyphen` — thư mục này không tồn tại mặc định trên NixOS, nên `modules/nixos/desktop.nix` khai `systemd.tmpfiles` tạo symlink tới `hyphenDicts.en_US`. **Nếu tự ý xoá khối `systemd.tmpfiles` đó, foliate vẫn chạy nhưng sẽ im lặng mất ngắt từ** (chữ bị dãi lỗ hổng giữa các từ).
 >
 > Đây là sửa ở tầng **hệ thống** cho WebKitGTK nên giữ lại dù không khai file config cho foliate — có lợi cho mọi app dùng WebKit (Epiphany, wpewebkit…), không chỉ foliate.
 
-**Lưu ý về mime mobi:** mime đúng là `application/x-mobipocket-ebook` và `application/vnd.amazon.mobi8-ebook`. Nếu thấy `application/x-mobi8-ebook` ở đâu đó → đó là mime bịa, dòng mapping đó không bao giờ được dùng (đã sửa trong `home/mimeapps.nix`).
+**Lưu ý về mime mobi:** mime đúng là `application/x-mobipocket-ebook` và `application/vnd.amazon.mobi8-ebook`. Nếu thấy `application/x-mobi8-ebook` ở đâu đó → đó là mime bịa, dòng mapping đó không bao giờ được dùng (đã sửa trong `home/config/mimeapps.nix`).
 
-> ⚠️ File `~/.config/mimeapps.list` giờ do **Home-Manager quản lý** (symlink tới `/nix/store`) — muốn đổi app mặc định thì sửa `home/mimeapps.nix` rồi rebuild, **đừng sửa tay file trong `~`** (sẽ bị ghi đè). File cũ sửa tay được giữ lại thành `mimeapps.list.backup`.
+> ⚠️ File `~/.config/mimeapps.list` giờ do **Home-Manager quản lý** (symlink tới `/nix/store`) — muốn đổi app mặc định thì sửa `home/config/mimeapps.nix` rồi rebuild, **đừng sửa tay file trong `~`** (sẽ bị ghi đè). File cũ sửa tay được giữ lại thành `mimeapps.list.backup`.
 >
 > Lưu ý: `text/plain` cố ý trỏ về `nvim.desktop` → double-click file `.txt`/`.log`/`.csv` sẽ **mở nvim** trong terminal.
 
 ## Terminal: Foot (không có "acrylic" trên Sway)
 
 - Terminal là **foot** (`$mod+Return` mở cửa sổ mới). Lý do đổi từ Alacritty: foot hỗ trợ **sixel** nên yazi xem trước ảnh thật.
-- **Hiệu ứng blur ("acrylic") không tồn tại trên Sway** — Sway không implement protocol blur nào. Foot *có* khoá `blur = yes` nhưng nó cần protocol `ext-background-effect-manager-v1` (chỉ KDE Plasma 6.1+ có) nên trên Sway foot chỉ log `disabling background blur` rồi bỏ qua; Alacritty cũng tương tự (blur chỉ chạy macOS/KDE). Ở đây chỉ có **trong suốt phẳng** (`alpha = 0.9` trong `home/foot.nix`).
+- **Hiệu ứng blur ("acrylic") không tồn tại trên Sway** — Sway không implement protocol blur nào. Foot *có* khoá `blur = yes` nhưng nó cần protocol `ext-background-effect-manager-v1` (chỉ KDE Plasma 6.1+ có) nên trên Sway foot chỉ log `disabling background blur` rồi bỏ qua; Alacritty cũng tương tự (blur chỉ chạy macOS/KDE). Ở đây chỉ có **trong suốt phẳng** (`alpha = 0.9` trong `home/config/foot.nix`).
 - Muốn cảm giác kính mờ: đặt sẵn **ảnh nền đã blur** vào `~/Pictures/wallpapers/` rồi đổi ảnh đó (`$mod+r`) → terminal trong suốt nằm trên nền mờ trông gần giống acrylic.
-- Sửa `home/foot.nix` rồi `nh os switch` là xong. **Kiểm tra config foot không cần mở cửa sổ**: `foot -C` → in `err: config.c:…` và exit 1 nếu sai cú pháp (sai màu hay gặp nhất, xem chú thích trong `home/foot.nix`).
+- Sửa `home/config/foot.nix` rồi `nh os switch` là xong. **Kiểm tra config foot không cần mở cửa sổ**: `foot -C` → in `err: config.c:…` và exit 1 nếu sai cú pháp (sai màu hay gặp nhất, xem chú thích trong `home/config/foot.nix`).
 
 ## Sự cố thường gặp
 
@@ -548,7 +550,7 @@ xdg-open ~/Books/Reading/*.epub   # mở thẳng 1 cuốn
 | Mất âm thanh | `systemctl status pipewire` → `systemctl --user restart wireplumber` |
 | Bộ gõ kẹt | `fcitx5-diagnose` |
 | Yazi không xem trước ảnh | Ảnh phải hiện (foot hỗ trợ sixel). Kiểm tra `echo $TERM` trong terminal đang chạy yazi phải ra `foot` — nếu là `xterm-256color` thì terminal khác đã mở yazi, đóng đi mở lại từ foot. Hover PDF/video/SVG thì báo lỗi là **bình thường** (xem [Mở file ≠ Xem trước](#mở-file--xem-trước-preview)) |
-| Double-click file mở app không đúng | `xdg-mime query default <mime>` xem app đang được gán; sửa `home/mimeapps.nix` rồi rebuild (đừng sửa tay `~/.config/mimeapps.list` — nó là symlink do Home-Manager quản lý) |
+| Double-click file mở app không đúng | `xdg-mime query default <mime>` xem app đang được gán; sửa `home/config/mimeapps.nix` rồi rebuild (đừng sửa tay `~/.config/mimeapps.list` — nó là symlink do Home-Manager quản lý) |
 | Wallpaper không đổi | `systemctl --user status awww-daemon` (daemon giữ ảnh nền); test tay: `~/.local/bin/wallpaper-set`. Script tự loại ảnh đang hiển thị nên bấm `$mod+r` luôn ra ảnh mới; menu `$mod+Shift+r` hiện lưới thumbnail 3×3, tên dưới ảnh (ảnh đang dùng có dấu `●`). Lưu ý: auto-rotate 30 phút **đã tắt** nên nền sẽ KHÔNG tự đổi |
 | Hibernate không dậy | `cat /proc/cmdline` phải có `resume=/dev/disk/by-label/swap`; `swapon --show` phải thấy phân vùng swap (nhãn `swap`) |
 

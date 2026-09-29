@@ -4,7 +4,7 @@
 #
 # Cấu hình tối giản: Yazi tự merge các file này với config mặc định. Cố ý
 # KHÔNG dùng `yazi.override` — option đó thay cả thư mục config, mất phím tắt.
-# Đổi sang bản yazi khác = sửa `home/yazi/keymap.toml`.
+# Đổi sang bản yazi khác = sửa `home/apps/yazi/keymap.toml`.
 { pkgs, ... }:
 
 {

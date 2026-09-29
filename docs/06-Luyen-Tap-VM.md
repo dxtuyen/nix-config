@@ -17,9 +17,9 @@
 ## Gói cần cài
 
 Tất cả đã khai sẵn trong repo — chỉ cần rebuild, không cài tay:
-- `home/packages.nix`: `qemu` (chạy VM), `qemu-utils` (`qemu-img`), `OVMF` (firmware UEFI)
+- `home/config/packages.nix`: `qemu` (chạy VM), `qemu-utils` (`qemu-img`), `OVMF` (firmware UEFI)
 - `modules/nixos/core.nix`: user đã vào group `kvm` (để dùng tăng tốc KVM)
-- `home/scripts.nix`: script tiện ích `~/.local/bin/vm-nixos`
+- `home/script/vm-nixos.nix`: script tiện ích `~/.local/bin/vm-nixos`
 
 Sau khi chạy `sudo nixos-rebuild switch --flake .#laptop`, kiểm tra:
 

@@ -1,11 +1,7 @@
-{
-  pkgs,
-  userName,
-  ...
-}:
+{ inputs, userName, ... }:
 
 # Điểm nhập chính của Home Manager cho user — mọi module trong home/ import ở đây.
-# Hệ thống chạy nixos-unstable nên gói lấy thẳng từ `pkgs`.
+# Hệ thống chạy nixos-unstable nên các module lấy gói trực tiếp từ `pkgs`.
 
 {
   home = {
@@ -27,22 +23,10 @@
   };
 
   imports = [
-    ./packages.nix
-    ./git.nix
-    ./foot.nix
-    ./mimeapps.nix
-    ./starship.nix
-    ./gtk.nix
-    ./sway.nix
-    ./waybar.nix
-    ./mako.nix
-    ./fcitx5.nix
-    ./scripts.nix
-    ./sioyek.nix
-    ./pomodoro.nix
-    ./remnote.nix
-    ./thunar.nix
-    ./yazi.nix
+    inputs.nixvim.homeModules.nixvim
+    ./config
+    ./apps
+    ./script
   ];
 
   programs.home-manager.enable = true;
@@ -58,6 +42,7 @@
     enableBashIntegration = true;
   };
 
+  # CLI fzf độc lập cho terminal; HM cũng bật Ctrl-R tìm lịch sử Bash.
   programs.fzf = {
     enable = true;
     enableBashIntegration = true;
@@ -81,7 +66,7 @@
       # yazi (yazi ghi nó vào --cwd-file). Bổ sung cho phím `b`/`B` trong yazi —
       # chúng đi hướng NGƯỢC (yazi → shell), còn hàm này đi hướng shell → yazi →
       # shell. Cố ý viết thủ công thay vì `programs.yazi.enableBashIntegration`:
-      # module đó kéo theo finalPackage override (xem home/yazi.nix).
+      # module đó kéo theo finalPackage override (xem home/apps/yazi.nix).
       function y() {
         local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
         yazi "$@" --cwd-file="$tmp"

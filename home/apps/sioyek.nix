@@ -2,7 +2,7 @@
 
 {
   # Mỗi file mới = cửa sổ riêng (vẫn 1 process); cửa sổ mới hiện ở workspace
-  # đang focus nhờ rule for_window trong home/sway.nix.
+  # đang focus nhờ rule for_window trong home/config/sway.nix.
   xdg.configFile."sioyek/prefs_user.config".text = ''
     should_launch_new_window 1
   '';

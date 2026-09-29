@@ -1,4 +1,4 @@
-# Theme Yazi — Catppuccin Mocha, khớp foot (home/foot.nix) và Sway (home/sway.nix).
+# Theme Yazi — Catppuccin Mocha, khớp Foot (home/config/foot.nix) và Sway (home/config/sway.nix).
 #
 # File này CHỈ ghi đè 13 khoá có NỀN MÀU. Đó là nhóm duy nhất bị hỏng, vì:
 #

@@ -25,23 +25,18 @@
 | `laptop.nix` | **Hibernate** (`resume=/dev/disk/by-label/swap`), zram 50% RAM, keyd, battery threshold 85–90%, fwupd, logind (đóng nắp → suspend) — **swap tự nhận diện theo nhãn `swap`** |
 | `system-tweaks.nix` | earlyoom (chống treo RAM), fstrim hàng tuần |
 
-## Các file trong `home/`
+## Các phần trong `home/`
 
-| File | Nội dung |
+| Thư mục/file | Nội dung |
 |---|---|
-| `default.nix` | Entry point: import tất cả, bật `xdg` + `xdg.userDirs` (tự tạo `~/Desktop`, `~/Documents`, `~/Downloads`, `~/Music`, `~/Pictures`, `~/Public`, `~/Videos`; `Templates`/`Projects` đặt `null` — không dùng), PATH `~/.local/bin`, module `direnv`/`zoxide`/`fzf` |
-| `git.nix` | Git identity toàn cục (tất cả repo): user `dxtuyen` + email, `defaultBranch=main`, `pull.rebase`, `pager=cat` |
-| `packages.nix` | Gói user: rofi, grim, slurp, swaylock, swayidle, google-chrome, obsidian, **foliate** (đọc sách), imv (xem ảnh), mpv (xem video), sioyek, ripgrep, fd… |
-| `sway.nix` | Cửa sổ, layout, idle/lock/sleep (swayidle), phím tắt (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)) |
-| `waybar.nix` / `foot.nix` + `starship.nix` / `gtk.nix` / `mako.nix` | Thanh trạng thái / terminal / theme / thông báo |
-| `mimeapps.nix` | App mặc định theo loại file: imv (ảnh), mpv (video), sioyek (PDF), **foliate** (epub/mobi/azw3/fb2/cbz/opds), Chrome (web/HTML), nvim (text) — khai trong `xdg.mimeApps` (**phải bật `enable`**) |
-| `sioyek.nix` | Script `sioyek-open` (mở PDF, kéo cửa sổ về workspace đang focus) |
-| `fcitx5.nix` | Bộ gõ tiếng Việt (Bamboo engine, Telex) |
-| `scripts.nix` | Script `~/.local/bin`: lock-screen, power-menu, quick-lang, screenshot-menu, wallpaper-set/menu, **trash-clean** (dọn rác > 30 ngày)... |
-| `pomodoro.nix` | Đồng hồ PHIÊN TẬP TRUNG duy nhất (focus): menu `$mod+p` — rảnh: ⌨ tự nhập 1–480 phút / preset 🍅 30/60/120; có phiên: chỉ ⏸/▶ toggle + ↺ reset; không break; phiên chạy → tự dừng swayidle (icon mắt trên bar đồng bộ); máy ngủ → tự pause phiên, thức dậy → tự tiếp tục; tự phục hồi khi daemon chết |
-| `remnote.nix` | RemNote AppImage (khung cài + script `setup-remnote`) |
-| `thunar.nix` | File manager đồ hoạ (giữ lại) + mở terminal bằng Foot. Thùng rác GIO dùng chung với yazi (`d` = xoá mềm), tự dọn lúc 3h sáng — xem [docs/02](02-Van-Hanh-Hang-Ngay.md#thùng-rác-tự-động-dọn-lúc-0300) |
-| `yazi.nix` | File manager trong terminal — `$mod+y` mở dạng **popup** nhỏ (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). Config ở `home/yazi/`: `yazi.toml` + `keymap.toml` + `theme.toml`, cộng plugin **smart-enter** (`<Enter>` tự rẽ nhánh: vào thư mục *hoặc* mở file) |
+| `default.nix` | Thiết lập tài khoản Home Manager, shell và imports ba nhóm cấu hình. |
+| `config/` | Gói người dùng, Git, Nixvim, Sway, Waybar, terminal, theme, MIME và bộ gõ. |
+| `apps/` | Tích hợp ứng dụng có cấu hình riêng: Pomodoro, RemNote, Sioyek, Thunar, wallpaper/awww và Yazi. |
+| `script/` | Mỗi lệnh `~/.local/bin` có một file riêng; `default.nix` liệt kê các script. `quick-lang.nix` chứa model, prompt và Gemini API. |
+
+Neovim được cấu hình bằng Nixvim tại `home/config/nixvim.nix`; phím leader là Space.
+`fzf` được cài độc lập qua `programs.fzf` trong `home/default.nix`, dùng trực tiếp
+trong terminal cùng Bash integration; cấu hình này không phụ thuộc Yazi.
 
 ## Dòng chảy khởi động
 

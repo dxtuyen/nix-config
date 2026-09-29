@@ -150,7 +150,7 @@ in
       bindsym $mod+Shift+Up move up
       bindsym $mod+Shift+Right move right
 
-      # Tên tập trung ở home/workspaces.nix: vị trí thứ N tự sinh $mod+N /
+      # Tên tập trung ở home/config/workspaces.nix: vị trí thứ N tự sinh $mod+N /
       # $mod+Shift+N (tên đầu → $mod+1…). Số còn lại đến 10 sinh tương ứng (0 = 10).
       ${builtins.concatStringsSep "\n" (
         pkgs.lib.imap1 (

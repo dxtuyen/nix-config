@@ -117,12 +117,12 @@ in
     description = "Dọn thùng rác lúc 03:00 hằng ngày (xoá mục > 30 ngày)";
     # `systemd.user.timers` dùng tên option CỦA SYSTEMD GỐC (timerConfig.*),
     # không phải kiểu rút gọn như `systemd.timers` cấp hệ thống.
+    unitConfig.After = [ "graphical-session.target" ];
     timerConfig = {
       OnCalendar = "*-*-* 03:00:00";
       # Máy tắt lúc 3h (hay dùng hibernate) sẽ bỏ qua timer; Persistent = chạy
-      # BÙ lần sau. Chỉ chạy sau graphical-session.target (cần $XDG_RUNTIME_DIR).
+      # BÙ lần sau. Timer chạy sau graphical-session.target để có môi trường desktop.
       Persistent = true;
-      After = [ "graphical-session.target" ];
     };
     wantedBy = [ "timers.target" ];
   };

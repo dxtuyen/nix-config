@@ -345,7 +345,7 @@ Máy đã cài xong thì mọi thứ Git đều có sẵn (không cấu hình g�
 | Thứ | Nơi khai báo |
 |---|---|
 | Gói `git` | `modules/nixos/core.nix` (`environment.systemPackages`) |
-| Identity commit (user `dxtuyen`, email `tuyendoxuan05@gmail.com`) | `home/git.nix` (`programs.git`) |
+| Identity commit (user `dxtuyen`, email `tuyendoxuan05@gmail.com`) | `home/config/git.nix` (`programs.git`) |
 | ssh-agent (giữ passphrase, chỉ hỏi 1 lần/phiên) | `programs.ssh.startAgent` trong `core.nix` |
 
 Chỉ khi còn ở **USB installer** mà gõ `git` báo "command not found", dùng tạm:

@@ -1,7 +1,7 @@
 { config, ... }:
 
 let
-  # Danh sách tên workspace dùng chung ở home/workspaces.nix
+  # Danh sách tên workspace dùng chung ở home/config/workspaces.nix
   ws = import ./workspaces.nix;
 
   # Bọc MỌI glyph icon (codepoint PUA trong `format-icons`) vào "Font Awesome 7
@@ -162,7 +162,7 @@ in
           ""
         ];
       };
-      # Đồng hồ phiên tập trung (xem pomodoro.nix).
+      # Đồng hồ phiên tập trung (xem home/apps/pomodoro.nix).
       "custom/study" = {
         exec = "~/.local/bin/study status";
         signal = 8;

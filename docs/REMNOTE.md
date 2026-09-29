@@ -6,7 +6,7 @@ RemNote được cài dưới dạng **AppImage** (file "ngoài Nix") để **kh
 
 | Thành phần | Vị trí |
 |---|---|
-| Module Nix | `home/remnote.nix` (import trong `home/default.nix`) |
+| Module Nix | `home/apps/remnote.nix` (import trong `home/apps/default.nix`) |
 | File AppImage | `~/Apps/RemNote/RemNote.AppImage` |
 | Script cài đặt | `~/.local/bin/setup-remnote` |
 | Icon | `~/.local/share/icons/hicolor/512x512/apps/remnote.png` (trích từ AppImage) |
@@ -79,12 +79,13 @@ mv ~/Apps/RemNote/RemNote.AppImage.bak ~/Apps/RemNote/RemNote.AppImage
 Bản `nixos-rebuild` **chỉ tạo desktop entry, không tạo file icon** — icon nằm bên trong file AppImage
 (ngoài Nix) nên phải trích ra. Vì vậy sau `rebuild` phải chạy `setup-remnote` một lần thì icon mới có.
 
-Vài điểm dễ sai đã được xử lý sẵn trong `home/remnote.nix`:
+Vài điểm dễ sai đã được xử lý sẵn trong `home/apps/remnote.nix` và
+`home/script/setup-remnote.nix`:
 
 | Vấn đề | Cách sửa trong repo |
 |---|---|
 | Desktop entry không có dòng `Icon=` → Rofi hiện mục **không icon** | Khai báo `icon = "<đường dẫn tuyệt đối tới file .png>"` |
-| AppImage đặt icon ở thư mục size **không chuẩn** `hicolor/0x0` → GTK **không đọc** size này, copy nguyên thư mục cũng vẫn mất icon | `setup-remnote` copy file ra `hicolor/**512x512**/apps/remnote.png` (size GTK thật sự đọc) |
+| AppImage đặt icon ở thư mục size **không chuẩn** `hicolor/0x0` → GTK **không đọc** size này, copy nguyên thư mục cũng vẫn mất icon | `home/script/setup-remnote.nix` copy file ra `hicolor/**512x512**/apps/remnote.png` (size GTK thật sự đọc) |
 | `Exec=appimage-run ...` (tên trần) → Rofi **loại bỏ entry** khi binary không có trong `PATH` của session | Trỏ tuyệt đối: `${pkgs.appimage-run}/bin/appimage-run` |
 | Trỏ icon **bằng tên** (`Icon=remnote`) → phụ thuộc icon theme đang dùng (`Papirus-Dark`) và icon cache của GTK | Trỏ **đường dẫn tuyệt đối** tới file PNG — không phụ thuộc theme, không phụ thuộc cache |
 | `AppImage --appimage-extract` **bung toàn bộ 207 MB** ra đĩa chỉ để lấy 1 file icon (~500MB–1GB rác, vài giây) | Dùng `unsquashfs -o <offset>` chỉ trích **đúng 1 file**: **~9 ms**, không ghi rác |
@@ -101,7 +102,7 @@ Lưu ý khi debug:
   ```bash
   grep Icon= /etc/profiles/per-user/doxuantuyen/share/applications/remnote.desktop
   ```
-- Nếu `setup-remnote` báo `Cảnh báo: không tìm thấy icon ...` ⇒ AppImage mới đã đổi cấu trúc bên trong. App vẫn chạy bình thường, chỉ mất icon; cần sửa biến `icon_in_appimage` trong `home/remnote.nix` cho khớp.
+- Nếu `setup-remnote` báo `Cảnh báo: không tìm thấy icon ...` ⇒ AppImage mới đã đổi cấu trúc bên trong. App vẫn chạy bình thường, chỉ mất icon; cần sửa biến `icon_in_appimage` trong `home/script/setup-remnote.nix` cho khớp.
 
 ## Cài thủ công (không dùng script)
 
