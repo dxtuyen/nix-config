@@ -217,17 +217,22 @@ in
       @define-color edge rgba(69, 71, 90, 0.45);     /* surface1, viền mờ */
       @define-color txt #bac2de;                     /* subtext1 */
       @define-color txt-strong #cdd6f4;              /* text */
+      @define-color muted #7f849c;                   /* overlay1 */
 
       @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
       window#waybar { background: rgba(0, 0, 0, 0); color: @txt; }
       #workspaces { background: @pill; border: 1px solid @edge; border-radius: 10px; margin: 4px 0 4px 4px; padding: 0 10px; }
-      #workspaces button { padding: 0 7px; color: #a6adc8; font-size: 15px; border-bottom: 2px solid transparent;
+      #workspaces button { padding: 0 7px; color: @txt; font-size: 15px; border-bottom: 2px solid transparent;
         background-color: rgba(0, 0, 0, 0); }
       #workspaces button:hover, #workspaces button:active {
         background-color: rgba(0, 0, 0, 0); box-shadow: none; }
-      #workspaces button.focused, #workspaces button.active { color: #89b4fa; border-bottom: 2px solid rgba(137, 180, 250, 0.7); }
+      #workspaces button.focused, #workspaces button.active {
+        color: @txt-strong;
+        background-color: rgba(137, 180, 250, 0.16);
+        border-radius: 6px;
+      }
       #workspaces button.urgent { color: #f38ba8; border-bottom-color: #f38ba8; }
-      #workspaces button.persistent.empty { color: #6c7086; }  /* overlay0 */
+      #workspaces button.persistent.empty { color: @muted; }
       #window { background: @pill-hover; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: @txt-strong; font-weight: bold; }
       #custom-inhibit, #tray, #mode, #scratchpad,
       box#devices, box#hardware, box#power {
@@ -248,26 +253,26 @@ in
       #tray { padding: 0 8px; margin: 4px 4px 4px 2px; }
       #mode { color: #89b4fa; background: @pill; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 5px; }
       #scratchpad { color: @txt-strong; margin: 4px 5px; }
-      #clock { color: #89b4fa; font-weight: bold; background: @pill; border: 1px solid @edge; border-radius: 10px; padding: 0 10px; margin: 4px 10px 4px 5px; }
+      #clock { color: @txt; font-weight: bold; background: @pill; border: 1px solid @edge; border-radius: 10px; padding: 0 10px; margin: 4px 10px 4px 5px; }
       #custom-study { background: @pill; border: 1px solid @edge; border-radius: 10px; padding: 0 10px; margin: 4px 5px; font-weight: bold; }
       #custom-study.running { color: #89b4fa; }
       #custom-study.paused { color: #fab387; }
-      #custom-study.idle { color: #585b70; }
+      #custom-study.idle { color: @muted; }
       #custom-inhibit.running { color: #89b4fa; }
       /* Pill chỉ có glyph (14px) thấp hơn pill chữ (18px) → thêm padding dọc. */
       #custom-inhibit { padding: 2px 10px; margin: 4px 4px 4px 2px; }
       #power-profiles-daemon { padding: 0 4px; }
-      #bluetooth.off, #bluetooth.disabled, #bluetooth.no-controller { color: #7f849c; } /* overlay1 */
+      #bluetooth.off, #bluetooth.disabled, #bluetooth.no-controller { color: @muted; }
       #bluetooth.connected { color: #a6e3a1; }
       #custom-inhibit.manual { color: #fab387; }
-      #custom-inhibit.idle { color: #585b70; }
+      #custom-inhibit.idle { color: @muted; }
       #network.disconnected, #network.disabled { color: #f38ba8; }
       #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: #fab387; }
       #battery.critical { color: #f38ba8; }
       #temperature.critical, #cpu.critical, #memory.critical { color: #f38ba8; animation: blink 1s linear infinite; }
       #battery.charging { color: #a6e3a1; font-weight: bold; }
       #battery.plugged { color: #a6e3a1; }
-      #pulseaudio.muted { color: #585b70; }
+      #pulseaudio.muted { color: @muted; }
     '';
   };
 }

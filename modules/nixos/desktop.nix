@@ -59,7 +59,10 @@ in
     wireplumber.enable = true;
   };
   services.power-profiles-daemon.enable = true;
-  hardware.bluetooth.enable = true;
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = false;
+  };
 
   xdg.portal = {
     enable = true;

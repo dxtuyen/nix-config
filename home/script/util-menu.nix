@@ -35,7 +35,7 @@
 
         case "$choice" in
           "● Idle:"*) exec ~/.local/bin/study inhibit-toggle ;;
-          "☀ Display:"*) exec ~/.local/bin/wlsunset-menu ;;
+          "☀ Display"*) exec ~/.local/bin/wlsunset-menu ;;
           "⚡ Power Profile"*) exec ~/.local/bin/power-profile-menu ;;
         esac
       '';
