@@ -194,9 +194,9 @@ in
       bindsym $mod+minus scratchpad show
 
       # Custom Utilities & Screenshot
-      bindsym $mod+o exec ~/.local/bin/util-menu
-      bindsym $mod+p exec ~/.local/bin/pomodoro-menu
-      bindsym $mod+Shift+o exec ~/.local/bin/power-menu
+      bindsym $mod+o exec ~/.local/bin/pomodoro-menu
+      bindsym $mod+p exec ~/.local/bin/util-menu
+      bindsym $mod+Shift+p exec ~/.local/bin/power-menu
       # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+Shift+t = ép
       # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
