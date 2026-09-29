@@ -8,7 +8,7 @@
         #! /usr/bin/env bash
         set -u
 
-        MENU="Idle
+        MENU="👁 Idle
         ☀ Display
         📶 Wi-Fi
         🔵 Bluetooth
@@ -18,7 +18,7 @@
           -mesg "Type to filter · Enter to select")
 
         case "$choice" in
-          "Idle") exec ~/.local/bin/study inhibit-toggle ;;
+          "👁 Idle") exec ~/.local/bin/study inhibit-toggle ;;
           "☀ Display"*) exec ~/.local/bin/wlsunset-menu ;;
           "📶 Wi-Fi"*) exec foot --app-id=wifitui -T "Wi-Fi" wifitui ;;
           "🔵 Bluetooth"*) exec foot --app-id=bluetui -T "Bluetooth" bluetui ;;

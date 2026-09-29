@@ -1,10 +1,20 @@
 { config, pkgs, ... }:
 
 let
-  iconSizes = [ "16x16" "22x22" "24x24" "32x32" "48x48" "64x64" "scalable" ];
+  iconSizes = [
+    "16x16"
+    "22x22"
+    "24x24"
+    "32x32"
+    "48x48"
+    "64x64"
+    "scalable"
+  ];
   iconDirs =
     map (size: "${config.home.homeDirectory}/.local/share/icons/hicolor/${size}/apps") iconSizes
-    ++ map (size: "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/${size}/apps") iconSizes
+    ++ map (
+      size: "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/${size}/apps"
+    ) iconSizes
     ++ map (size: "/run/current-system/sw/share/icons/hicolor/${size}/apps") iconSizes
     ++ [
       "/run/current-system/sw/share/icons/Adwaita/48x48/apps"

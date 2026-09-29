@@ -175,7 +175,7 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 |---|---|
 | `nt` | Lệnh Bash: trong tmux mở window mới tại thư mục hiện tại; ngoài tmux mở cửa sổ Foot tại đó |
 | `power-menu` | `$mod+p`: Poweroff / Reboot / Suspend / Hibernate / Lock / Reload Sway / Exit Sway |
-| `util-menu` | `$mod+o`: `Idle` toggle · `Display` mode · `Wi-Fi` · `Bluetooth` · `Power Profile` submenu |
+| `util-menu` | `$mod+o`: `👁 Idle` toggle · `Display` mode · `Wi-Fi` · `Bluetooth` · `Power Profile` submenu |
 | `wlsunset-menu` | Three display modes (`Warm 4000K` / `Cool 6500K` / `Natural`), with `●` marking the active mode |
 | `power-profile-menu` | Đổi battery-saver / balanced / performance; mở từ `$mod+o` hoặc nhấp biểu tượng profile trên Waybar |
 | `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key nằm ở `~/.config/quick-lang/api.key` trên từng máy; không cần sửa file Nix |
@@ -343,7 +343,7 @@ sudo nixos-rebuild switch --flake ~/nix-config#laptop
 
 ## Menu tiện ích (`$mod+o`) và menu nguồn (`$mod+p`)
 
-`$mod+o` mở Rofi với các tiện ích `Idle`, `Display`, `Wi-Fi`, `Bluetooth` và `Power Profile`. Gõ để lọc nhanh; Rofi xếp hạng fuzzy theo Levenshtein để kết quả khớp nhất lên trước. Chọn `Wi-Fi` hoặc `Bluetooth` sẽ mở công cụ tương ứng trong terminal nổi. `Idle` gọi `study inhibit-toggle`, cùng lệnh với biểu tượng mắt Waybar nên trạng thái được quản lý đồng bộ. Khi phiên đếm ngược đang chạy, chống ngủ tự động vẫn được giữ; bật/tắt thủ công chỉ thay đổi trạng thái thủ công theo logic của `study`.
+`$mod+o` mở Rofi với các tiện ích `👁 Idle`, `Display`, `Wi-Fi`, `Bluetooth` và `Power Profile`. Gõ để lọc nhanh; Rofi xếp hạng fuzzy theo Levenshtein để kết quả khớp nhất lên trước. Chọn `Wi-Fi` hoặc `Bluetooth` sẽ mở công cụ tương ứng trong terminal nổi. `👁 Idle` gọi `study inhibit-toggle`, cùng lệnh với biểu tượng mắt Waybar nên trạng thái được quản lý đồng bộ. Khi phiên đếm ngược đang chạy, chống ngủ tự động vẫn được giữ; bật/tắt thủ công chỉ thay đổi trạng thái thủ công theo logic của `study`.
 
 Chọn `Display` để mở menu con có ba chế độ: `Warm 4000K`, `Cool 6500K` và `Natural (automatic)`. Dấu `●` đánh dấu chế độ đang chạy. `$mod+p` mở menu nguồn với Poweroff, Reboot, Suspend, Hibernate, Lock, Reload Sway và Exit Sway. Bluetooth có trạng thái trên Waybar ngay sau Wi-Fi; nhấp vào Bluetooth trên Waybar mở Bluetui, nhấp vào Wi-Fi mở Wifitui.
 

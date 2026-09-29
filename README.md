@@ -15,6 +15,14 @@ Cấu hình **NixOS + Home-Manager** cho laptop cá nhân, chạy **Sway** (Wayl
 
 ## 🚀 Rebuild & Cập nhật
 
+Bật kiểm tra tự động trước mỗi lần push (chạy một lần trên mỗi clone):
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Hook kiểm tra đúng commit sắp push bằng hai lệnh CI: `nix fmt -- --check` và `nix flake check --no-build`. Nếu format sai, chạy `nix fmt`, xem lại thay đổi, commit rồi push lại.
+
 ```bash
 cd nix-config
 git pull --rebase        # lấy code mới nhất
