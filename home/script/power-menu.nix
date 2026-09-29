@@ -12,7 +12,9 @@
         ↻ Reboot
         ⏾ Suspend
         ⏾ Hibernate
-        🔒 Lock"
+        🔒 Lock
+        ↻ Reload Sway
+        ⏻ Exit Sway"
 
         choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -matching fuzzy -sort -sorting-method normal -p "Power" \
           -mesg "Select an action, then press Enter")
@@ -23,6 +25,8 @@
           "⏾ Suspend") notify-send -a power -i "system-suspend" -t 2000 "Power" "Suspending..."; exec systemctl suspend ;;
           "⏾ Hibernate") notify-send -a power -i "system-suspend" -t 2000 "Power" "Hibernating..." ; exec systemctl hibernate ;;
           "🔒 Lock") exec ~/.local/bin/lock-screen ;;
+          "↻ Reload Sway") exec swaymsg reload ;;
+          "⏻ Exit Sway") exec swaymsg exit ;;
         esac
       '';
     };

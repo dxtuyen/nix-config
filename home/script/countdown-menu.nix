@@ -2,11 +2,11 @@
 
 {
   home.file = {
-    ".local/bin/pomodoro-menu" = {
+    ".local/bin/countdown-menu" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Rofi đồng hồ Focus: rảnh → khởi động, có phiên → pause/resume, reset, cộng phút.
+        # Countdown menu: start, pause/resume, reset, hoặc thêm thời gian.
         set -u
 
         STUDY="$HOME/.local/bin/study"
@@ -49,17 +49,17 @@
           ITEMS+=("＋ Add minutes...")
         else
           ITEMS=("⌨ Minutes (1–480)...")
-          ITEMS+=("🍅 30")
-          ITEMS+=("🍅 60")
-          ITEMS+=("🍅 120")
+          ITEMS+=("⏱ 30 min")
+          ITEMS+=("⏱ 60 min")
+          ITEMS+=("⏱ 120 min")
         fi
 
-        choice=$(printf '%s\n' "''${ITEMS[@]}" | rofi -dmenu -i -p "Focus" \
-          -mesg "⌨ start 1–480 · 🍅 30/60/120 · ⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
+        choice=$(printf '%s\n' "''${ITEMS[@]}" | rofi -dmenu -i -p "Countdown" \
+          -mesg "⌨ start 1–480 · ⏱ 30/60/120 min · ⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
 
         # Hủy (rỗng) → thoát im lặng; sai định dạng → báo lỗi.
         ask_minutes() {
-          local prompt="''${1:-Focus — minutes (1–480)}"
+          local prompt="''${1:-Countdown — minutes (1–480)}"
           local minutes
           minutes=$(rofi -dmenu -p "$prompt")
           if [ -z "$minutes" ]; then
@@ -67,7 +67,7 @@
           fi
           if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
             notify-send -a focus -i "dialog-error" -t 4000 \
-              "Focus" "Invalid minutes: $minutes (need 1–480)"
+              "Countdown" "Invalid minutes: $minutes (need 1–480)"
             exit 1
           fi
           echo "$minutes"
@@ -79,14 +79,14 @@
             [ -n "$m" ] || exit 0
             exec "$STUDY" start "$m"
             ;;
-          "🍅 30") exec "$STUDY" start 30 ;;
-          "🍅 60") exec "$STUDY" start 60 ;;
-          "🍅 120") exec "$STUDY" start 120 ;;
+          "⏱ 30 min") exec "$STUDY" start 30 ;;
+          "⏱ 60 min") exec "$STUDY" start 60 ;;
+          "⏱ 120 min") exec "$STUDY" start 120 ;;
           "⏸ "*) exec "$STUDY" toggle ;;
           "▶ "*) exec "$STUDY" toggle ;;
           "↺ Reset") exec "$STUDY" reset ;;
           "＋ Add minutes...")
-            m=$(ask_minutes "Focus — add minutes (1–480)") || exit $?
+            m=$(ask_minutes "Countdown — add minutes (1–480)") || exit $?
             [ -n "$m" ] || exit 0
             exec "$STUDY" add "$m"
             ;;

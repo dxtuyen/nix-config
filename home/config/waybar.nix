@@ -62,6 +62,7 @@ in
       };
       network = {
         interval = 5;
+        "on-click" = "foot --app-id=wifitui -T 'Wi-Fi' wifitui";
         format-wifi = "${faSpan ""} {signalStrength}%";
         format-ethernet = "${faSpan ""} LAN";
         format-disconnected = faSpan "";
@@ -178,12 +179,12 @@ in
           ""
         ];
       };
-      # Đồng hồ phiên tập trung (xem home/apps/pomodoro.nix).
+      # Đồng hồ đếm ngược của study (xem home/script/study.nix).
       "custom/study" = {
         exec = "~/.local/bin/study status";
         signal = 8;
         return-type = "json";
-        "on-click" = "~/.local/bin/pomodoro-menu";
+        "on-click" = "~/.local/bin/countdown-menu";
       };
       # Icon mắt: xanh = phiên chạy, vàng = bật tay, mờ = không chống idle.
       "custom/inhibit" = {

@@ -26,9 +26,12 @@
     ./screenshot-menu.nix
     ./quick-lang.nix
     ./study.nix
-    ./pomodoro-menu.nix
+    ./countdown-menu.nix
     ./focus-sleep-watch.nix
     ./setup-remnote.nix
+    ./remnote-focus.nix
+    ./scratchpad-menu.nix
+    ./scratchpad-terminal.nix
     ./swayr-rofi-menu.nix
   ];
 

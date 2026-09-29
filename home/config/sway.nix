@@ -88,6 +88,9 @@ in
       # script đặt ra. Chỉ cửa sổ này float, terminal thường không ảnh hưởng.
       for_window [title="(?i)^yazi-popup"] floating enable, resize set 1000 px 700 px
 
+      # Foot terminal scratchpad: chỉ mở một cửa sổ riêng, giữ phiên shell khi ẩn.
+      for_window [app_id="scratchpad-terminal"] floating enable, resize set width 75 ppt height 65 ppt, move position center, move scratchpad, scratchpad show
+
       # Wi-Fi popup: wifitui (hỗ trợ toggle radio, fuzzy search, rescan)
       for_window [app_id="wifitui"] floating enable, resize set 750 px 500 px
 
@@ -113,18 +116,22 @@ in
 
       # Keybindings - App & Session
       bindsym $mod+Return exec $term
-      bindsym $mod+Shift+q kill
+      bindsym $mod+Shift+Return exec ~/.local/bin/scratchpad-terminal
+      bindsym $mod+q exec ${pkgs.swayr}/bin/swayr quit-window
       bindsym $mod+d exec $menu
       # Mod+Tab: quay lại cửa sổ vừa dùng; Mod+m: menu MRU;
-      # Mod+Shift+m: chọn cửa sổ cần đóng.
+      # Mod+Shift+q: kill ngay cửa sổ đang focus.
       bindsym $mod+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+m exec ${pkgs.swayr}/bin/swayr switch-window
-      bindsym $mod+Shift+m exec ${pkgs.swayr}/bin/swayr quit-window
+      bindsym $mod+Shift+q kill
 
-      # Wallpaper: r = random ảnh khác · Shift+r = menu chọn ảnh trong
+      # Scratchpad menu: Shift+m chọn cửa sổ đang cất.
+      bindsym $mod+Shift+m exec ~/.local/bin/scratchpad-menu
+      # Wallpaper: Ctrl+w = menu chọn ảnh · Shift+w = đổi ảnh ngẫu nhiên.
       # ~/Pictures/wallpapers (lưới thumbnail, phím ←→↑↓ duyệt ảnh).
-      bindsym $mod+r exec ~/.local/bin/wallpaper-set
-      bindsym $mod+Shift+r exec ~/.local/bin/wallpaper-menu
+      bindsym $mod+Ctrl+w exec ~/.local/bin/wallpaper-menu
+      bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-set
+      bindsym $mod+r exec ~/.local/bin/remnote-focus
       # $mod+y: yazi dạng POPUP nhỏ; gõ `yazi` trong terminal thì cửa sổ thường.
       bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
@@ -193,9 +200,9 @@ in
       bindsym $mod+minus scratchpad show
 
       # Custom Utilities & Screenshot
-      bindsym $mod+o exec ~/.local/bin/pomodoro-menu
-      bindsym $mod+p exec ~/.local/bin/util-menu
-      bindsym $mod+Shift+p exec ~/.local/bin/power-menu
+      bindsym $mod+o exec ~/.local/bin/util-menu
+      bindsym $mod+p exec ~/.local/bin/power-menu
+      bindsym $mod+c exec ~/.local/bin/countdown-menu
       # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+Shift+t = ép
       # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
