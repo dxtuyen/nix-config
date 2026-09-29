@@ -89,7 +89,7 @@ in
       for_window [title="(?i)^yazi-popup"] floating enable, resize set 1000 px 700 px
 
       # Foot terminal scratchpad: chỉ mở một cửa sổ riêng, giữ phiên shell khi ẩn.
-      for_window [app_id="scratchpad-terminal"] floating enable, resize set width 75 ppt height 65 ppt, move position center, move scratchpad, scratchpad show
+      for_window [app_id="scratchpad-terminal"] floating enable, resize set width 65 ppt height 60 ppt, move position center, move scratchpad, scratchpad show
 
       # Wi-Fi popup: wifitui (hỗ trợ toggle radio, fuzzy search, rescan)
       for_window [app_id="wifitui"] floating enable, resize set 750 px 500 px
