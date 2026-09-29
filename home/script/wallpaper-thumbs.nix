@@ -12,12 +12,12 @@
         set -u
         WALL_DIR="$HOME/Pictures/wallpapers"
         THUMB_DIR="$HOME/.cache/wallpaper-thumbs"
-  
+
         if [ ! -d "$WALL_DIR" ]; then
           [ "''${1:-}" = "--status" ] && echo 0
           exit 0
         fi
-  
+
         missing=()
         while IFS= read -r -d $'\0' f; do
           t="$THUMB_DIR/''${f##*/}.thumb"  # builtin — không fork basename
@@ -25,13 +25,13 @@
           missing+=("$f")
         done < <(find "$WALL_DIR" -maxdepth 1 -type f \
             \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -print0 2>/dev/null)
-  
+
         if [ "''${1:-}" = "--status" ]; then
           echo "''${#missing[@]}"
           exit 0
         fi
         [ "''${#missing[@]}" -eq 0 ] && exit 0
-  
+
         mkdir -p "$THUMB_DIR"
         make_thumb() {
           # -auto-orient: ảnh điện thoại xoay theo EXIF; -thumbnail 320x320:

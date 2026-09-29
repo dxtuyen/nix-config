@@ -14,7 +14,7 @@
         set -u
         TERM_BIN="${pkgs.foot}/bin/foot"
         FOOT_SIZE="--window-size-pixels=1000x700"
-  
+
         exec "$TERM_BIN" --title=yazi-popup $FOOT_SIZE -e yazi "$@"
       '';
     };

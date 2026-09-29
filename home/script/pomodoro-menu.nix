@@ -8,18 +8,18 @@
         #! /usr/bin/env bash
         # Rofi đồng hồ Focus: rảnh → khởi động, có phiên → pause/resume, reset, cộng phút.
         set -u
-    
+
         STUDY="$HOME/.local/bin/study"
         STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
-    
+
         format_time() {
           local secs=$1
           printf "%02d:%02d" $((secs / 60)) $((secs % 60))
         }
-    
+
         # `status` tự finalize/hồi sinh trước khi dựng menu.
         "$STUDY" status >/dev/null
-    
+
         DURATION=""
         RUNNING="false"
         END_TIME=""
@@ -28,7 +28,7 @@
           # shellcheck disable=SC1090
           . "$STATE_DIR/study-state"
         fi
-    
+
         if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
           r=$((END_TIME - $(date +%s)))
           [ "$r" -lt 0 ] && r=0
@@ -37,7 +37,7 @@
         else
           r=0
         fi
-    
+
         # Rảnh → dòng khởi động; có phiên → toggle, reset hoặc cộng phút.
         if [ -n "$DURATION" ]; then
           if [ "$RUNNING" = "true" ]; then
@@ -53,10 +53,10 @@
           ITEMS+=("🍅 60")
           ITEMS+=("🍅 120")
         fi
-    
+
         choice=$(printf '%s\n' "''${ITEMS[@]}" | rofi -dmenu -i -p "Focus" \
           -mesg "⌨ start 1–480 · 🍅 30/60/120 · ⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
-    
+
         # Hủy (rỗng) → thoát im lặng; sai định dạng → báo lỗi.
         ask_minutes() {
           local prompt="''${1:-Focus — minutes (1–480)}"
@@ -72,7 +72,7 @@
           fi
           echo "$minutes"
         }
-    
+
         case "$choice" in
           "⌨ Minutes (1–480)...")
             m=$(ask_minutes) || exit $?

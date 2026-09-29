@@ -8,9 +8,9 @@
         #! /usr/bin/env bash
         # Kiểm tra exit slurp để hủy không báo sai.
         set -u
-  
+
         mode="''${1:?missing mode}"
-  
+
         case "$mode" in
           selection-clipboard)
             region="$(slurp)" || exit 1

@@ -10,16 +10,16 @@
         # END_TIME wall-clock nên phải giữ REMAINING, không thì timer nhảy cóc.
         set -u
         set -o pipefail
-    
+
         STATE_DIR="''${XDG_STATE_HOME:-$HOME/.local/state}"
-    
+
         log() {
           printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" \
             >> "$STATE_DIR/focus-sleep-watch.log"
         }
-    
+
         log "watcher khởi động (đang theo dõi PrepareForSleep trên system bus)"
-    
+
         pending=0
         dbus-monitor --system \
           "type='signal',interface='org.freedesktop.login1.Manager',member='PrepareForSleep',sender='org.freedesktop.login1'" 2>/dev/null |

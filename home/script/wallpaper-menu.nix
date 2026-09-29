@@ -19,13 +19,13 @@
         CACHE="$HOME/.cache/wallpaper-current"
         AWWW=${pkgs.awww}/bin/awww
         THUMB_DIR="$HOME/.cache/wallpaper-thumbs"
-  
+
         mode="auto"
         case "''${1:-}" in
           --grid) mode="grid" ;;
           --list) mode="list" ;;
         esac
-  
+
         # Ảnh hiện tại: đọc ~/.cache/wallpaper-current bằng `read` BUILTIN
         # (0 spawn) — wallpaper-set ghi file này mỗi lần đổi nên luôn đúng.
         # Chỉ hỏi awww khi cache trống (máy mới / chưa đổi lần nào).
@@ -38,16 +38,16 @@
           0x*) cur="" ;;
           *) cur="$(readlink -f -- "''${cur:-}" 2>/dev/null || true)" ;;
         esac
-  
+
         mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
         if [ "''${#imgs[@]}" -eq 0 ]; then
           notify-send -a wallpaper "wallpaper-menu" \
             "Chưa có ảnh nào trong $WALL_DIR — thêm bằng yazi (\$mod+y). Hiện đang dùng màu nền dự phòng."
           exit 0
         fi
-  
+
         THUMBS="$HOME/.local/bin/wallpaper-thumbs"
-  
+
         # Một vòng duy nhất, toàn builtin (bản cũ fork ~1000 lần ≈ 2.2s mỗi
         # lần mở). So sánh chuỗi trực tiếp: wallpaper symlink sẽ không gắn ●.
         #   sel/names/thumbs — index, tên (có "● "), thumbnail; missing = số
@@ -69,7 +69,7 @@
           thumbs[i]="$t"
           i=$((i + 1))
         done
-  
+
         # Chọn chế độ theo cache thumbnail:
         #   grid = icon = file 320px trong ~/.cache/wallpaper-thumbs
         #         (rofi KHÔNG decode ảnh gốc vài MB nữa → mở tức thì)
@@ -92,7 +92,7 @@
               nohup "$THUMBS" >/dev/null 2>&1 &
             fi ;;
         esac
-  
+
         # Phím điều hướng: rofi mặc định gán Left/Right cho con trỏ trong ô
         # filter, nên không sang được cột 2, 3 của lưới. Đổi con trỏ sang
         # Alt+Left/Right, nhả Left/Right cho di chuyển cột. Alt+h/j/k/l và
@@ -107,7 +107,7 @@
           -kb-page-prev 'Page_Up,Alt+o'
           -kb-page-next 'Page_Down,Alt+p'
         )
-  
+
         # -theme-str chỉ áp cho lần chạy này (không đụng ~/.config/rofi):
         # lưới 3 cột × 3 hàng, ảnh trên tên dưới, tên căn giữa.
         # cycle: vòng lại khi lưới hết ảnh thay vì kẹt ở ảnh cuối.
@@ -127,7 +127,7 @@
             "''${kb[@]}"
             -theme-str 'listview { cycle: true; }')
         fi
-  
+
         # Mỗi mục: "<tên>\0icon\x1f<thumbnail>" → rofi tự bóc metadata.
         choice_idx="$(
           i=0
@@ -140,7 +140,7 @@
             i=$((i + 1))
           done | rofi "''${rofi_args[@]}"
         )" || exit 0
-  
+
         if ! [[ "$choice_idx" =~ ^[0-9]+$ ]] || [ "$choice_idx" -ge "''${#imgs[@]}" ]; then exit 0; fi
         choice="''${imgs[$choice_idx]}"
         if [ "''${cur:-}" = "$(readlink -f -- "$choice")" ]; then
@@ -151,6 +151,6 @@
       '';
     };
 
-  # Ảnh nền: cp/rm trực tiếp trong ~/Pictures/wallpapers, không cần rebuild.
+    # Ảnh nền: cp/rm trực tiếp trong ~/Pictures/wallpapers, không cần rebuild.
   };
 }

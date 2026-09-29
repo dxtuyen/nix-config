@@ -7,38 +7,38 @@
       text = ''
         #! /usr/bin/env bash
         set -eu
-  
+
         # flock để bấm phím liên tục không đè thông báo nhau.
         if [ "''${MEDIA_NOTIFY_LOCKED:-}" != 1 ]; then
           exec env MEDIA_NOTIFY_LOCKED=1 ${pkgs.util-linux}/bin/flock \
             "''${XDG_RUNTIME_DIR:?}/media-notify.lock" "$0" "$@"
         fi
-  
+
         notify_replace() {
           name="$1"
           shift
           id_file="''${XDG_RUNTIME_DIR:?}/media-notify-''${name}.id"
           replace_id=""
-  
+
           if [ -r "$id_file" ]; then
             read -r replace_id < "$id_file" || true
             case "$replace_id" in
               *[!0-9]*|"") replace_id="" ;;
             esac
           fi
-  
+
           if [ -n "$replace_id" ]; then
             notification_id="$(notify-send -p -r "$replace_id" "$@")"
           else
             notification_id="$(notify-send -p "$@")"
           fi
-  
+
           case "$notification_id" in
             *[!0-9]*|"") ;;
             *) printf '%s\n' "$notification_id" > "$id_file" ;;
           esac
         }
-  
+
         notify_volume() {
           status="$(wpctl get-volume @DEFAULT_AUDIO_SINK@)"
           volume="$(printf '%s\n' "$status" | awk '{ printf "%d", ($2 * 100) + 0.5 }')"
@@ -60,7 +60,7 @@
               ;;
           esac
         }
-  
+
         notify_microphone() {
           status="$(wpctl get-volume @DEFAULT_AUDIO_SOURCE@)"
           case "$status" in
@@ -72,13 +72,13 @@
               ;;
           esac
         }
-  
+
         notify_brightness() {
           bright_raw="$(brightnessctl -m | cut -d, -f4)"
           bright_val="''${bright_raw%%%}"
           notify_replace brightness -a brightness -i "display-brightness" -h "int:value:$bright_val" -t 2000 "Brightness" "''${bright_raw}"
         }
-  
+
         case "''${1:?missing action}" in
           volume-up) wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+; notify_volume ;;
           volume-down) wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-; notify_volume ;;

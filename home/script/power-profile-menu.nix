@@ -7,23 +7,23 @@
       text = ''
         #! /usr/bin/env bash
         set -u
-  
+
         current="$(powerprofilesctl get)"
-  
+
         case "$current" in
           power-saver) current_label="Power Saver" ;;
           balanced) current_label="Balanced" ;;
           performance) current_label="Performance" ;;
           *) current_label="$current" ;;
         esac
-  
+
         MENU="🔋 Power Saver
         ⚖️ Balanced
         🚀 Performance"
-  
+
         choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -p "Power Profile" \
           -mesg "Current: $current_label — Select a profile, then press Enter")
-  
+
         case "$choice" in
           "🔋 Power Saver")
             powerprofilesctl set power-saver
