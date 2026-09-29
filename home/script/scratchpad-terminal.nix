@@ -28,33 +28,28 @@
 
       matches = list(find_terminal(tree))
       if matches:
-          # A focused terminal is hidden even if it was toggled out of floating
-          # mode. Otherwise restore it on this workspace as a centered popup.
           terminal = next((window for window in matches if window.get("focused")), matches[0])
           criteria = f"[con_id={terminal['id']}]"
+
           if terminal.get("focused"):
-              command = (
-                  "scratchpad show"
-                  if terminal.get("scratchpad_state") != "none"
-                  else "move container to scratchpad"
-              )
-              subprocess.run([swaymsg, f"{criteria} {command}"], check=True)
+              # Đang focus sẵn: bấm mod+grave chỉ để gọi lên, KHÔNG ẩn nữa.
+              pass
+          elif terminal.get("visible"):
+              # Đang hiện trên workspace hiện tại (kể cả tiled chiếm trọn màn
+              # hình hay fullscreen): chỉ focus, không đổi kích thước/trạng thái.
+              subprocess.run([swaymsg, f"{criteria} focus"], check=True)
+          elif terminal.get("scratchpad_state") not in (None, "none"):
+              # Đang ẩn trong scratchpad: kéo về workspace hiện tại + focus.
+              subprocess.run([swaymsg, f"{criteria} scratchpad show"], check=True)
           else:
-              commands = []
-              if not terminal.get("visible"):
-                  commands.append(
-                      "scratchpad show"
-                      if terminal.get("scratchpad_state") != "none"
-                      else "move container to workspace current"
-                  )
-              commands.extend([
-                  "floating enable",
-                  "resize set width 65 ppt height 60 ppt",
-                  "move position center",
-                  "focus",
-              ])
+              # Ở workspace khác (hoặc đã bị gỡ khỏi scratchpad): thành popup
+              # scratchpad ở workspace HIỆN TẠI, size mặc định của Sway.
+              # Phải "move ... workspace current" TRƯỚC, vì "move scratchpad"
+              # trên cửa sổ ở ws khác sẽ kéo focus về workspace cũ của nó.
               subprocess.run(
-                  [swaymsg, f"{criteria} " + ", ".join(commands)], check=True
+                  [swaymsg, f"{criteria} move container to workspace current, "
+                            "move scratchpad, scratchpad show"],
+                  check=True,
               )
       else:
           # Lazy launch avoids keeping an unused terminal process alive.

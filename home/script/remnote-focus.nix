@@ -42,34 +42,25 @@
           window = match
           criteria = f"[con_id={window['id']}]"
 
-          if window.get("focused") and window.get("visible"):
-              # Hide only when RemNote itself is focused.
-              command = (
-                  "scratchpad show"
-                  if window.get("scratchpad_state") != "none"
-                  else "move container to scratchpad"
-              )
-              subprocess.run([swaymsg, f"{criteria} {command}"], check=True)
+          if window.get("focused"):
+              # Đang focus sẵn: bấm mod+r chỉ để gọi lên, KHÔNG ẩn nữa.
+              pass
+          elif window.get("visible"):
+              # Đang hiện trên workspace hiện tại (kể cả tiled chiếm trọn màn
+              # hình hay fullscreen): chỉ focus, không re-float/đổi kích thước.
+              subprocess.run([swaymsg, f"{criteria} focus"], check=True)
+          elif window.get("scratchpad_state") not in (None, "none"):
+              # Đang ẩn trong scratchpad: kéo về workspace hiện tại + focus.
+              subprocess.run([swaymsg, f"{criteria} scratchpad show"], check=True)
           else:
-              commands = []
-              if not window.get("visible"):
-                  # Restore it here whether it is hidden in the scratchpad or
-                  # sitting on another workspace.
-                  commands.append(
-                      "scratchpad show"
-                      if window.get("scratchpad_state") != "none"
-                      else "move container to workspace current"
-                  )
-              # Reapply popup geometry in case a manual floating toggle changed
-              # the window since the manage rule first ran.
-              commands.extend([
-                  "floating enable",
-                  "resize set width 65 ppt height 75 ppt",
-                  "move position center",
-                  "focus",
-              ])
+              # Ở workspace khác (hoặc đã bị gỡ khỏi scratchpad): thành popup
+              # scratchpad ở workspace HIỆN TẠI, size mặc định của Sway.
+              # Phải "move ... workspace current" TRƯỚC, vì "move scratchpad"
+              # trên cửa sổ ở ws khác sẽ kéo focus về workspace cũ của nó.
               subprocess.run(
-                  [swaymsg, f"{criteria} " + ", ".join(commands)], check=True
+                  [swaymsg, f"{criteria} move container to workspace current, "
+                            "move scratchpad, scratchpad show"],
+                  check=True,
               )
       else:
           appimage = Path("${config.home.homeDirectory}/Apps/RemNote/RemNote.AppImage")

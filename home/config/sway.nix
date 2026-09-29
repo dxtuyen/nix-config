@@ -68,9 +68,11 @@ in
       # Floating rules
       for_window [app_id="pavucontrol"] floating enable, resize set width 30 ppt height 40 ppt
       for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
-      # RemNote opens as a centered floating popup instead of a tiled window.
-      for_window [class="(?i).*remnote.*"] floating enable, resize set width 65 ppt height 75 ppt, move position center
-      for_window [app_id="(?i).*remnote.*"] floating enable, resize set width 65 ppt height 75 ppt, move position center
+      # RemNote: popup scratchpad giữa màn hình. Vào scratchpad ngay khi mở nên
+      # $mod+minus ẩn/hiện được và cửa sổ bám theo workspace hiện tại.
+      # KHÔNG resize: "move scratchpad" tự float + size mặc định của Sway.
+      for_window [class="(?i).*remnote.*"] move scratchpad, scratchpad show
+      for_window [app_id="(?i).*remnote.*"] move scratchpad, scratchpad show
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
       # GoldenDict float như popup (mod+g bật/tắt; đóng = ẩn về tray).
@@ -91,8 +93,10 @@ in
       # script đặt ra. Chỉ cửa sổ này float, terminal thường không ảnh hưởng.
       for_window [title="(?i)^yazi-popup"] floating enable, resize set 1000 px 700 px
 
-      # Foot terminal scratchpad: chỉ mở một cửa sổ riêng, giữ phiên shell khi ẩn.
-      for_window [app_id="scratchpad-terminal"] floating enable, resize set width 65 ppt height 60 ppt, move position center, move scratchpad, scratchpad show
+      # Foot terminal scratchpad: một cửa sổ riêng, giữ phiên shell khi ẩn; luôn
+      # nằm trong scratchpad để $mod+minus ẩn/hiện và $mod+grave chỉ focus.
+      # KHÔNG resize: "move scratchpad" tự float + size mặc định của Sway.
+      for_window [app_id="scratchpad-terminal"] move scratchpad, scratchpad show
 
       # Wi-Fi popup: wifitui (hỗ trợ toggle radio, fuzzy search, rescan)
       for_window [app_id="wifitui"] floating enable, resize set 750 px 500 px
@@ -119,6 +123,7 @@ in
 
       # Keybindings - App & Session
       bindsym $mod+Return exec $term
+      # $mod+grave: focus terminal scratchpad (bấm lại KHÔNG ẩn; ẩn bằng $mod+minus).
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+q exec ${pkgs.swayr}/bin/swayr quit-window
       bindsym $mod+d exec $menu
@@ -133,6 +138,7 @@ in
       bindsym $mod+Shift+m exec ~/.local/bin/wallpaper-menu
       bindsym $mod+n exec ~/.local/bin/scratchpad-menu
       bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-set
+      # $mod+r: focus RemNote scratchpad (bấm lại KHÔNG ẩn; ẩn bằng $mod+minus).
       bindsym $mod+r exec ~/.local/bin/remnote-focus
       # $mod+y: yazi dạng POPUP nhỏ; gõ `yazi` trong terminal thì cửa sổ thường.
       bindsym $mod+y exec ~/.local/bin/yazi-open
