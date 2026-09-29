@@ -14,7 +14,7 @@
         ⏾ Hibernate
         🔒 Lock"
 
-        choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -p "Power" \
+        choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -matching fuzzy -sort -sorting-method normal -p "Power" \
           -mesg "Select an action, then press Enter")
 
         case "$choice" in

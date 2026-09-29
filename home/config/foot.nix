@@ -24,6 +24,9 @@
 
       mouse.hide-when-typing = "yes";
 
+      # Mở cửa sổ mới bằng `nt`; không dùng phím spawn-terminal mặc định.
+      "key-bindings".spawn-terminal = "none";
+
       cursor = {
         style = "beam";
         blink = "yes";

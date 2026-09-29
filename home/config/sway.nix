@@ -125,11 +125,6 @@ in
       bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
-      # $mod+n: mở nhanh menu Wi-Fi (wifitui popup) — q hoặc Esc để thoát
-      bindsym $mod+n exec foot --app-id=wifitui -T "Wi-Fi" wifitui
-      # $mod+Shift+b: Bluetooth device manager.
-      bindsym $mod+Shift+b exec foot --app-id=bluetui -T "Bluetooth" bluetui
-
       # Focus movement
       bindsym $mod+$left focus left
       bindsym $mod+$down focus down

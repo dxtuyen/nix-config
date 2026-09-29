@@ -54,13 +54,39 @@
     initExtra = ''
       export PATH="$HOME/.local/bin:$PATH"
 
-      # Starship không set title nên tự phát OSC 2 mỗi prompt.
+      # Foot dùng OSC 7 để mở terminal mới tại thư mục hiện tại; OSC 2 đặt title.
+      __foot_escape_uri_path() {
+        local LC_ALL=C
+        local path="$1" escaped="" char hex
+        while [ -n "$path" ]; do
+          char="''${path:0:1}"
+          path="''${path:1}"
+          case "$char" in
+            [a-zA-Z0-9/._~-]) escaped+="$char" ;;
+            *) printf -v hex '%%%02X' "'$char"; escaped+="$hex" ;;
+          esac
+        done
+        __foot_osc7_path="$escaped"
+      }
+
       __set_window_title() {
         # Tách 2 bước để né tilde expansion (title hiện full path).
         local dir="''${PWD/#$HOME/}"
         printf '\033]2;~%s\007' "$dir"
+        __foot_escape_uri_path "$PWD"
+        printf '\033]7;file://%s%s\033\\' "''${HOSTNAME:-localhost}" "$__foot_osc7_path"
       }
       PROMPT_COMMAND="__set_window_title''${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+
+      # nt: cùng project → tmux window mới; ngoài tmux → cửa sổ Foot mới.
+      nt() {
+        if [ -n "''${TMUX:-}" ]; then
+          tmux new-window -c "$PWD"
+        else
+          foot --working-directory "$PWD" >/dev/null 2>&1 &
+          disown
+        fi
+      }
 
       # y: mở yazi, thoát ra (`q`) thì shell cd theo thư mục cuối cùng đứng trong
       # yazi (yazi ghi nó vào --cwd-file). Bổ sung cho phím `b`/`B` trong yazi —

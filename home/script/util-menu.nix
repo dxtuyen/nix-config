@@ -8,34 +8,20 @@
         #! /usr/bin/env bash
         set -u
 
-        inhibit_state="$(~/.local/bin/study inhibit-state)"
-        read -r inhibit_class inhibit_manual <<< "$inhibit_state"
+        MENU="Idle
+        ☀ Display
+        📶 Wi-Fi
+        🔵 Bluetooth
+        ⚡ Power Profile"
 
-        case "$inhibit_class:$inhibit_manual" in
-          running:true)
-            inhibit_row="● Idle: ON (Focus + manual) → Focus only"
-            ;;
-          running:*)
-            inhibit_row="● Idle: ON (Focus) → Add manual"
-            ;;
-          manual:true)
-            inhibit_row="● Idle: ON (manual) → OFF"
-            ;;
-          *)
-            inhibit_row="● Idle: OFF → ON (manual)"
-            ;;
-        esac
-
-        MENU="$inhibit_row
-        ☀ Display  →
-        ⚡ Power Profile  →"
-
-        choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -matching fuzzy -p "Utilities" \
+        choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -matching fuzzy -sort -sorting-method normal -p "Utilities" \
           -mesg "Type to filter · Enter to select")
 
         case "$choice" in
-          "● Idle:"*) exec ~/.local/bin/study inhibit-toggle ;;
+          "Idle") exec ~/.local/bin/study inhibit-toggle ;;
           "☀ Display"*) exec ~/.local/bin/wlsunset-menu ;;
+          "📶 Wi-Fi"*) exec foot --app-id=wifitui -T "Wi-Fi" wifitui ;;
+          "🔵 Bluetooth"*) exec foot --app-id=bluetui -T "Bluetooth" bluetui ;;
           "⚡ Power Profile"*) exec ~/.local/bin/power-profile-menu ;;
         esac
       '';
