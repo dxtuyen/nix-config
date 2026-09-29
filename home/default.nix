@@ -51,6 +51,7 @@
   # Nơi duy nhất thêm ~/.local/bin vào PATH + tạo ~/.bashrc.
   programs.bash = {
     enable = true;
+    shellAliases.nswitch = ''cd "$HOME/nix-config" && sudo nixos-rebuild switch --flake ".#$(hostname -s)"'';
     initExtra = ''
       export PATH="$HOME/.local/bin:$PATH"
 

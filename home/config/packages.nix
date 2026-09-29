@@ -5,6 +5,7 @@
 
   home.packages = with pkgs; [
     rofi
+    swayr # Chuyển cửa sổ theo lịch sử focus (Alt+Tab kiểu MRU)
     wlsunset
     grim
     slurp

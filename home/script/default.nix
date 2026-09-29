@@ -29,6 +29,7 @@
     ./pomodoro-menu.nix
     ./focus-sleep-watch.nix
     ./setup-remnote.nix
+    ./swayr-rofi-menu.nix
   ];
 
 }

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 let
   ws = import ./workspaces.nix; # tên workspace dùng chung với Waybar
@@ -115,7 +115,9 @@ in
       bindsym $mod+Return exec $term
       bindsym $mod+Shift+q kill
       bindsym $mod+d exec $menu
-      bindsym $mod+Shift+w exec rofi -show window
+      # Mod+Tab: quay lại cửa sổ vừa dùng; Mod+m: menu MRU.
+      bindsym $mod+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
+      bindsym $mod+m exec ${pkgs.swayr}/bin/swayr switch-window
 
       # Wallpaper: r = random ảnh khác · Shift+r = menu chọn ảnh trong
       # ~/Pictures/wallpapers (lưới thumbnail, phím ←→↑↓ duyệt ảnh).
@@ -217,6 +219,58 @@ in
       # swayidle (systemd): khoá 300s → tắt màn 310s → ngủ 900s khi dùng pin.
       # Phiên Focus chạy → study stop service này, xong tự start lại.
     '';
+  };
+
+  # swayr giữ format mặc định cho ứng dụng thường; wrapper chỉ ẩn app ID PWA.
+  xdg.configFile."swayr/config.toml".text = ''
+    [menu]
+    executable = "${config.home.homeDirectory}/.local/bin/swayr-rofi-menu"
+    args = ["{prompt}"]
+
+    [format]
+    window_format = "{app_name} — {title}\u0000icon\u001f{app_icon}"
+    html_escape = true
+    icon_dirs = [
+      "${config.home.homeDirectory}/.local/share/icons/hicolor/16x16/apps",
+      "${config.home.homeDirectory}/.local/share/icons/hicolor/32x32/apps",
+      "${config.home.homeDirectory}/.local/share/icons/hicolor/48x48/apps",
+      "${config.home.homeDirectory}/.local/share/icons/hicolor/64x64/apps",
+      "${config.home.homeDirectory}/.local/share/icons/hicolor/128x128/apps",
+      "${config.home.homeDirectory}/.local/share/icons/hicolor/256x256/apps",
+      "${config.home.homeDirectory}/.local/share/icons/hicolor/scalable/apps",
+      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/16x16/apps",
+      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/32x32/apps",
+      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/48x48/apps",
+      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/64x64/apps",
+      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/128x128/apps",
+      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/256x256/apps",
+      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/scalable/apps",
+      "/run/current-system/sw/share/icons/hicolor/16x16/apps",
+      "/run/current-system/sw/share/icons/hicolor/32x32/apps",
+      "/run/current-system/sw/share/icons/hicolor/48x48/apps",
+      "/run/current-system/sw/share/icons/hicolor/64x64/apps",
+      "/run/current-system/sw/share/icons/hicolor/128x128/apps",
+      "/run/current-system/sw/share/icons/hicolor/256x256/apps",
+      "/run/current-system/sw/share/icons/hicolor/scalable/apps",
+      "/run/current-system/sw/share/icons/Adwaita/48x48/apps",
+      "/run/current-system/sw/share/icons/Adwaita/scalable/apps",
+      "/run/current-system/sw/share/pixmaps",
+    ]
+  '';
+
+  # Ghi lịch sử focus trong suốt phiên Sway; target được start sau khi import SWAYSOCK.
+  systemd.user.services.swayrd = {
+    Unit = {
+      Description = "Swayr window history daemon";
+      After = [ "sway-session.target" ];
+      PartOf = [ "sway-session.target" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.swayr}/bin/swayrd";
+      Restart = "on-failure";
+      RestartSec = 3;
+    };
+    Install.WantedBy = [ "sway-session.target" ];
   };
 
   # systemd cho log journald + tự hồi sinh khi crash + dừng theo phiên Sway.

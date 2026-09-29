@@ -20,6 +20,7 @@ cd nix-config
 git pull --rebase        # lấy code mới nhất
 nix fmt                   # format *.nix (nixfmt)
 sudo nixos-rebuild switch --flake .#laptop   # hoặc: nh os switch
+# Sau khi shell alias đã được cập nhật: nswitch (từ đâu cũng cd vào repo và rebuild theo hostname)
 ```
 
 > Một lệnh duy nhất cập nhật **cả NixOS lẫn home-manager** (home-manager được gắn qua `home-manager.nixosModules` trong `hosts/laptop/default.nix`).

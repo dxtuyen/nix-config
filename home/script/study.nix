@@ -199,7 +199,8 @@
           END_TIME=""
           REMAINING=""
           write_state || return 1
-          pkill -f "study daemon" 2>/dev/null || true
+          # Do not pkill here: this function can run inside the daemon itself.
+          # Killing it before the caller unlocks/notifies leaves Waybar stuck at 1s.
         }
 
         case "''${1:-status}" in
