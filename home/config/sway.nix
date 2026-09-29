@@ -32,7 +32,6 @@ in
       exec ~/.local/bin/wallpaper-set
 
       # Applets & daemons
-      exec blueman-applet
       exec ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1
       exec wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8
 
@@ -68,7 +67,7 @@ in
 
       # Floating rules
       for_window [app_id="pavucontrol"] floating enable, resize set width 30 ppt height 40 ppt
-      for_window [app_id="blueman-manager"] floating enable, resize set width 40 ppt height 40 ppt
+      for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
       # GoldenDict float như popup (mod+g bật/tắt; đóng = ẩn về tray).
@@ -126,9 +125,10 @@ in
       bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
-      bindsym $mod+Shift+n exec ~/.local/bin/toggle-wlsunset
       # $mod+n: mở nhanh menu Wi-Fi (wifitui popup) — q hoặc Esc để thoát
       bindsym $mod+n exec foot --app-id=wifitui -T "Wi-Fi" wifitui
+      # $mod+Shift+b: Bluetooth device manager.
+      bindsym $mod+Shift+b exec foot --app-id=bluetui -T "Bluetooth" bluetui
 
       # Focus movement
       bindsym $mod+$left focus left
@@ -194,8 +194,9 @@ in
       bindsym $mod+minus scratchpad show
 
       # Custom Utilities & Screenshot
+      bindsym $mod+o exec ~/.local/bin/util-menu
       bindsym $mod+p exec ~/.local/bin/pomodoro-menu
-      bindsym $mod+Shift+p exec ~/.local/bin/power-menu
+      bindsym $mod+Shift+o exec ~/.local/bin/power-menu
       # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+Shift+t = ép
       # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en

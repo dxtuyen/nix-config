@@ -39,6 +39,7 @@ in
       "group/devices" = {
         orientation = "horizontal";
         modules = [
+          "bluetooth"
           "network"
           "pulseaudio"
           "backlight"
@@ -62,13 +63,27 @@ in
       network = {
         interval = 5;
         format-wifi = "${faSpan ""} {signalStrength}%";
-        format-ethernet = "${faSpan ""} {ipaddr}";
+        format-ethernet = "${faSpan ""} LAN";
         format-disconnected = faSpan "";
         format-disabled = faSpan "";
-        tooltip-format-wifi = "SSID: {essid}\nTín hiệu: {signalStrength}%\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}";
-        tooltip-format-ethernet = "Giao diện: {ifname}\nIP: {ipaddr}/{cidr}";
-        tooltip-format-disconnected = "Đã ngắt kết nối mạng";
-        tooltip-format-disabled = "Wi-Fi đang tắt";
+        tooltip-format-wifi = "SSID: {essid}\nSignal: {signalStrength}%\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}";
+        tooltip-format-ethernet = "Interface: {ifname}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}";
+        tooltip-format-disconnected = "Network disconnected";
+        tooltip-format-disabled = "Wi-Fi disabled";
+      };
+      bluetooth = {
+        format = "${faSpan ""} {status}";
+        "format-disabled" = "${faSpan ""} Disabled";
+        "format-off" = "${faSpan ""} Off";
+        "format-on" = "${faSpan ""} On";
+        "format-connected" = "${faSpan ""} {device_alias}";
+        "format-no-controller" = "${faSpan ""} N/A";
+        "max-length" = 18;
+        tooltip = true;
+        "tooltip-format" = "{controller_alias}: {status}";
+        "tooltip-format-connected" = "{controller_alias} · {num_connections} connected\n{device_enumerate}";
+        "tooltip-format-enumerate-connected" = "{device_alias}";
+        "on-click" = "foot --app-id=bluetui -T Bluetooth bluetui";
       };
       "sway/workspaces" = {
         "disable-scroll" = true;
@@ -113,6 +128,7 @@ in
         format = faSpan "{icon}";
         tooltip = true;
         "tooltip-format" = "{profile}";
+        "on-click" = "~/.local/bin/power-profile-menu";
         "format-icons" = {
           performance = "";
           balanced = "";
@@ -196,11 +212,11 @@ in
 
       /* Màu phân tầng theo vai trò: pill · stat (@txt) · title window bold ·
          accent #89b4fa. GTK CSS không có var() nên dùng @define-color. */
-      @define-color pill rgba(30, 30, 46, 0.75);   /* Catppuccin base, hơi trong */
+      @define-color pill rgba(30, 30, 46, 0.80);   /* Catppuccin base, 80% opacity */
       @define-color pill-hover rgba(49, 50, 68, 1);  /* surface0 đục hẳn — nền title không trong suốt */
       @define-color edge rgba(69, 71, 90, 0.45);     /* surface1, viền mờ */
       @define-color txt #bac2de;                     /* subtext1 */
-      @define-color txt-strong #bac2de;              /* subtext1 */
+      @define-color txt-strong #cdd6f4;              /* text */
 
       @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
       window#waybar { background: rgba(0, 0, 0, 0); color: @txt; }
@@ -241,6 +257,8 @@ in
       /* Pill chỉ có glyph (14px) thấp hơn pill chữ (18px) → thêm padding dọc. */
       #custom-inhibit { padding: 2px 10px; margin: 4px 4px 4px 2px; }
       #power-profiles-daemon { padding: 0 4px; }
+      #bluetooth.off, #bluetooth.disabled, #bluetooth.no-controller { color: #7f849c; } /* overlay1 */
+      #bluetooth.connected { color: #a6e3a1; }
       #custom-inhibit.manual { color: #fab387; }
       #custom-inhibit.idle { color: #585b70; }
       #network.disconnected, #network.disabled { color: #f38ba8; }

@@ -173,8 +173,10 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 
 | Script | Chức năng |
 |---|---|
-| `power-menu` | Menu nguồn: Poweroff / Reboot / Suspend / **Hibernate** / Lock / Power Profile / Reload |
-| `power-profile-menu` | Đổi battery-saver / balanced / performance |
+| `power-menu` | `$mod+Shift+o`: Poweroff / Reboot / Suspend / **Hibernate** / Lock |
+| `util-menu` | `$mod+o`: `Idle` status and next action · `Display` mode · `Power Profile` submenu |
+| `wlsunset-menu` | Three display modes (`Warm 4000K` / `Cool 6500K` / `Natural`), with `●` marking the active mode |
+| `power-profile-menu` | Đổi battery-saver / balanced / performance; mở từ `$mod+o` hoặc nhấp biểu tượng profile trên Waybar |
 | `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key nằm ở `~/.config/quick-lang/api.key` trên từng máy; không cần sửa file Nix |
 | `dict-toggle` | `mod+g`: bật/tắt GoldenDict float — đóng = ẩn về tray (tiến trình giữ nguyên, mở lại tức thời) |
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
@@ -182,6 +184,8 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 | `wallpaper-menu` | `$mod+Shift+r`: menu rofi **lưới 3×3 thumbnail 320px** (ảnh trên, tên dưới, đang dùng đánh dấu `●`, >9 ảnh tự cuộn) — icon lấy từ **cache** `~/.cache/wallpaper-thumbs/` + build list **0 spawn** (đo: 2.2s → 0.05s với 333 ảnh) → **mở tức thì**. Lần đầu / vừa thêm ảnh: mở **dựng cache nền** → lần sau tự lưới. Chế độ: `--grid` (ép lưới), `--list` (chữ thuần, nhanh nhất)<br>**Phím duyệt ảnh:** `←` `→` **sang cột** · `↑` `↓` lên/xuống hàng · `Tab`/`Shift+Tab` hàng trước/sau · `Page_Up`/`Page_Down` trang trước/sau · `Home`/`End` ảnh đầu/cuối · lưới hết cuối **vòng lại đầu**. Bản `Alt+` tương ứng: `Alt+h/j/k/l`, `Alt+u/i/o/p`. Menu này **đổi chỗ** so với mặc định của rofi: `←`/`→` sang cột, con trỏ gõ chuyển sang `Alt+←`/`Alt+→` (không mất phím nào). Chỉ áp cho menu này, không đụng `rofi -show drun/window` |
 | `wallpaper-thumbs` | Dựng thumbnail 320px cho menu (song song 8 luồng, ImageMagick, đếm thiếu bằng builtin không fork). Chạy nền khi menu cần; `--status` chỉ còn để tra tay. Xoá `~/.cache/wallpaper-thumbs/` bất cứ lúc nào → tự dựng lại |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
+| `study inhibit-toggle` | Bật/tắt chống idle thủ công; trạng thái đồng bộ giữa `$mod+o` và biểu tượng mắt Waybar. Phiên Focus tiếp tục giữ chống idle tự động |
+| `bluetui` | `$mod+Shift+b`: Bluetooth device manager in a floating terminal |
 | `Wi-Fi popup` | `$mod+n`: mở nhanh danh sách Wi-Fi dạng popup (`wifitui` trong Foot), hỗ trợ phím `r` bật/tắt Wi-Fi, `/` tìm kiếm fuzzy, `s` quét lại sóng, `Enter` kết nối, `q`/`Esc` để đóng |
 | `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
 | `study` / `pomodoro-menu` / `focus-sleep-watch` | Đồng hồ PHIÊN TẬP TRUNG duy nhất: rảnh → ⌨ tự nhập 1–480 / 🍅 30/60/120; có phiên → ⏸/▶, ↺ reset, ＋ cộng phút; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
@@ -331,6 +335,14 @@ sudo nixos-rebuild switch --flake ~/nix-config#laptop
 | `~/.local/bin/wallpaper-menu` | Mở menu chọn ảnh lưới 3×3 (như `$mod+Shift+r`) |
 | `awww query` | Xem ảnh đang hiển thị |
 | `ls ~/Pictures/wallpapers/` | Danh sách ảnh thực tế (kiểm tra sau thêm/xóa) |
+
+## Menu tiện ích (`$mod+o`) và menu nguồn (`$mod+Shift+o`)
+
+`$mod+o` mở Rofi với ba mục có từ khóa dễ lọc: `Idle`, `Display` và `Power Profile`. Dòng `Idle` cho biết trạng thái hiện tại và kết quả thao tác sau dấu `→`; nó gọi `study inhibit-toggle`, cùng lệnh với biểu tượng mắt Waybar nên trạng thái được quản lý đồng bộ. Khi Focus đang chạy, chống ngủ tự động vẫn được giữ; bật/tắt thủ công chỉ thay đổi trạng thái thủ công theo logic của `study`.
+
+Chọn `Display` để mở menu con có ba chế độ: `Warm 4000K`, `Cool 6500K` và `Natural (automatic)`. Dấu `●` đánh dấu chế độ đang chạy. `$mod+Shift+o` mở menu nguồn chỉ gồm Poweroff, Reboot, Suspend, Hibernate và Lock. `$mod+Shift+n` đã được giải phóng. Bluetooth có trạng thái trên Waybar ngay sau Wi-Fi; nhấp vào đó hoặc dùng `$mod+Shift+b` để mở Bluetui. Yêu cầu ghép đôi do thiết bị khác khởi xướng có thể cần mở Bluetui để nhận.
+
+`$mod+p` tiếp tục dành riêng cho Pomodoro/Focus.
 
 ## Focus — đồng hồ PHIÊN TẬP TRUNG duy nhất (`$mod+p`)
 

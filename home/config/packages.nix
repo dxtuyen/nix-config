@@ -19,7 +19,7 @@
     goldendict-ng
     wifitui # TUI quản lý Wi-Fi hiện đại (hỗ trợ bật/tắt radio, fuzzy search, QR code)
 
-    blueman
+    bluetui
     google-chrome
     # Sách: foliate đọc epub/mobi/azw3/fb2/cbz/opds (typography tốt hơn calibre
     # đã gỡ; thư viện ở ~/Books/{Textbooks,Reading}).

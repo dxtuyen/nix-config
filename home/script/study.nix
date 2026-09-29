@@ -6,7 +6,7 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Usage: study {start|add|pause|resume|toggle|reset|status|inhibit|...|daemon}
+        # Usage: study {start|add|pause|resume|toggle|reset|status|inhibit|inhibit-state|...|daemon}
 
         STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
         STATE_FILE="$STATE_DIR/study-state"
@@ -412,45 +412,63 @@
               "$text" "$class" "$tooltip"
             ;;
 
+          inhibit-state)
+            # Fast read-only snapshot for menus; state transitions stay in study commands.
+            read_state
+            printf -v now '%(%s)T' -1
+            manual_json=false
+            [ -f "$MANUAL_FLAG" ] && manual_json=true
+            if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ] && [ "$END_TIME" -gt "$now" ]; then
+              inhibit_class="running"
+            elif [ "$manual_json" = true ]; then
+              inhibit_class="manual"
+            else
+              inhibit_class="idle"
+            fi
+            printf '%s %s\n' "$inhibit_class" "$manual_json"
+            ;;
+
           inhibit)
-            # JSON trạng thái chống idle cho Waybar (xanh = tự động, vàng = tay).
+            # JSON state for Waybar and util-menu.
             "$0" status >/dev/null 2>&1
             read_state
+            manual_json=false
+            [ -f "$MANUAL_FLAG" ] && manual_json=true
             if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
-              printf '{"text": "%s", "class": "%s", "tooltip": "%s"}\n' \
+              printf '{"text": "%s", "class": "%s", "tooltip": "%s", "manual": %s}\n' \
                 "$(printf '\xef\x81\xae')" "running" \
-                "Focus đang chạy — màn hình không khóa, không ngủ (tự động)\\nBấm = tạm dừng phiên; tắt tay chỉ hiệu lực khi phiên dừng"
+                "Focus is active — idle is inhibited automatically\\nClick to pause the session; manual changes apply after Focus ends" "$manual_json"
             elif [ -f "$MANUAL_FLAG" ]; then
-              printf '{"text": "%s", "class": "%s", "tooltip": "%s"}\n' \
+              printf '{"text": "%s", "class": "%s", "tooltip": "%s", "manual": true}\n' \
                 "$(printf '\xef\x81\xae')" "manual" \
-                "Chống idle BẬT thủ công — màn hình không khóa, không ngủ\\nBấm để tắt"
+                "Manual idle inhibition is ON\\nClick to turn it off"
             else
-              printf '{"text": "%s", "class": "%s", "tooltip": "%s"}\n' \
+              printf '{"text": "%s", "class": "%s", "tooltip": "%s", "manual": false}\n' \
                 "$(printf '\xef\x81\xb0')" "idle" \
-                "Chống idle TẮT — màn hình khóa/tắt/ngủ bình thường\\nBấm để bật (hoặc bắt đầu phiên Focus)"
+                "Idle inhibition is OFF\\nClick to turn it on or start a Focus session"
             fi
             ;;
 
           inhibit-toggle)
-            # Bật/tắt chống idle thủ công. Phiên chạy → tắt tay hiệu lực sau khi phiên dừng.
+            # Toggle manual idle inhibition. Focus keeps its automatic inhibition.
             state_lock
             read_state
             if [ -f "$MANUAL_FLAG" ]; then
               rm -f "$MANUAL_FLAG"
-              toggle_msg="Tắt"
+              toggle_msg="Off"
             else
               : > "$MANUAL_FLAG"
-              toggle_msg="Bật"
+              toggle_msg="On"
             fi
             sync_idle_inhibit
             state_unlock
             notify_waybar
-            if [ "$RUNNING" = "true" ] && [ "$toggle_msg" = "Tắt" ]; then
+            if [ "$RUNNING" = "true" ] && [ "$toggle_msg" = "Off" ]; then
               notify-send -a focus -i "dialog-information" -t 3000 \
-                "Chống idle" "Phiên Focus đang chạy — chống idle vẫn giữ đến khi phiên dừng"
+                "Idle inhibition" "Focus is active — automatic inhibition stays on until the session ends"
             else
               notify-send -a focus -i "dialog-information" -t 2000 \
-                "Chống idle" "$toggle_msg chống khóa/tắt màn/ngủ"
+                "Idle inhibition" "$toggle_msg — screen locking, display sleep, and suspend behavior updated"
             fi
             ;;
 
@@ -517,7 +535,7 @@
             ;;
 
           *)
-            echo "Usage: study {start <1-480>|add <1-480>|pause|resume|toggle|reset|status|inhibit|inhibit-toggle|sleep-pause|sleep-resume|daemon}" >&2
+            echo "Usage: study {start <1-480>|add <1-480>|pause|resume|toggle|reset|status|inhibit|inhibit-state|inhibit-toggle|sleep-pause|sleep-resume|daemon}" >&2
             exit 1
             ;;
         esac

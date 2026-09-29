@@ -17,7 +17,8 @@
     ./sioyek.nix
     ./quick-net-reload.nix
     ./toggle-touchpad.nix
-    ./toggle-wlsunset.nix
+    ./util-menu.nix
+    ./wlsunset-menu.nix
     ./power-profile-menu.nix
     ./media-notify.nix
     ./power-menu.nix
