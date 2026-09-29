@@ -128,11 +128,10 @@ in
       bindsym $mod+m exec ${pkgs.swayr}/bin/swayr switch-window
       bindsym $mod+Shift+q kill
 
-      # Scratchpad menu: Shift+m chọn cửa sổ đang cất.
-      bindsym $mod+Shift+m exec ~/.local/bin/scratchpad-menu
-      # Wallpaper: Ctrl+w = menu chọn ảnh · Shift+w = đổi ảnh ngẫu nhiên.
+      # Menu ảnh: Mod+Shift+m · menu scratchpad: Mod+n · đổi ảnh: Mod+Shift+w.
       # ~/Pictures/wallpapers (lưới thumbnail, phím ←→↑↓ duyệt ảnh).
-      bindsym $mod+Ctrl+w exec ~/.local/bin/wallpaper-menu
+      bindsym $mod+Shift+m exec ~/.local/bin/wallpaper-menu
+      bindsym $mod+n exec ~/.local/bin/scratchpad-menu
       bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-set
       bindsym $mod+r exec ~/.local/bin/remnote-focus
       # $mod+y: yazi dạng POPUP nhỏ; gõ `yazi` trong terminal thì cửa sổ thường.
@@ -206,11 +205,11 @@ in
       bindsym $mod+o exec ~/.local/bin/util-menu
       bindsym $mod+p exec ~/.local/bin/power-menu
       bindsym $mod+c exec ~/.local/bin/countdown-menu
-      # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+Shift+t = ép
+      # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+t = ép
       # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
-      bindsym $mod+Ctrl+Shift+t exec ~/.local/bin/quick-lang fix
+      bindsym $mod+Ctrl+t exec ~/.local/bin/quick-lang fix
       # dict-toggle: bật/tắt GoldenDict float; đóng = ẩn về tray
       bindsym $mod+g exec ~/.local/bin/dict-toggle
       bindsym $mod+Mod1+t exec ~/.local/bin/toggle-touchpad
