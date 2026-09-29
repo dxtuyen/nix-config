@@ -28,16 +28,34 @@
 
       matches = list(find_terminal(tree))
       if matches:
-          # Targeted scratchpad show toggles this terminal: hide it if visible,
-          # otherwise restore it on the current workspace and focus it.
+          # A focused terminal is hidden even if it was toggled out of floating
+          # mode. Otherwise restore it on this workspace as a centered popup.
           terminal = next((window for window in matches if window.get("focused")), matches[0])
-          if terminal.get("visible") and not terminal.get("focused"):
-              command = "focus"
+          criteria = f"[con_id={terminal['id']}]"
+          if terminal.get("focused"):
+              command = (
+                  "scratchpad show"
+                  if terminal.get("scratchpad_state") != "none"
+                  else "move container to scratchpad"
+              )
+              subprocess.run([swaymsg, f"{criteria} {command}"], check=True)
           else:
-              command = "scratchpad show"
-          subprocess.run(
-              [swaymsg, f"[con_id={terminal['id']}] {command}"], check=True
-          )
+              commands = []
+              if not terminal.get("visible"):
+                  commands.append(
+                      "scratchpad show"
+                      if terminal.get("scratchpad_state") != "none"
+                      else "move container to workspace current"
+                  )
+              commands.extend([
+                  "floating enable",
+                  "resize set width 65 ppt height 60 ppt",
+                  "move position center",
+                  "focus",
+              ])
+              subprocess.run(
+                  [swaymsg, f"{criteria} " + ", ".join(commands)], check=True
+              )
       else:
           # Lazy launch avoids keeping an unused terminal process alive.
           subprocess.Popen(

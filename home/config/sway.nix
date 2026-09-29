@@ -119,7 +119,7 @@ in
 
       # Keybindings - App & Session
       bindsym $mod+Return exec $term
-      bindsym $mod+Shift+Return exec ~/.local/bin/scratchpad-terminal
+      bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+q exec ${pkgs.swayr}/bin/swayr quit-window
       bindsym $mod+d exec $menu
       # Mod+Tab: quay lại cửa sổ vừa dùng; Mod+m: menu MRU;
