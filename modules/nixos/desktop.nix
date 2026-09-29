@@ -79,7 +79,6 @@ in
     ];
   };
 
-
   environment.sessionVariables = {
     QT_IM_MODULE = "fcitx";
     XMODIFIERS = "@im=fcitx";
