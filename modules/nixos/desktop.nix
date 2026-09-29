@@ -79,8 +79,6 @@ in
     ];
   };
 
-  # Dùng Mod+; cho Quick Phrase, tránh trùng Mod+grave của terminal scratchpad.
-  i18n.inputMethod.fcitx5.settings.addons.quickphrase.globalSection.TriggerKey = "Super+semicolon";
 
   environment.sessionVariables = {
     QT_IM_MODULE = "fcitx";
