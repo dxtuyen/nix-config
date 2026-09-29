@@ -190,7 +190,7 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 | `study inhibit-toggle` | Bật/tắt chống idle thủ công; trạng thái đồng bộ giữa `$mod+o` và biểu tượng mắt Waybar. Phiên đếm ngược tiếp tục giữ chống idle tự động |
 | `bluetui` | `Utilities` (`$mod+o`) → `Bluetooth`, hoặc nhấp Bluetooth trên Waybar; mở device manager trong floating terminal |
 | `Wi-Fi popup` | `Utilities` (`$mod+o`) → `Wi-Fi`, hoặc nhấp Wi-Fi trên Waybar: mở `wifitui` trong Foot, hỗ trợ `r` bật/tắt Wi-Fi, `/` tìm kiếm fuzzy, `s` quét lại sóng, `Enter` kết nối, `q`/`Esc` để đóng |
-| `remnote-focus` | `$mod+r`: chạy RemNote nếu chưa mở; focus và kéo từ workspace khác về; gọi ra từ scratchpad nếu đang ẩn; khi chính RemNote đang focus thì ẩn vào scratchpad |
+| `remnote-focus` | `$mod+r`: mở RemNote dạng popup nổi ở giữa màn hình nếu chưa chạy; focus và kéo từ workspace khác về; gọi ra từ scratchpad nếu đang ẩn; khi chính RemNote đang focus thì ẩn vào scratchpad |
 | `swayr` | `$mod+q`: menu đóng cửa sổ theo lịch sử; `$mod+Shift+q`: kill ngay cửa sổ đang focus. Menu chuyển cửa sổ `$mod+m` giữ thứ tự mặc định |
 | `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
 | `study` / `countdown-menu` / `focus-sleep-watch` | Đồng hồ đếm ngược phiên tập trung: rảnh → ⌨ tự nhập 1–480 / ⏱ 30/60/120 phút; có phiên → ⏸/▶, ↺ reset, ＋ cộng phút; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |

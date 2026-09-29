@@ -27,7 +27,9 @@
           if node.get("type") == "workspace":
               workspace = node.get("name")
           properties = node.get("window_properties") or {}
-          if (properties.get("class") or "").casefold() == "remnote":
+          wm_class = (properties.get("class") or "").casefold()
+          app_id = (node.get("app_id") or "").casefold()
+          if "remnote" in wm_class or "remnote" in app_id:
               yield node, workspace
           for key in ("nodes", "floating_nodes"):
               for child in node.get(key, []):

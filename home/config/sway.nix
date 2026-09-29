@@ -68,6 +68,9 @@ in
       # Floating rules
       for_window [app_id="pavucontrol"] floating enable, resize set width 30 ppt height 40 ppt
       for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
+      # RemNote opens as a centered floating popup instead of a tiled window.
+      for_window [class="(?i).*remnote.*"] floating enable, resize set width 65 ppt height 75 ppt, move position center
+      for_window [app_id="(?i).*remnote.*"] floating enable, resize set width 65 ppt height 75 ppt, move position center
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
       # GoldenDict float như popup (mod+g bật/tắt; đóng = ẩn về tray).
