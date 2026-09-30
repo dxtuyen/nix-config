@@ -65,15 +65,15 @@ in
           capslock = "overload(control, esc)";
           tab = "overload(nav, tab)";
         };
+        # Tab giữ = nav layer (Tab chạm vẫn là Tab). u/i/o/p cũ đã bỏ:
+        # [ = Home, ] = End (keyd key name: leftbrace/rightbrace).
         nav = {
           h = "left";
           j = "down";
           k = "up";
           l = "right";
-          u = "home";
-          i = "end";
-          o = "pageup";
-          p = "pagedown";
+          leftbrace = "home";
+          rightbrace = "end";
         };
       };
     };

@@ -152,6 +152,8 @@ in
       bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-set
       # $mod+r: focus RemNote scratchpad (bấm lại khi đang focus → cất về scratchpad).
       bindsym $mod+r exec ~/.local/bin/remnote-focus
+      # $mod+y: yazi dạng POPUP nhỏ; gõ `yazi` trong terminal thì cửa sổ thường.
+      bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       # Focus movement
@@ -200,8 +202,10 @@ in
             bindsym $mod+Shift+${key} move container to workspace number ${n}''
         ) (pkgs.lib.range (builtins.length ws + 1) 10)
       )}
-      bindsym $mod+u workspace prev
-      bindsym $mod+i workspace next
+      # Chuyển ws liền trước/liền sau (trước đây $mod+u / $mod+i — đã nhường
+      # $mod+i cho TickTick): $mod+[ / $mod+].
+      bindsym $mod+bracketleft workspace prev
+      bindsym $mod+bracketright workspace next
 
       # Layout & Window State
       bindsym $mod+b splith
@@ -225,11 +229,11 @@ in
       bindsym $mod+p exec ~/.local/bin/pomodoro
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
       bindsym $mod+c exec ${pkgs.google-chrome}/bin/google-chrome
-      # $mod+y: TickTick (PWA) — toggle popup float 1000×700 giữa màn hình
-      # (cùng cơ chế $mod+o Obsidian / $mod+r RemNote). $mod+q để TRỐNG
-      # (tránh bấm nhầm); menu kill (swayr quit-window) và yazi-open
-      # không gán phím — chạy tay: `swayr quit-window`, hoặc `y` / `yazi-open`.
-      bindsym $mod+y exec ~/.local/bin/ticktick-focus
+      # $mod+i: TickTick (PWA) — toggle popup float 1000×700 giữa màn hình
+      # (cùng cơ chế $mod+o Obsidian / $mod+r RemNote). $mod+q, $mod+u,
+      # $mod+x để TRỐNG (tránh bấm nhầm); menu kill (swayr quit-window)
+      # không gán phím — chạy tay: `swayr quit-window`.
+      bindsym $mod+i exec ~/.local/bin/ticktick-focus
       # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+t = ép
       # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en

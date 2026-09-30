@@ -88,7 +88,7 @@ Bắt đầu từ hub [`docs/README.md`](docs/README.md):
 | **ZRAM** | Swap nén zstd 50% RAM — nhanh hơn SSD, giảm mòn ổ |
 | **Hibernate** | `systemctl hibernate` — lưu toàn bộ RAM vào swap 10G rồi tắt máy, bật lại khôi phục nguyên trạng |
 | **Battery threshold** | Sạc giới hạn 85–90% |
-| **keyd** | Caps Lock = Ctrl (giữ) / Esc (chạm) |
+| **keyd** | Caps Lock = Ctrl (giữ) / Esc (chạm) · **Tab giữ** = nav layer: hjkl mũi tên, `[`/`]` = Home/End (Tab chạm vẫn là Tab) |
 | **Power profiles** | battery-saver / balanced / performance |
 | **earlyoom** | Giết tiến trình ngốn RAM trước khi treo desktop |
 | **fwupd** | Cập nhật firmware |
