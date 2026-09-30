@@ -155,12 +155,13 @@ in
       for label in labels:
           counts[label] = counts.get(label, 0) + 1
 
+      # Chỉ đánh số khi có nhiều cửa sổ TRÙNG tên (vd 2 tab cùng tiêu đề), để
+      # phân biệt được. Số đặt CUỐI chuỗi hiển thị, KHÔNG chèn vào giữa icon.
       rows = []
       for index, (label, row) in enumerate(rendered, start=1):
           if counts[label] > 1:
               label_bytes, separator, icon = row.partition(b"\0")
-              suffix = f" [{index}]".encode("utf-8")
-              row = label_bytes + suffix + (separator + icon if separator else b"")
+              row = label_bytes + f" ({index})".encode("utf-8") + (separator + icon if separator else b"")
           rows.append(row)
 
       # Menu tự viết bằng swaymsg nên giữ được con_id -> thêm Delete để đóng cửa
@@ -170,8 +171,12 @@ in
           [
               "${pkgs.rofi}/bin/rofi", "-dmenu", "-i", "-matching", "fuzzy",
               "-show-icons", "-format", "i", "-p", "Scratchpad",
-              "-kb-custom-1", "Delete",
-              "-mesg", "Enter: mở / focus · Delete: đóng cửa sổ này",
+              # KHÔNG dùng "Delete": rofi đã gán sẵn cho kb-remove-char-forward
+              # (và Shift+Delete cho kb-delete-entry) → trùng binding bị rofi từ
+              # chối, in ra dòng đỏ "Failed to set binding Delete ...". Control+Delete
+              # thì chưa ai dùng nên nhận.
+              "-kb-custom-1", "Control+Delete",
+              "-mesg", "Enter: mở / focus · Ctrl+Delete: đóng cửa sổ này",
           ],
           input=b"\n".join(rows) + (b"\n" if rows else b""),
           capture_output=True,

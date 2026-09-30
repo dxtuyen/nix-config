@@ -149,12 +149,12 @@ in
       # Mod+r: về cửa sổ urgent (nếu có) hoặc cửa sổ dùng gần nhất (swayr LRU);
       # Mod+Shift+m: menu chuyển cửa sổ tổng. Menu này của swayr KHÔNG kill được
       # (swayr chỉ đọc index rồi tự focus, không trả con_id cho wrapper) — muốn
-      # đóng thì dùng $mod+m rồi bấm Delete, hoặc $mod+Shift+q để kill luôn.
+      # đóng thì dùng $mod+m rồi bấm Ctrl+Delete, hoặc $mod+Shift+q để kill luôn.
       # $mod+p nay là Pomodoro (xem phần Custom Utilities).
       bindsym $mod+r exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+Shift+m exec ${pkgs.swayr}/bin/swayr switch-window
       # Đã bỏ menu kill $mod+q: trùng danh sách với $mod+Shift+m, và kill đã có
-      # ở $mod+m (Delete) + $mod+Shift+q (kill cửa sổ đang focus).
+      # ở $mod+m (Ctrl+Delete) + $mod+Shift+q (kill cửa sổ đang focus).
       bindsym $mod+Shift+q kill
 
       # Menu ảnh: Mod+Alt+w · menu scratchpad+popup: Mod+m · đổi ảnh: Mod+Shift+w.
@@ -239,7 +239,7 @@ in
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
       # $mod+i đã xóa (cùng ticktick-focus). $mod+r là swayr urgent/LRU
       # (xem phần App & Session); $mod+u, $mod+x, $mod+q để TRỐNG. Kill cửa sổ:
-      # $mod+m rồi Delete, hoặc $mod+Shift+q cho cửa sổ đang focus.
+      # $mod+m rồi Ctrl+Delete, hoặc $mod+Shift+q cho cửa sổ đang focus.
       # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+t = ép
       # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
