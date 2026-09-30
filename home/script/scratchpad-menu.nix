@@ -129,6 +129,10 @@ in
           else:
               label = app_name
 
+          # Đồng nhất với 2 menu swayr ($mod+q, $mod+Shift+m): mọi dòng ở đây
+          # đều là cửa sổ đang cất nên gắn tiền tố [S].
+          label = f"[S] {label}"
+
           icon_path = entry.get("icon")
           if not icon_path:
               icon_path = icon_files.get(app_id.casefold()) or icon_files.get(wm_class.casefold())
