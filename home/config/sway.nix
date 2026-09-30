@@ -143,6 +143,8 @@ in
       # Mod+Shift+q: kill ngay cửa sổ đang focus.
       bindsym $mod+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+Shift+m exec ${pkgs.swayr}/bin/swayr switch-window
+      # $mod+q: menu danh sách kill — chọn cửa sổ trong danh sách để đóng.
+      bindsym $mod+q exec ${pkgs.swayr}/bin/swayr quit-window
       bindsym $mod+Shift+q kill
 
       # Menu ảnh: Mod+Alt+w · menu scratchpad: Mod+m · đổi ảnh: Mod+Shift+w.
@@ -224,15 +226,14 @@ in
       # Custom Utilities & Screenshot
       # $mod+o Obsidian (toggle scratchpad) · $mod+Shift+o menu tiện ích.
       bindsym $mod+o exec ~/.local/bin/obsidian-focus
-      bindsym $mod+Shift+o exec ~/.local/bin/util-menu
+      bindsym $mod+Shift+o exec ~/.local/bin/options
       # $mod+p Pomodoro · $mod+Shift+p menu nguồn · $mod+c Chrome.
       bindsym $mod+p exec ~/.local/bin/pomodoro
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
       bindsym $mod+c exec ${pkgs.google-chrome}/bin/google-chrome
       # $mod+i: TickTick (PWA) — toggle popup float 1000×700 giữa màn hình
-      # (cùng cơ chế $mod+o Obsidian / $mod+r RemNote). $mod+q, $mod+u,
-      # $mod+x để TRỐNG (tránh bấm nhầm); menu kill (swayr quit-window)
-      # không gán phím — chạy tay: `swayr quit-window`.
+      # (cùng cơ chế $mod+o Obsidian / $mod+r RemNote). $mod+u, $mod+x để
+      # TRỐNG; menu danh sách kill nằm ở $mod+q.
       bindsym $mod+i exec ~/.local/bin/ticktick-focus
       # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+t = ép
       # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.

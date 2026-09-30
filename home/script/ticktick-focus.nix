@@ -5,7 +5,7 @@
     executable = true;
     text = ''
       #!${pkgs.python3}/bin/python3
-      # ticktick-focus ($mod+q): logic y hệt remnote-focus/obsidian-focus.
+      # ticktick-focus ($mod+i): logic y hệt remnote-focus/obsidian-focus.
       # TickTick là PWA Chrome (app_id chrome-<id>-Default) → matcher theo
       # extension-id 32 ký tự để bền nếu Chrome đổi hậu tố profile.
       # Chưa mở → launch --app-id (cửa sổ map vào rule float 1000×700 giữa

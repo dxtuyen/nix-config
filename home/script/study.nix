@@ -430,7 +430,7 @@
             ;;
 
           inhibit)
-            # JSON state for Waybar and util-menu.
+            # JSON state for Waybar and options.
             "$0" status >/dev/null 2>&1
             read_state
             manual_json=false

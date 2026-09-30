@@ -175,7 +175,7 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 |---|---|
 | `nt` | Lệnh Bash: trong tmux mở window mới tại thư mục hiện tại; ngoài tmux mở cửa sổ Foot tại đó |
 | `power-menu` | `$mod+Shift+p`: Poweroff / Reboot / Suspend / Hibernate / Lock / Reload Sway / Exit Sway |
-| `util-menu` | `$mod+Shift+o`: `👁 Idle` toggle · `Display` mode · `Wi-Fi` · `Bluetooth` · `Power Profile` submenu |
+| `options` | `$mod+Shift+o`: `👁 Idle` toggle · `Display` mode · `Wi-Fi` · `Bluetooth` · `Power Profile` submenu |
 | `wlsunset-menu` | Three display modes (`Warm 4000K` / `Cool 6500K` / `Natural`), with `●` marking the active mode |
 | `power-profile-menu` | Đổi battery-saver / balanced / performance; mở từ `$mod+Shift+o` hoặc nhấp biểu tượng profile trên Waybar |
 | `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key nằm ở `~/.config/quick-lang/api.key` trên từng máy; không cần sửa file Nix |
@@ -193,7 +193,7 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 | `remnote-focus` | `$mod+r`: mở RemNote dạng popup scratchpad giữa màn hình nếu chưa chạy (**size mặc định của Sway**, không resize tay). Đang focus mà bấm nữa → **cất về scratchpad** (toggle); đang hiện chưa focus thì giữ nguyên trạng thái (kể cả tiled chiếm trọn màn hình hay fullscreen); nếu ẩn trong scratchpad hoặc ở workspace khác thì kéo về workspace hiện tại thành popup scratchpad rồi focus. Ẩn bằng `$mod+minus`, cất lại bằng `$mod+Shift+minus` |
 | `obsidian-focus` | `$mod+o`: logic **giống `remnote-focus`** — chưa chạy thì khởi động, đang focus mà bấm nữa → cất về scratchpad (toggle), đang hiện chưa focus → chỉ focus, ẩn/ở workspace khác → kéo về workspace hiện tại thành popup scratchpad rồi focus. Cửa sổ Obsidian cũng tự vào scratchpad ngay khi mở (rule trong `home/config/sway.nix`) |
 | `ticktick-focus` | `$mod+i`: TickTick (PWA) — logic **giống `obsidian-focus`**: mở từ desktop của Chrome (profile Default), chưa mở → khởi động (tự float 1000×700 giữa màn hình, rule trong `sway.nix`), đang focus bấm nữa → cất về scratchpad (toggle), hiện chưa focus → chỉ focus, ẩn/ở workspace khác → kéo về workspace hiện tại |
-| `swayr` | `$mod+Shift+q`: kill ngay cửa sổ đang focus; menu đóng cửa sổ theo lịch sử (`swayr quit-window`) **không gán phím** — chạy tay. Menu chuyển cửa sổ **tổng** (mọi workspace) `$mod+Shift+m` giữ thứ tự mặc định |
+| `swayr` | `$mod+q`: menu **danh sách kill** — chọn cửa sổ trong danh sách để đóng; `$mod+Shift+q`: kill ngay cửa sổ đang focus. Menu chuyển cửa sổ **tổng** (mọi workspace) `$mod+Shift+m` giữ thứ tự mặc định |
 | `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
 | `study` / `pomodoro` / `focus-sleep-watch` | Đồng hồ đếm ngược phiên tập trung: rảnh → ⌨ tự nhập 1–480 / ⏱ 30/60/120 phút; có phiên → ⏸/▶, ↺ reset, ＋ cộng phút; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
