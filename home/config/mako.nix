@@ -29,9 +29,9 @@
       "app-name=wlsunset".default-timeout = 2000;
       "app-name=power-profiles".default-timeout = 2000;
       "app-name=toggle-touchpad".default-timeout = 2000;
-      # Focus: viền theo màu đồng hồ Waybar.
-      "app-name=focus".border-color = "#89b4fa";
-      "app-name=focus".default-timeout = 5000;
+      # Countdown: viền theo màu đồng hồ Waybar.
+      "app-name=countdown".border-color = "#89b4fa";
+      "app-name=countdown".default-timeout = 5000;
       "app-name=screenshot".default-timeout = 2000;
       "app-name=power".default-timeout = 2000;
     };

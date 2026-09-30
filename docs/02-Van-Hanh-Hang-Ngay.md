@@ -183,19 +183,19 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
 | `wallpaper-set` | `$mod+Shift+w`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Mỗi lần bật máy vào Sway: **tự đổi ảnh random** (không giữ ảnh phiên trước); thư mục ảnh rỗng → dùng ảnh mặc định trong repo. ⛔ Auto-rotate 30 phút **đã TẮT** (xem mục [Tự đổi ảnh nền mỗi 30 phút](#tự-đổi-ảnh-nền-mỗi-30-phút-auto-rotate)). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
 | `wallpaper-menu` | `$mod+Alt+w`: menu rofi **lưới 3×3 thumbnail 320px** (ảnh trên, tên dưới, đang dùng đánh dấu `●`, >9 ảnh tự cuộn) — icon lấy từ **cache** `~/.cache/wallpaper-thumbs/` + build list **0 spawn** (đo: 2.2s → 0.05s với 333 ảnh) → **mở tức thì**. Lần đầu / vừa thêm ảnh: mở **dựng cache nền** → lần sau tự lưới. Chế độ: `--grid` (ép lưới), `--list` (chữ thuần, nhanh nhất)<br>**Phím duyệt ảnh:** `←` `→` **sang cột** · `↑` `↓` lên/xuống hàng · `Tab`/`Shift+Tab` hàng trước/sau · `Page_Up`/`Page_Down` trang trước/sau · `Home`/`End` ảnh đầu/cuối · lưới hết cuối **vòng lại đầu**. Bản `Alt+` tương ứng: `Alt+h/j/k/l`, `Alt+u/i/o/p`. Menu này **đổi chỗ** so với mặc định của rofi: `←`/`→` sang cột, con trỏ gõ chuyển sang `Alt+←`/`Alt+→` (không mất phím nào). Chỉ áp cho menu này, không đụng `rofi -show drun/window` |
-| `scratchpad-menu` | `$mod+m`: menu chọn cửa sổ đang cất, dùng tên/icon từ desktop entry; PWA Chrome/Chromium hiện tiêu đề thay cho app ID; chọn một mục để đưa đúng cửa sổ lên workspace hiện tại và focus |
-| `scratchpad-terminal` | `$mod+grave`: focus Foot terminal nhỏ trong scratchpad (chỉ khởi chạy lần đầu, shell giữ nguyên giữa các lần ẩn/hiện). Đang focus mà bấm nữa → **cất về scratchpad** (toggle); cũng ẩn được bằng `$mod+minus`; đang ở workspace khác thì kéo về workspace hiện tại thành popup scratchpad (size mặc định của Sway: 50% ngang × 75% dọc, tự canh giữa) rồi focus |
+| `scratchpad-menu` | `$mod+m`: menu chọn cửa sổ đang cất `[S]` + popup floating đang hiện `[F]` (RemNote/TickTick mở mặc định dạng popup), dùng tên/icon từ desktop entry; PWA Chrome/Chromium hiện tiêu đề thay cho app ID; chọn một mục để đưa đúng cửa sổ lên workspace hiện tại và focus |
+| `scratchpad-terminal` | `$mod+o`: focus Foot terminal nhỏ trong scratchpad (chỉ khởi chạy lần đầu, shell giữ nguyên giữa các lần ẩn/hiện; terminal scratchpad duy nhất còn lại sau khi xóa obsidian). Đang focus mà bấm nữa → **cất về scratchpad** (toggle); cũng ẩn được bằng `$mod+minus`; đang ở workspace khác thì kéo về workspace hiện tại thành popup scratchpad (size mặc định của Sway: 50% ngang × 75% dọc, tự canh giữa) rồi focus |
 | `wallpaper-thumbs` | Dựng thumbnail 320px cho menu (song song 8 luồng, ImageMagick, đếm thiếu bằng builtin không fork). Chạy nền khi menu cần; `--status` chỉ còn để tra tay. Xoá `~/.cache/wallpaper-thumbs/` bất cứ lúc nào → tự dựng lại |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
-| `study inhibit-toggle` | Bật/tắt chống idle thủ công; trạng thái đồng bộ giữa `$mod+Shift+o` và biểu tượng mắt Waybar. Phiên đếm ngược tiếp tục giữ chống idle tự động |
+| `countdown-engine inhibit-toggle` | Bật/tắt chống idle thủ công; trạng thái đồng bộ giữa `$mod+Shift+o` và biểu tượng mắt Waybar. Phiên đếm ngược tiếp tục giữ chống idle tự động |
 | `bluetui` | `Utilities` (`$mod+Shift+o`) → `Bluetooth`, hoặc nhấp Bluetooth trên Waybar; mở device manager trong floating terminal |
 | `Wi-Fi popup` | `Utilities` (`$mod+Shift+o`) → `Wi-Fi`, hoặc nhấp Wi-Fi trên Waybar: mở `wifitui` trong Foot, hỗ trợ `r` bật/tắt Wi-Fi, `/` tìm kiếm fuzzy, `s` quét lại sóng, `Enter` kết nối, `q`/`Esc` để đóng |
-| `remnote-focus` | `$mod+r`: mở RemNote dạng popup scratchpad giữa màn hình nếu chưa chạy (**size mặc định của Sway**, không resize tay). Đang focus mà bấm nữa → **cất về scratchpad** (toggle); đang hiện chưa focus thì giữ nguyên trạng thái (kể cả tiled chiếm trọn màn hình hay fullscreen); nếu ẩn trong scratchpad hoặc ở workspace khác thì kéo về workspace hiện tại thành popup scratchpad rồi focus. Ẩn bằng `$mod+minus`, cất lại bằng `$mod+Shift+minus` |
-| `obsidian-focus` | `$mod+o`: logic **giống `remnote-focus`** — chưa chạy thì khởi động, đang focus mà bấm nữa → cất về scratchpad (toggle), đang hiện chưa focus → chỉ focus, ẩn/ở workspace khác → kéo về workspace hiện tại thành popup scratchpad rồi focus. Cửa sổ Obsidian cũng tự vào scratchpad ngay khi mở (rule trong `home/config/sway.nix`) |
-| `ticktick-focus` | `$mod+i`: TickTick (PWA) — logic **giống `obsidian-focus`**: mở từ desktop của Chrome (profile Default), chưa mở → khởi động (tự float 1000×700 giữa màn hình, rule trong `sway.nix`), đang focus bấm nữa → cất về scratchpad (toggle), hiện chưa focus → chỉ focus, ẩn/ở workspace khác → kéo về workspace hiện tại |
-| `swayr` | `$mod+q`: menu **danh sách kill** — chọn cửa sổ trong danh sách để đóng; `$mod+Shift+q`: kill ngay cửa sổ đang focus. Menu chuyển cửa sổ **tổng** (mọi workspace) `$mod+Shift+m` giữ thứ tự mặc định |
+| `RemNote popup` | RemNote mở mặc định dạng **popup floating giữa màn hình** (1000x700, rule trong `home/config/sway.nix`), mở qua `$mod+d` rofi hoặc desktop entry, chọn trong `$mod+m` (tiền tố `[F]`). Không còn tự vào scratchpad, không còn phím `$mod+r` |
+| `Obsidian` | Script `obsidian-focus` **ĐÃ XÓA cùng phím `$mod+o`** — `$mod+o` giờ là terminal scratchpad. Mở Obsidian qua `$mod+d` rofi như app thường |
+| `TickTick popup` | Script `ticktick-focus` **ĐÃ XÓA cùng phím `$mod+i`** — TickTick (PWA Chrome) mở mặc định dạng **popup floating giữa màn hình** (1000x700, rule trong `sway.nix`), mở qua Chrome `--app-id` hoặc `$mod+d`, chọn trong `$mod+m` (tiền tố `[F]`) |
+| `swayr` | `$mod+p`: **nhảy tới cửa sổ urgent nếu có, không thì về cửa sổ dùng gần nhất (LRU)** — thay thế `$mod+Tab` cũ; `$mod+q`: menu **danh sách kill** — chọn cửa sổ trong danh sách để đóng; `$mod+Shift+q`: kill ngay cửa sổ đang focus. Menu chuyển cửa sổ **tổng** (mọi workspace) `$mod+Shift+m` giữ thứ tự mặc định |
 | `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
-| `study` / `pomodoro` / `focus-sleep-watch` | Đồng hồ đếm ngược phiên tập trung: rảnh → ⌨ tự nhập 1–480 / ⏱ 30/60/120 phút; có phiên → ⏸/▶, ↺ reset, ＋ cộng phút; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
+| `countdown-engine` / `countdown` / `countdown-sleep-watch` | Đồng hồ đếm ngược phiên tập trung (`$mod+c` mở menu `countdown`, click pill Waybar cũng mở `countdown`): rảnh → ⌨ tự nhập 1–480 / ⏱ 30/60/120 phút; có phiên → ⏸/▶, ↺ reset, ＋ cộng phút; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
 
 > Các phím tắt chi tiết được khai trong `home/config/sway.nix` — tra cứu tại đó khi cần.
@@ -345,13 +345,13 @@ sudo nixos-rebuild switch --flake ~/nix-config#laptop
 
 ## Menu tiện ích (`$mod+Shift+o`) và menu nguồn (`$mod+Shift+p`)
 
-`$mod+Shift+o` mở Rofi với các tiện ích `👁 Idle`, `Display`, `Wi-Fi`, `Bluetooth` và `Power Profile`. Gõ để lọc nhanh; Rofi xếp hạng fuzzy theo Levenshtein để kết quả khớp nhất lên trước. Chọn `Wi-Fi` hoặc `Bluetooth` sẽ mở công cụ tương ứng trong terminal nổi. `👁 Idle` gọi `study inhibit-toggle`, cùng lệnh với biểu tượng mắt Waybar nên trạng thái được quản lý đồng bộ. Khi phiên đếm ngược đang chạy, chống ngủ tự động vẫn được giữ; bật/tắt thủ công chỉ thay đổi trạng thái thủ công theo logic của `study`.
+`$mod+Shift+o` mở Rofi với các tiện ích `👁 Idle`, `Display`, `Wi-Fi`, `Bluetooth` và `Power Profile`. Gõ để lọc nhanh; Rofi xếp hạng fuzzy theo Levenshtein để kết quả khớp nhất lên trước. Chọn `Wi-Fi` hoặc `Bluetooth` sẽ mở công cụ tương ứng trong terminal nổi. `👁 Idle` gọi `countdown-engine inhibit-toggle`, cùng lệnh với biểu tượng mắt Waybar nên trạng thái được quản lý đồng bộ. Khi phiên đếm ngược đang chạy, chống ngủ tự động vẫn được giữ; bật/tắt thủ công chỉ thay đổi trạng thái thủ công theo logic của `countdown-engine`.
 
 Chọn `Display` để mở menu con có ba chế độ: `Warm 4000K`, `Cool 6500K` và `Natural (automatic)`. Dấu `●` đánh dấu chế độ đang chạy. `$mod+Shift+p` mở menu nguồn với Poweroff, Reboot, Suspend, Hibernate, Lock, Reload Sway và Exit Sway. Bluetooth có trạng thái trên Waybar ngay sau Wi-Fi; nhấp vào Bluetooth trên Waybar mở Bluetui, nhấp vào Wi-Fi mở Wifitui.
 
-`$mod+p` mở menu Pomodoro (đồng hồ đếm ngược). `$mod+c` mở Chrome. `$mod+m` chọn cửa sổ scratchpad, `$mod+Shift+m` menu chuyển cửa sổ tổng, `$mod+grave` focus terminal scratchpad (ẩn bằng `$mod+minus`), `$mod+Alt+w` chọn ảnh nền, còn `$mod+Shift+w` đổi ảnh nền ngẫu nhiên.
+`$mod+c` mở menu Countdown (đồng hồ đếm ngược). `$mod+p` nhảy tới cửa sổ urgent (nếu có) hoặc về cửa sổ dùng gần nhất. `$mod+m` chọn cửa sổ scratchpad `[S]` + popup floating `[F]`, `$mod+Shift+m` menu chuyển cửa sổ tổng, `$mod+o` focus terminal scratchpad (ẩn bằng `$mod+minus`), `$mod+Alt+w` chọn ảnh nền, còn `$mod+Shift+w` đổi ảnh nền ngẫu nhiên.
 
-## Đếm ngược phiên tập trung / Pomodoro (`$mod+p`)
+## Đếm ngược phiên tập trung / Countdown (`$mod+c`)
 
 Chỉ MỘT chế độ, KHÔNG break. Rảnh hoàn toàn → menu khởi động:
 
@@ -371,18 +371,18 @@ Chỉ MỘT chế độ, KHÔNG break. Rảnh hoàn toàn → menu khởi độn
 ```
 
 - **Mỗi dòng tự giải thích**: rảnh → dòng khởi động; có phiên → menu ẩn preset, hiện `⏸`/`▶` pause/resume, `↺ Reset` và `＋ Add minutes...`. Cộng phút giữ nguyên thời gian đã tập trung, tối đa tổng phiên 480 phút; dùng được cả khi phiên đang tạm dừng.
-- **Không mất lịch sử**: đổi phiên giữa chừng bằng CLI (`study start …`) vẫn ghi phần đã tập trung ≥ 1 phút vào lịch sử.
+- **Không mất lịch sử**: đổi phiên giữa chừng bằng CLI (`countdown-engine start …`) vẫn ghi phần đã tập trung ≥ 1 phút vào lịch sử.
 - **Tự động chống idle** (giống bật nút idle_inhibitor trên Waybar): phiên đang chạy → swayidle tạm dừng — **không khóa màn 300s, không tắt màn 310s, không ngủ 900s**; pause / reset / hết giờ → swayidle tự bật lại, mọi thứ về như bình thường. (Đóng nắp laptop vẫn ngủ như cũ.)
 - **Icon chống idle trên bar là NÚT ĐỘC LẬP** (như idle_inhibitor cũ), đồng bộ với phiên: phiên chạy → mắt mở **xanh** (tự động); bấm tay → mắt mở **vàng** (thủ công, giữ cả khi không có phiên); không nguồn nào → mắt gạch mờ (màn hình khóa/tắt/ngủ bình thường). **Bấm icon = bật/tắt chống idle thủ công**; tắt tay khi phiên đang chạy sẽ chỉ có hiệu lực sau khi phiên dừng (thông báo sẽ nhắc).
-- **Đóng nắp / máy ngủ → phiên tự TẠM DỪNG** (`focus-sleep-watch` nghe tín hiệu logind): REMAINING được tính lại đúng trước khi ngủ nên **thời gian ngủ không bị trừ vào phiên**; thức dậy → swayidle tự bật lại, phiên tự tiếp tục ▶ (hoặc finalize nếu phiên hết trong lúc ngủ). Muốn dừng hẳn thì `↺ Reset` sau khi dậy.
+- **Đóng nắp / máy ngủ → phiên tự TẠM DỪNG** (`countdown-sleep-watch` nghe tín hiệu logind): REMAINING được tính lại đúng trước khi ngủ nên **thời gian ngủ không bị trừ vào phiên**; thức dậy → swayidle tự bật lại, phiên tự tiếp tục ▶ (hoặc finalize nếu phiên hết trong lúc ngủ). Muốn dừng hẳn thì `↺ Reset` sau khi dậy.
 - **Tự phục hồi**: daemon chết giữa chừng → lần mở menu tiếp theo (hoặc waybar refresh) tự finalize phiên đã hết hạn (chuông/thông báo/lịch sử) hoặc hồi sinh daemon — không bao giờ kẹt đồng hồ "còn 00:00".
-- Hết giờ: chuông + thông báo. Lịch sử phiên ghi tại `~/.local/state/pomodoro-history.log` (mỗi dòng: thời điểm · `focus` · số phút).
+- Hết giờ: chuông + thông báo. Lịch sử phiên ghi tại `~/.local/state/countdown-history.log` (tự migrate từ `pomodoro-history.log` cũ; mỗi dòng: thời điểm · `countdown` · số phút).
 
 ```bash
-study start 30     # preset 30 phút
-study start 45     # tự nhập 45 phút (1–480)
-study add 15       # cộng 15 phút vào phiên hiện tại (tổng tối đa 480)
-study toggle       # pause/resume
+countdown-engine start 30     # preset 30 phút
+countdown-engine start 45     # tự nhập 45 phút (1–480)
+countdown-engine add 15       # cộng 15 phút vào phiên hiện tại (tổng tối đa 480)
+countdown-engine toggle       # pause/resume
 ```
 
 ## Khóa màn hình • Idle • Sleep (swayidle)
@@ -391,7 +391,7 @@ study toggle       # pause/resume
 |---|---|
 | 300s idle | khóa màn hình (`lock-screen`) |
 | 310s idle | tắt màn — có thao tác → bật lại nhưng vẫn khóa |
-| 900s idle | suspend (ngủ) — **chỉ khi đang dùng pin**; cắm sạc → thức tiếp (màn vẫn tắt & khóa) nhưng watcher nền chờ sẵn: **rút sạc khi vẫn idle → tự ngủ sau tối đa ~30s**; **bỏ qua khi phiên Focus đang chạy** (phiên chạy → cả chuỗi 300s/310s/900s tạm dừng, pause/reset/hết giờ → tự bật lại) |
+| 900s idle | suspend (ngủ) — **chỉ khi đang dùng pin**; cắm sạc → thức tiếp (màn vẫn tắt & khóa) nhưng watcher nền chờ sẵn: **rút sạc khi vẫn idle → tự ngủ sau tối đa ~30s**; **bỏ qua khi phiên Countdown đang chạy** (phiên chạy → cả chuỗi 300s/310s/900s tạm dừng, pause/reset/hết giờ → tự bật lại) |
 | before-sleep | luôn khóa lại trước khi ngủ |
 | lock / unlock | logind khóa → khóa ngay; unlock → bật màn |
 

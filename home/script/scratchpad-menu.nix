@@ -49,17 +49,25 @@ in
       ).stdout)
 
       def scratchpad_windows(node):
-          if node.get("type") in ("con", "floating_con") and node.get("scratchpad_state") not in (None, "none"):
-              yield node
+          # [S] = đang cất trong scratchpad; [F] = popup floating đang hiện
+          # (RemNote/TickTick và các float khác — không nằm trong scratchpad).
+          node_type = node.get("type")
+          if node.get("scratchpad_state") not in (None, "none"):
+              if node_type in ("con", "floating_con"):
+                  yield (node, "S")
+          elif node_type == "floating_con":
+              yield (node, "F")
           for key in ("nodes", "floating_nodes"):
               for child in node.get(key, []):
                   yield from scratchpad_windows(child)
 
-      windows = list(scratchpad_windows(tree))
+      found = list(scratchpad_windows(tree))
+      windows = [window for window, _ in found]
+      kinds = {window["id"]: kind for window, kind in found}
       if not windows:
           subprocess.run([
               shutil.which("notify-send") or "notify-send",
-              "Scratchpad", "Không có cửa sổ nào đang được cất",
+              "Scratchpad", "Không có cửa sổ nào đang cất hay popup",
           ], check=False)
           sys.exit(0)
 
@@ -129,9 +137,9 @@ in
           else:
               label = app_name
 
-          # Đồng nhất với 2 menu swayr ($mod+q, $mod+Shift+m): mọi dòng ở đây
-          # đều là cửa sổ đang cất nên gắn tiền tố [S].
-          label = f"[S] {label}"
+          # [S] cửa sổ đang cất · [F] popup floating đang hiện. Đồng nhất
+          # với 2 menu swayr ($mod+q, $mod+Shift+m): cửa sổ đang cất gắn [S].
+          label = f"[{kinds.get(window['id'], 'S')}] {label}"
 
           icon_path = entry.get("icon")
           if not icon_path:

@@ -2,34 +2,50 @@
 
 {
   home.file = {
-    ".local/bin/study" = {
+    ".local/bin/countdown-engine" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Usage: study {start|add|pause|resume|toggle|reset|status|inhibit|inhibit-state|...|daemon}
+        # Usage: countdown-engine {start|add|pause|resume|toggle|reset|status|inhibit|inhibit-state|...|daemon}
+        # (Trước đây là `study` — đã rename cho khớp menu `countdown`.)
 
         STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
-        STATE_FILE="$STATE_DIR/study-state"
+        # State file mới; tự migrate từ tên cũ 1 lần để không mất phiên đang chạy.
+        STATE_FILE="$STATE_DIR/countdown-state"
+        LEGACY_STATE_FILE="$STATE_DIR/study-state"
+        if [ -f "$LEGACY_STATE_FILE" ] && [ ! -f "$STATE_FILE" ]; then
+          mv -f "$LEGACY_STATE_FILE" "$STATE_FILE"
+        fi
         # Keep the lock under persistent state even when STATE_DIR is runtime-only.
-        LOCK_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/study-state.lock"
+        LOCK_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/countdown-state.lock"
         FLOCK="${pkgs.util-linux}/bin/flock"
-        SLEEP_MARKER="$STATE_DIR/study-sleep-paused"
+        SLEEP_MARKER="$STATE_DIR/countdown-sleep-paused"
         MANUAL_FLAG="$STATE_DIR/inhibit-manual"
-        HISTORY_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/pomodoro-history.log"
+        HISTORY_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/countdown-history.log"
+        LEGACY_HISTORY_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/pomodoro-history.log"
         mkdir -p "$STATE_DIR" "$(dirname "$LOCK_FILE")" "$(dirname "$HISTORY_FILE")"
+        # Migrate 1 lần từ tên cũ (pomodoro-history.log): chưa có file mới → mv;
+        # có cả 2 → nối cũ vào mới rồi xóa cũ. An toàn khi chạy nhiều lần.
+        if [ -f "$LEGACY_HISTORY_FILE" ]; then
+          if [ -f "$HISTORY_FILE" ]; then
+            cat "$LEGACY_HISTORY_FILE" >> "$HISTORY_FILE" && rm -f "$LEGACY_HISTORY_FILE"
+          else
+            mv -f "$LEGACY_HISTORY_FILE" "$HISTORY_FILE"
+          fi
+        fi
         exec 9>>"$LOCK_FILE"
 
         # Serialize state transitions shared by Waybar, the menu and the timer daemon.
         state_lock() {
           "$FLOCK" -x 9 || {
-            echo "study: cannot acquire state lock" >&2
+            echo "countdown-engine: cannot acquire state lock" >&2
             exit 1
           }
         }
 
         state_unlock() {
           "$FLOCK" -u 9 || {
-            echo "study: cannot release state lock" >&2
+            echo "countdown-engine: cannot release state lock" >&2
             exit 1
           }
         }
@@ -158,9 +174,9 @@
               state_unlock
               if [ -n "$finished_duration" ]; then
                 play_sound
-                notify-send -a focus -i "chronometer" -t 10000 -u critical \
+                notify-send -a countdown -i "chronometer" -t 10000 -u critical \
                   "Focus" "Phiên tập trung kết thúc! $finished_duration phút 🍅"
-                log_history "focus" "$finished_duration"
+                log_history "countdown" "$finished_duration"
                 notify_waybar
                 exit 0
               fi
@@ -175,9 +191,11 @@
         }
 
         # Luôn thay daemon cũ bằng daemon mới (tránh race pause → treo timer).
+        # Lần switch đầu còn sót daemon tên cũ `study daemon` → diệt luôn.
         ensure_daemon() {
+          pkill -f "countdown-engine daemon" 2>/dev/null || true
           pkill -f "study daemon" 2>/dev/null || true
-          nohup "$HOME/.local/bin/study" daemon 9>&- >/dev/null 2>&1 &
+          nohup "$HOME/.local/bin/countdown-engine" daemon 9>&- >/dev/null 2>&1 &
         }
 
         # Xóa dấu "ngủ tự pause" khi người dùng thao tác tay.
@@ -208,12 +226,12 @@
             minutes="''${2:-}"
             # Số nguyên 1–480 (preset đặt ở menu rofi).
             if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
-              echo "Usage: study start <1-480>" >&2
+              echo "Usage: countdown-engine start <1-480>" >&2
               exit 1
             fi
             state_lock
             read_state
-            maybe_log_current "focus"
+            maybe_log_current "countdown"
             clear_sleep_marker
             now=$(date +%s)
             DURATION="$minutes"
@@ -224,14 +242,14 @@
             ensure_daemon
             state_unlock
             notify_waybar
-            notify-send -a focus -i "chronometer" -t 3000 \
+            notify-send -a countdown -i "chronometer" -t 3000 \
               "Focus" "Phiên tập trung $minutes phút bắt đầu 🍅"
             ;;
 
           add)
             minutes="''${2:-}"
             if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
-              echo "Usage: study add <1-480>" >&2
+              echo "Usage: countdown-engine add <1-480>" >&2
               exit 1
             fi
             # Finalize first if the session elapsed while its menu was open.
@@ -240,14 +258,14 @@
             read_state
             if [ -z "$DURATION" ]; then
               state_unlock
-              notify-send -a focus -i "dialog-error" -t 4000 \
+              notify-send -a countdown -i "dialog-error" -t 4000 \
                 "Focus" "Không có phiên để cộng thời gian."
               exit 1
             fi
             new_duration=$((DURATION + minutes))
             if [ "$new_duration" -gt 480 ]; then
               state_unlock
-              notify-send -a focus -i "dialog-error" -t 4000 \
+              notify-send -a countdown -i "dialog-error" -t 4000 \
                 "Focus" "Tổng thời lượng tối đa là 480 phút (hiện tại $DURATION phút)."
               exit 1
             fi
@@ -270,7 +288,7 @@
             fi
             state_unlock
             notify_waybar
-            notify-send -a focus -i "chronometer" -t 3000 \
+            notify-send -a countdown -i "chronometer" -t 3000 \
               "Focus" "Đã cộng $minutes phút · tổng phiên $DURATION phút"
             ;;
 
@@ -285,10 +303,10 @@
               END_TIME=""
               write_state || exit 1
               # Kill daemon ngay (không chờ tự thoát).
-              pkill -f "study daemon" 2>/dev/null || true
+              pkill -f "countdown-engine daemon" 2>/dev/null || true
               state_unlock
               notify_waybar
-              notify-send -a focus -i "chronometer" -t 2000 "Focus" "Tạm dừng ⏸"
+              notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Tạm dừng ⏸"
             else
               state_unlock
             fi
@@ -306,7 +324,7 @@
               ensure_daemon
               state_unlock
               notify_waybar
-              notify-send -a focus -i "chronometer" -t 2000 "Focus" "Tiếp tục ▶"
+              notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Tiếp tục ▶"
             else
               state_unlock
             fi
@@ -324,10 +342,10 @@
               END_TIME=""
               write_state || exit 1
               # Kill daemon ngay (không chờ tự thoát).
-              pkill -f "study daemon" 2>/dev/null || true
+              pkill -f "countdown-engine daemon" 2>/dev/null || true
               state_unlock
               notify_waybar
-              notify-send -a focus -i "chronometer" -t 2000 "Focus" "Tạm dừng ⏸"
+              notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Tạm dừng ⏸"
             elif [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
               now=$(date +%s)
               END_TIME=$((now + REMAINING))
@@ -336,7 +354,7 @@
               ensure_daemon
               state_unlock
               notify_waybar
-              notify-send -a focus -i "chronometer" -t 2000 "Focus" "Tiếp tục ▶"
+              notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Tiếp tục ▶"
             else
               state_unlock
             fi
@@ -345,14 +363,14 @@
           reset)
             state_lock
             read_state
-            maybe_log_current "focus"
+            maybe_log_current "countdown"
             clear_sleep_marker
             DURATION=""
             RUNNING="false"
             END_TIME=""
             REMAINING=""
             write_state || exit 1
-            pkill -f "study daemon" 2>/dev/null || true
+            pkill -f "countdown-engine daemon" 2>/dev/null || true
             state_unlock
             notify_waybar
             ;;
@@ -366,7 +384,7 @@
             finished_duration=""
             # Lock only on expiry or daemon recovery; routine Waybar polls are lock-free.
             if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
-              if [ "$((END_TIME - $(date +%s)))" -le 0 ] || ! pgrep -f "study daemon" >/dev/null 2>&1; then
+              if [ "$((END_TIME - $(date +%s)))" -le 0 ] || ! pgrep -f "countdown-engine daemon" >/dev/null 2>&1; then
                 state_lock
                 read_state
                 if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
@@ -374,7 +392,7 @@
                     state_unlock
                     exit 1
                   }
-                  if [ -z "$finished_duration" ] && ! pgrep -f "study daemon" >/dev/null 2>&1; then
+                  if [ -z "$finished_duration" ] && ! pgrep -f "countdown-engine daemon" >/dev/null 2>&1; then
                     ensure_daemon
                     sync_idle_inhibit
                   fi
@@ -404,9 +422,9 @@
             fi
             if [ -n "$finished_duration" ]; then
               play_sound
-              notify-send -a focus -i "chronometer" -t 10000 -u critical \
+              notify-send -a countdown -i "chronometer" -t 10000 -u critical \
                 "Focus" "Phiên tập trung kết thúc! $finished_duration phút 🍅"
-              log_history "focus" "$finished_duration"
+              log_history "countdown" "$finished_duration"
               notify_waybar
             fi
             printf '{"text": "%s", "class": "%s", "tooltip": "%s"}\n' \
@@ -414,7 +432,7 @@
             ;;
 
           inhibit-state)
-            # Fast read-only snapshot for menus; state transitions stay in study commands.
+            # Fast read-only snapshot for menus; state transitions stay in countdown-engine commands.
             read_state
             printf -v now '%(%s)T' -1
             manual_json=false
@@ -465,10 +483,10 @@
             state_unlock
             notify_waybar
             if [ "$RUNNING" = "true" ] && [ "$toggle_msg" = "Off" ]; then
-              notify-send -a focus -i "dialog-information" -t 3000 \
+              notify-send -a countdown -i "dialog-information" -t 3000 \
                 "Idle inhibition" "Focus is active — automatic inhibition stays on until the session ends"
             else
-              notify-send -a focus -i "dialog-information" -t 2000 \
+              notify-send -a countdown -i "dialog-information" -t 2000 \
                 "Idle inhibition" "$toggle_msg — screen locking, display sleep, and suspend behavior updated"
             fi
             ;;
@@ -486,7 +504,7 @@
               END_TIME=""
               touch "$SLEEP_MARKER"
               write_state || exit 1
-              pkill -f "study daemon" 2>/dev/null || true
+              pkill -f "countdown-engine daemon" 2>/dev/null || true
               sleep_paused=1
             fi
             state_unlock
@@ -517,26 +535,26 @@
                 END_TIME=""
                 REMAINING=""
                 write_state || exit 1
-                pkill -f "study daemon" 2>/dev/null || true
+                pkill -f "countdown-engine daemon" 2>/dev/null || true
               fi
             else
               sync_idle_inhibit
             fi
             state_unlock
             if [ "$resumed" -eq 1 ]; then
-              notify-send -a focus -i "chronometer" -t 3000 \
+              notify-send -a countdown -i "chronometer" -t 3000 \
                 "Focus" "Máy vừa thức dậy — phiên tiếp tục ▶"
             elif [ -n "$finished_duration" ]; then
               play_sound
-              notify-send -a focus -i "chronometer" -t 10000 -u critical \
+              notify-send -a countdown -i "chronometer" -t 10000 -u critical \
                 "Focus" "Phiên tập trung kết thúc trong lúc máy ngủ! $finished_duration phút 🍅"
-              log_history "focus" "$finished_duration"
+              log_history "countdown" "$finished_duration"
             fi
             notify_waybar
             ;;
 
           *)
-            echo "Usage: study {start <1-480>|add <1-480>|pause|resume|toggle|reset|status|inhibit|inhibit-state|inhibit-toggle|sleep-pause|sleep-resume|daemon}" >&2
+            echo "Usage: countdown-engine {start <1-480>|add <1-480>|pause|resume|toggle|reset|status|inhibit|inhibit-state|inhibit-toggle|sleep-pause|sleep-resume|daemon}" >&2
             exit 1
             ;;
         esac

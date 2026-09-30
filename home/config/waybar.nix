@@ -179,22 +179,23 @@ in
           ""
         ];
       };
-      # Đồng hồ đếm ngược của study (xem home/script/study.nix).
+      # Đồng hồ đếm ngược (engine: home/script/countdown-engine.nix, menu: countdown).
+      # Giữ id module `custom/study` để không phải sửa `modules-center` ở trên.
       "custom/study" = {
-        exec = "~/.local/bin/study status";
+        exec = "~/.local/bin/countdown-engine status";
         signal = 8;
         return-type = "json";
-        "on-click" = "~/.local/bin/pomodoro";
+        "on-click" = "~/.local/bin/countdown";
       };
       # Icon mắt: xanh = phiên chạy, vàng = bật tay, mờ = không chống idle.
       "custom/inhibit" = {
-        exec = "~/.local/bin/study inhibit";
+        exec = "~/.local/bin/countdown-engine inhibit";
         # Script in glyph mắt; `escape = true` chỉ escape &<> trong tooltip.
         format = faSpan "{text}";
         escape = true;
         signal = 7;
         return-type = "json";
-        "on-click" = "~/.local/bin/study inhibit-toggle";
+        "on-click" = "~/.local/bin/countdown-engine inhibit-toggle";
       };
       clock = {
         format = "{:%a %d %b | %I:%M %p}";
