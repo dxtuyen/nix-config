@@ -174,26 +174,27 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 | Script | Chức năng |
 |---|---|
 | `nt` | Lệnh Bash: trong tmux mở window mới tại thư mục hiện tại; ngoài tmux mở cửa sổ Foot tại đó |
-| `power-menu` | `$mod+p`: Poweroff / Reboot / Suspend / Hibernate / Lock / Reload Sway / Exit Sway |
-| `util-menu` | `$mod+o`: `👁 Idle` toggle · `Display` mode · `Wi-Fi` · `Bluetooth` · `Power Profile` submenu |
+| `power-menu` | `$mod+Shift+p`: Poweroff / Reboot / Suspend / Hibernate / Lock / Reload Sway / Exit Sway |
+| `util-menu` | `$mod+Shift+o`: `👁 Idle` toggle · `Display` mode · `Wi-Fi` · `Bluetooth` · `Power Profile` submenu |
 | `wlsunset-menu` | Three display modes (`Warm 4000K` / `Cool 6500K` / `Natural`), with `●` marking the active mode |
-| `power-profile-menu` | Đổi battery-saver / balanced / performance; mở từ `$mod+o` hoặc nhấp biểu tượng profile trên Waybar |
+| `power-profile-menu` | Đổi battery-saver / balanced / performance; mở từ `$mod+Shift+o` hoặc nhấp biểu tượng profile trên Waybar |
 | `quick-lang` | Trợ lý English cho văn bản đang bôi: VI/EN/trộn → English sạch, EN→VI, sửa lỗi ép (`fix`, dùng model mạnh hơn). Tag ngữ cảnh `[phi]`/`[sci]`/`[lit]`/`[cas]`/`[lĩnh vực]` đặt đầu văn bản. Gemini hết quota tự fallback Google Translate — key nằm ở `~/.config/quick-lang/api.key` trên từng máy; không cần sửa file Nix |
 | `dict-toggle` | `mod+g`: bật/tắt GoldenDict float — đóng = ẩn về tray (tiến trình giữ nguyên, mở lại tức thời) |
 | `lock-screen` | Khóa màn hình (swaylock), tự khóa khi idle 300s |
 | `wallpaper-set` | `$mod+Shift+w`: đổi nền random qua **awww** (fork của swww, transition fade 1.5s). **Luôn loại ảnh đang hiển thị** → bấm liên tục luôn ra ảnh mới. Mỗi lần bật máy vào Sway: **tự đổi ảnh random** (không giữ ảnh phiên trước); thư mục ảnh rỗng → dùng ảnh mặc định trong repo. ⛔ Auto-rotate 30 phút **đã TẮT** (xem mục [Tự đổi ảnh nền mỗi 30 phút](#tự-đổi-ảnh-nền-mỗi-30-phút-auto-rotate)). Ảnh ở `~/Pictures/wallpapers` — xem mục [Ảnh nền](#ảnh-nền-wallpaper) để thêm ảnh |
-| `wallpaper-menu` | `$mod+Ctrl+w`: menu rofi **lưới 3×3 thumbnail 320px** (ảnh trên, tên dưới, đang dùng đánh dấu `●`, >9 ảnh tự cuộn) — icon lấy từ **cache** `~/.cache/wallpaper-thumbs/` + build list **0 spawn** (đo: 2.2s → 0.05s với 333 ảnh) → **mở tức thì**. Lần đầu / vừa thêm ảnh: mở **dựng cache nền** → lần sau tự lưới. Chế độ: `--grid` (ép lưới), `--list` (chữ thuần, nhanh nhất)<br>**Phím duyệt ảnh:** `←` `→` **sang cột** · `↑` `↓` lên/xuống hàng · `Tab`/`Shift+Tab` hàng trước/sau · `Page_Up`/`Page_Down` trang trước/sau · `Home`/`End` ảnh đầu/cuối · lưới hết cuối **vòng lại đầu**. Bản `Alt+` tương ứng: `Alt+h/j/k/l`, `Alt+u/i/o/p`. Menu này **đổi chỗ** so với mặc định của rofi: `←`/`→` sang cột, con trỏ gõ chuyển sang `Alt+←`/`Alt+→` (không mất phím nào). Chỉ áp cho menu này, không đụng `rofi -show drun/window` |
-| `scratchpad-menu` | `$mod+Shift+m`: menu chọn cửa sổ đang cất, dùng tên/icon từ desktop entry; PWA Chrome/Chromium hiện tiêu đề thay cho app ID; chọn một mục để đưa đúng cửa sổ lên workspace hiện tại và focus |
+| `wallpaper-menu` | `$mod+Alt+w`: menu rofi **lưới 3×3 thumbnail 320px** (ảnh trên, tên dưới, đang dùng đánh dấu `●`, >9 ảnh tự cuộn) — icon lấy từ **cache** `~/.cache/wallpaper-thumbs/` + build list **0 spawn** (đo: 2.2s → 0.05s với 333 ảnh) → **mở tức thì**. Lần đầu / vừa thêm ảnh: mở **dựng cache nền** → lần sau tự lưới. Chế độ: `--grid` (ép lưới), `--list` (chữ thuần, nhanh nhất)<br>**Phím duyệt ảnh:** `←` `→` **sang cột** · `↑` `↓` lên/xuống hàng · `Tab`/`Shift+Tab` hàng trước/sau · `Page_Up`/`Page_Down` trang trước/sau · `Home`/`End` ảnh đầu/cuối · lưới hết cuối **vòng lại đầu**. Bản `Alt+` tương ứng: `Alt+h/j/k/l`, `Alt+u/i/o/p`. Menu này **đổi chỗ** so với mặc định của rofi: `←`/`→` sang cột, con trỏ gõ chuyển sang `Alt+←`/`Alt+→` (không mất phím nào). Chỉ áp cho menu này, không đụng `rofi -show drun/window` |
+| `scratchpad-menu` | `$mod+m`: menu chọn cửa sổ đang cất, dùng tên/icon từ desktop entry; PWA Chrome/Chromium hiện tiêu đề thay cho app ID; chọn một mục để đưa đúng cửa sổ lên workspace hiện tại và focus |
 | `scratchpad-terminal` | `$mod+grave`: focus Foot terminal nhỏ trong scratchpad (chỉ khởi chạy lần đầu, shell giữ nguyên giữa các lần ẩn/hiện). Đang focus mà bấm nữa → **cất về scratchpad** (toggle); cũng ẩn được bằng `$mod+minus`; đang ở workspace khác thì kéo về workspace hiện tại thành popup scratchpad (size mặc định của Sway: 50% ngang × 75% dọc, tự canh giữa) rồi focus |
 | `wallpaper-thumbs` | Dựng thumbnail 320px cho menu (song song 8 luồng, ImageMagick, đếm thiếu bằng builtin không fork). Chạy nền khi menu cần; `--status` chỉ còn để tra tay. Xoá `~/.cache/wallpaper-thumbs/` bất cứ lúc nào → tự dựng lại |
 | `refresh-session` | Reload Sway + wlsunset (nền giữ nguyên — daemon awww vẫn hiển thị) |
-| `study inhibit-toggle` | Bật/tắt chống idle thủ công; trạng thái đồng bộ giữa `$mod+o` và biểu tượng mắt Waybar. Phiên đếm ngược tiếp tục giữ chống idle tự động |
-| `bluetui` | `Utilities` (`$mod+o`) → `Bluetooth`, hoặc nhấp Bluetooth trên Waybar; mở device manager trong floating terminal |
-| `Wi-Fi popup` | `Utilities` (`$mod+o`) → `Wi-Fi`, hoặc nhấp Wi-Fi trên Waybar: mở `wifitui` trong Foot, hỗ trợ `r` bật/tắt Wi-Fi, `/` tìm kiếm fuzzy, `s` quét lại sóng, `Enter` kết nối, `q`/`Esc` để đóng |
+| `study inhibit-toggle` | Bật/tắt chống idle thủ công; trạng thái đồng bộ giữa `$mod+Shift+o` và biểu tượng mắt Waybar. Phiên đếm ngược tiếp tục giữ chống idle tự động |
+| `bluetui` | `Utilities` (`$mod+Shift+o`) → `Bluetooth`, hoặc nhấp Bluetooth trên Waybar; mở device manager trong floating terminal |
+| `Wi-Fi popup` | `Utilities` (`$mod+Shift+o`) → `Wi-Fi`, hoặc nhấp Wi-Fi trên Waybar: mở `wifitui` trong Foot, hỗ trợ `r` bật/tắt Wi-Fi, `/` tìm kiếm fuzzy, `s` quét lại sóng, `Enter` kết nối, `q`/`Esc` để đóng |
 | `remnote-focus` | `$mod+r`: mở RemNote dạng popup scratchpad giữa màn hình nếu chưa chạy (**size mặc định của Sway**, không resize tay). Đang focus mà bấm nữa → **cất về scratchpad** (toggle); đang hiện chưa focus thì giữ nguyên trạng thái (kể cả tiled chiếm trọn màn hình hay fullscreen); nếu ẩn trong scratchpad hoặc ở workspace khác thì kéo về workspace hiện tại thành popup scratchpad rồi focus. Ẩn bằng `$mod+minus`, cất lại bằng `$mod+Shift+minus` |
-| `swayr` | `$mod+q`: menu đóng cửa sổ theo lịch sử; `$mod+Shift+q`: kill ngay cửa sổ đang focus. Menu chuyển cửa sổ `$mod+m` giữ thứ tự mặc định. `$mod+Shift+p`: nhảy tới cửa sổ Chrome/PWA đang mở, kể cả cửa sổ chưa từng được focus |
+| `obsidian-focus` | `$mod+o`: logic **giống `remnote-focus`** — chưa chạy thì khởi động, đang focus mà bấm nữa → cất về scratchpad (toggle), đang hiện chưa focus → chỉ focus, ẩn/ở workspace khác → kéo về workspace hiện tại thành popup scratchpad rồi focus. Cửa sổ Obsidian cũng tự vào scratchpad ngay khi mở (rule trong `home/config/sway.nix`) |
+| `swayr` | `$mod+q`: menu đóng cửa sổ theo lịch sử; `$mod+Shift+q`: kill ngay cửa sổ đang focus. Menu chuyển cửa sổ **tổng** (mọi workspace) `$mod+Shift+m` giữ thứ tự mặc định |
 | `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
-| `study` / `countdown-menu` / `focus-sleep-watch` | Đồng hồ đếm ngược phiên tập trung: rảnh → ⌨ tự nhập 1–480 / ⏱ 30/60/120 phút; có phiên → ⏸/▶, ↺ reset, ＋ cộng phút; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
+| `study` / `pomodoro` / `focus-sleep-watch` | Đồng hồ đếm ngược phiên tập trung: rảnh → ⌨ tự nhập 1–480 / ⏱ 30/60/120 phút; có phiên → ⏸/▶, ↺ reset, ＋ cộng phút; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
 
 > Các phím tắt chi tiết được khai trong `home/config/sway.nix` — tra cứu tại đó khi cần.
@@ -207,7 +208,7 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 > Hệ quả: **cài máy mới phải copy ảnh vào `~/Pictures/wallpapers/`** (xem [03-Cai-May-Moi](03-Cai-May-Moi.md)), và **backup `~/Pictures` là bắt buộc** — nó là bản duy nhất (xem [04-Sao-Luu-Phuc-Hoi](04-Sao-Luu-Phuc-Hoi.md)).
 
 - **Mỗi lần bật máy vào Sway**: tự đổi ảnh nền **random** (luôn khác ảnh phiên trước). Nếu `~/Pictures/wallpapers/` rỗng (máy mới) → dùng ảnh mặc định trong repo (xem [Chưa có ảnh nào?](#-chua-co-anh-nao-tu-dung-anh-mac-dinh))
-- **Đổi ảnh bất cứ lúc nào**: `$mod+Shift+w` (random — luôn khác ảnh đang dùng) hoặc `$mod+Ctrl+w` (menu rofi lưới thumbnail 3×3, tên dưới ảnh, xếp lấp trái→phải, `●` là ảnh đang dùng; >9 ảnh tự cuộn, phím `←→↑↓` duyệt ảnh). Không tự đổi theo giờ nữa.
+- **Đổi ảnh bất cứ lúc nào**: `$mod+Shift+w` (random — luôn khác ảnh đang dùng) hoặc `$mod+Alt+w` (menu rofi lưới thumbnail 3×3, tên dưới ảnh, xếp lấp trái→phải, `●` là ảnh đang dùng; >9 ảnh tự cuộn, phím `←→↑↓` duyệt ảnh). Không tự đổi theo giờ nữa.
 - **Thêm/xoá ảnh**: `$mod+y` mở **yazi** popup ở thư mục hiện tại (xem [Thêm ảnh bằng yazi](#thêm-ảnh-bằng-yazi-mody))
 
 ### ⭐ Chưa có ảnh nào? Tự động dùng ảnh mặc định trong repo
@@ -249,7 +250,7 @@ Cách nhanh nhất, không cần nhớ lệnh. `$mod+y` mở yazi dạng **popup
 1. Bấm **`$mod+y`** → popup yazi mở ở thư mục terminal đang ở
 2. Đi tới `~/Pictures/wallpapers`: bấm `~` (về home) → `Pictures` → `wallpapers`
 3. Tới nơi ảnh nằm (ví dụ `~/Downloads`), bấm `y` để **copy** → quay lại thư mục ảnh → `p` để **paste**
-4. `$mod+r` → ảnh mới hiện ngay
+4. `$mod+Shift+w` → ảnh mới hiện ngay
 
 Xoá ảnh: bấm `d` trong yazi (hỏi xác nhận) — vào **thùng rác**, nên vẫn khôi phục được bằng `g` `t` nếu lỡ. Muốn xoá hẳn luôn thì bấm `D`. Tự dọn rác cũ lúc 03:00, xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300).
 
@@ -298,7 +299,7 @@ Popup chỉ là `foot --title=yazi-popup` + rule floating theo title đó trong 
 cp ~/Downloads/hinh-moi.jpg ~/Pictures/wallpapers/hinh-moi.jpg
 ```
 
-Xong — dùng được ngay. Không sửa file `.nix` nào, không rebuild, không commit. Ảnh mới nằm trong vòng random ngay lần `$mod+r` kế tiếp.
+Xong — dùng được ngay. Không sửa file `.nix` nào, không rebuild, không commit. Ảnh mới nằm trong vòng random ngay lần `$mod+Shift+w` kế tiếp.
 
 ### Xóa ảnh
 
@@ -306,7 +307,7 @@ Xong — dùng được ngay. Không sửa file `.nix` nào, không rebuild, kh�
 rm ~/Pictures/wallpapers/ten-anh.jpg
 ```
 
-💡 Nếu xóa đúng ảnh **đang hiển thị**: bấm `$mod+r` đổi sang ảnh khác *trước*. (Hệ thống vẫn tự phục hồi — daemon giữ ảnh trong bộ nhớ, lần đăng nhập sau Sway tự đổi ảnh random — nhưng đổi trước vẫn gọn hơn.)
+💡 Nếu xóa đúng ảnh **đang hiển thị**: bấm `$mod+Shift+w` đổi sang ảnh khác *trước*. (Hệ thống vẫn tự phục hồi — daemon giữ ảnh trong bộ nhớ, lần đăng nhập sau Sway tự đổi ảnh random — nhưng đổi trước vẫn gọn hơn.)
 
 ### Thay thế / đổi tên ảnh
 
@@ -337,19 +338,19 @@ sudo nixos-rebuild switch --flake ~/nix-config#laptop
 |---|---|
 | `~/.local/bin/wallpaper-set` | Đổi sang ảnh random khác |
 | `~/.local/bin/wallpaper-set <đường-dẫn-ảnh>` | Đặt đúng ảnh chỉ định |
-| `~/.local/bin/wallpaper-menu` | Mở menu chọn ảnh lưới 3×3 (như `$mod+Ctrl+w`) |
+| `~/.local/bin/wallpaper-menu` | Mở menu chọn ảnh lưới 3×3 (như `$mod+Alt+w`) |
 | `awww query` | Xem ảnh đang hiển thị |
 | `ls ~/Pictures/wallpapers/` | Danh sách ảnh thực tế (kiểm tra sau thêm/xóa) |
 
-## Menu tiện ích (`$mod+o`) và menu nguồn (`$mod+p`)
+## Menu tiện ích (`$mod+Shift+o`) và menu nguồn (`$mod+Shift+p`)
 
-`$mod+o` mở Rofi với các tiện ích `👁 Idle`, `Display`, `Wi-Fi`, `Bluetooth` và `Power Profile`. Gõ để lọc nhanh; Rofi xếp hạng fuzzy theo Levenshtein để kết quả khớp nhất lên trước. Chọn `Wi-Fi` hoặc `Bluetooth` sẽ mở công cụ tương ứng trong terminal nổi. `👁 Idle` gọi `study inhibit-toggle`, cùng lệnh với biểu tượng mắt Waybar nên trạng thái được quản lý đồng bộ. Khi phiên đếm ngược đang chạy, chống ngủ tự động vẫn được giữ; bật/tắt thủ công chỉ thay đổi trạng thái thủ công theo logic của `study`.
+`$mod+Shift+o` mở Rofi với các tiện ích `👁 Idle`, `Display`, `Wi-Fi`, `Bluetooth` và `Power Profile`. Gõ để lọc nhanh; Rofi xếp hạng fuzzy theo Levenshtein để kết quả khớp nhất lên trước. Chọn `Wi-Fi` hoặc `Bluetooth` sẽ mở công cụ tương ứng trong terminal nổi. `👁 Idle` gọi `study inhibit-toggle`, cùng lệnh với biểu tượng mắt Waybar nên trạng thái được quản lý đồng bộ. Khi phiên đếm ngược đang chạy, chống ngủ tự động vẫn được giữ; bật/tắt thủ công chỉ thay đổi trạng thái thủ công theo logic của `study`.
 
-Chọn `Display` để mở menu con có ba chế độ: `Warm 4000K`, `Cool 6500K` và `Natural (automatic)`. Dấu `●` đánh dấu chế độ đang chạy. `$mod+p` mở menu nguồn với Poweroff, Reboot, Suspend, Hibernate, Lock, Reload Sway và Exit Sway. Bluetooth có trạng thái trên Waybar ngay sau Wi-Fi; nhấp vào Bluetooth trên Waybar mở Bluetui, nhấp vào Wi-Fi mở Wifitui.
+Chọn `Display` để mở menu con có ba chế độ: `Warm 4000K`, `Cool 6500K` và `Natural (automatic)`. Dấu `●` đánh dấu chế độ đang chạy. `$mod+Shift+p` mở menu nguồn với Poweroff, Reboot, Suspend, Hibernate, Lock, Reload Sway và Exit Sway. Bluetooth có trạng thái trên Waybar ngay sau Wi-Fi; nhấp vào Bluetooth trên Waybar mở Bluetui, nhấp vào Wi-Fi mở Wifitui.
 
-`$mod+c` mở menu đồng hồ đếm ngược. `$mod+Shift+m` chọn cửa sổ scratchpad, `$mod+grave` focus terminal scratchpad (ẩn bằng `$mod+minus`), `$mod+Ctrl+w` chọn ảnh nền, còn `$mod+Shift+w` đổi ảnh nền ngẫu nhiên.
+`$mod+p` mở menu Pomodoro (đồng hồ đếm ngược). `$mod+c` mở Chrome. `$mod+m` chọn cửa sổ scratchpad, `$mod+Shift+m` menu chuyển cửa sổ tổng, `$mod+grave` focus terminal scratchpad (ẩn bằng `$mod+minus`), `$mod+Alt+w` chọn ảnh nền, còn `$mod+Shift+w` đổi ảnh nền ngẫu nhiên.
 
-## Đếm ngược phiên tập trung (`$mod+c`)
+## Đếm ngược phiên tập trung / Pomodoro (`$mod+p`)
 
 Chỉ MỘT chế độ, KHÔNG break. Rảnh hoàn toàn → menu khởi động:
 
@@ -556,7 +557,7 @@ xdg-open ~/Books/Reading/*.epub   # mở thẳng 1 cuốn
 
 - Terminal là **foot** (`$mod+Return` mở cửa sổ mới). Lý do đổi từ Alacritty: foot hỗ trợ **sixel** nên yazi xem trước ảnh thật.
 - **Hiệu ứng blur ("acrylic") không tồn tại trên Sway** — Sway không implement protocol blur nào. Foot *có* khoá `blur = yes` nhưng nó cần protocol `ext-background-effect-manager-v1` (chỉ KDE Plasma 6.1+ có) nên trên Sway foot chỉ log `disabling background blur` rồi bỏ qua; Alacritty cũng tương tự (blur chỉ chạy macOS/KDE). Ở đây chỉ có **trong suốt phẳng** (`alpha = 0.9` trong `home/config/foot.nix`).
-- Muốn cảm giác kính mờ: đặt sẵn **ảnh nền đã blur** vào `~/Pictures/wallpapers/` rồi đổi ảnh đó (`$mod+r`) → terminal trong suốt nằm trên nền mờ trông gần giống acrylic.
+- Muốn cảm giác kính mờ: đặt sẵn **ảnh nền đã blur** vào `~/Pictures/wallpapers/` rồi đổi ảnh đó (`$mod+Shift+w`) → terminal trong suốt nằm trên nền mờ trông gần giống acrylic.
 - Sửa `home/config/foot.nix` rồi `nh os switch` là xong. **Kiểm tra config foot không cần mở cửa sổ**: `foot -C` → in `err: config.c:…` và exit 1 nếu sai cú pháp (sai màu hay gặp nhất, xem chú thích trong `home/config/foot.nix`).
 
 ## Sự cố thường gặp
@@ -568,7 +569,7 @@ xdg-open ~/Books/Reading/*.epub   # mở thẳng 1 cuốn
 | Bộ gõ kẹt | `fcitx5-diagnose` |
 | Yazi không xem trước ảnh | Ảnh phải hiện (foot hỗ trợ sixel). Kiểm tra `echo $TERM` trong terminal đang chạy yazi phải ra `foot` — nếu là `xterm-256color` thì terminal khác đã mở yazi, đóng đi mở lại từ foot. Hover PDF/video/SVG thì báo lỗi là **bình thường** (xem [Mở file ≠ Xem trước](#mở-file--xem-trước-preview)) |
 | Double-click file mở app không đúng | `xdg-mime query default <mime>` xem app đang được gán; sửa `home/config/mimeapps.nix` rồi rebuild (đừng sửa tay `~/.config/mimeapps.list` — nó là symlink do Home-Manager quản lý) |
-| Wallpaper không đổi | `systemctl --user status awww-daemon` (daemon giữ ảnh nền); test tay: `~/.local/bin/wallpaper-set`. Script tự loại ảnh đang hiển thị nên bấm `$mod+Shift+w` luôn ra ảnh mới; menu `$mod+Ctrl+w` hiện lưới thumbnail 3×3, tên dưới ảnh (ảnh đang dùng có dấu `●`). Lưu ý: auto-rotate 30 phút **đã tắt** nên nền sẽ KHÔNG tự đổi |
+| Wallpaper không đổi | `systemctl --user status awww-daemon` (daemon giữ ảnh nền); test tay: `~/.local/bin/wallpaper-set`. Script tự loại ảnh đang hiển thị nên bấm `$mod+Shift+w` luôn ra ảnh mới; menu `$mod+Alt+w` hiện lưới thumbnail 3×3, tên dưới ảnh (ảnh đang dùng có dấu `●`). Lưu ý: auto-rotate 30 phút **đã tắt** nên nền sẽ KHÔNG tự đổi |
 | Hibernate không dậy | `cat /proc/cmdline` phải có `resume=/dev/disk/by-label/swap`; `swapon --show` phải thấy phân vùng swap (nhãn `swap`) |
 
 ## Liên quan

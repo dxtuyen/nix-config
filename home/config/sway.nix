@@ -76,6 +76,9 @@ in
       # KHÔNG resize: "move scratchpad" tự float + size mặc định của Sway.
       for_window [class="(?i).*remnote.*"] move scratchpad, scratchpad show
       for_window [app_id="(?i).*remnote.*"] move scratchpad, scratchpad show
+      # Obsidian: cũng vào scratchpad ngay khi mở (giống RemNote) — $mod+o gọi/ẩn.
+      for_window [class="(?i).*obsidian.*"] move scratchpad, scratchpad show
+      for_window [app_id="(?i).*obsidian.*"] move scratchpad, scratchpad show
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
       # GoldenDict float như popup (mod+g bật/tắt; đóng = ẩn về tray).
@@ -117,6 +120,13 @@ in
       # Chrome Picture-in-Picture
       for_window [title="Picture in picture"] floating enable, sticky enable, resize set width 350 px height 197 px, move position 1530 px 800 px
 
+      # TickTick (PWA) → popup float giữa màn hình. App_id cố định, sinh từ
+      # SHA256(start_url) + tên profile (xem app_id_helpers.cc) nên sang máy khác
+      # cài lại cùng PWA (cùng nguồn cài, profile Default) là giữ nguyên.
+      # Tìm app_id trên máy khác: ls ~/.local/share/applications/chrome-*-Default.desktop
+      # hoặc mở PWA rồi: swaymsg -t get_tree | jq -r '..|objects|select(.app_id?)|.app_id'
+      for_window [app_id="^chrome-cfammbeebmjdpoppachopcohfchgjapd-Default$"] floating enable, resize set width 1000 px height 700 px, move position center
+
       # VS Code luôn mở vào workspace 3.code.
       for_window [class="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
       for_window [app_id="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
@@ -128,26 +138,20 @@ in
       bindsym $mod+Return exec $term
       # $mod+grave: focus terminal scratchpad (bấm lại khi đang focus → cất về scratchpad).
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
-      bindsym $mod+q exec ${pkgs.swayr}/bin/swayr quit-window
       bindsym $mod+d exec $menu
-      # Mod+Tab: quay lại cửa sổ vừa dùng; Mod+m: menu MRU;
+      # Mod+Tab: quay lại cửa sổ vừa dùng; Mod+Shift+m: menu chuyển cửa sổ tổng;
       # Mod+Shift+q: kill ngay cửa sổ đang focus.
       bindsym $mod+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
-      bindsym $mod+m exec ${pkgs.swayr}/bin/swayr switch-window
-      # $mod+Shift+p: nhảy tới cửa sổ Chrome/PWA đang mở, kể cả chưa từng được
-      # focus (MRU/urgent không với tới cửa sổ kiểu này); chưa focus thì về LRU.
-      bindsym $mod+Shift+p exec ${pkgs.swayr}/bin/swayr switch-to-matching-or-urgent-or-lru-window '[app_id="^(google-chrome|chrome-)"]'
+      bindsym $mod+Shift+m exec ${pkgs.swayr}/bin/swayr switch-window
       bindsym $mod+Shift+q kill
 
-      # Menu ảnh: Mod+Shift+m · menu scratchpad: Mod+n · đổi ảnh: Mod+Shift+w.
+      # Menu ảnh: Mod+Alt+w · menu scratchpad: Mod+m · đổi ảnh: Mod+Shift+w.
       # ~/Pictures/wallpapers (lưới thumbnail, phím ←→↑↓ duyệt ảnh).
-      bindsym $mod+Shift+m exec ~/.local/bin/wallpaper-menu
-      bindsym $mod+n exec ~/.local/bin/scratchpad-menu
+      bindsym $mod+Mod1+w exec ~/.local/bin/wallpaper-menu
+      bindsym $mod+m exec ~/.local/bin/scratchpad-menu
       bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-set
       # $mod+r: focus RemNote scratchpad (bấm lại khi đang focus → cất về scratchpad).
       bindsym $mod+r exec ~/.local/bin/remnote-focus
-      # $mod+y: yazi dạng POPUP nhỏ; gõ `yazi` trong terminal thì cửa sổ thường.
-      bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       # Focus movement
@@ -214,9 +218,18 @@ in
       bindsym $mod+minus scratchpad show
 
       # Custom Utilities & Screenshot
-      bindsym $mod+o exec ~/.local/bin/util-menu
-      bindsym $mod+p exec ~/.local/bin/power-menu
-      bindsym $mod+c exec ~/.local/bin/countdown-menu
+      # $mod+o Obsidian (toggle scratchpad) · $mod+Shift+o menu tiện ích.
+      bindsym $mod+o exec ~/.local/bin/obsidian-focus
+      bindsym $mod+Shift+o exec ~/.local/bin/util-menu
+      # $mod+p Pomodoro · $mod+Shift+p menu nguồn · $mod+c Chrome.
+      bindsym $mod+p exec ~/.local/bin/pomodoro
+      bindsym $mod+Shift+p exec ~/.local/bin/power-menu
+      bindsym $mod+c exec ${pkgs.google-chrome}/bin/google-chrome
+      # $mod+y: TickTick (PWA) — toggle popup float 1000×700 giữa màn hình
+      # (cùng cơ chế $mod+o Obsidian / $mod+r RemNote). $mod+q để TRỐNG
+      # (tránh bấm nhầm); menu kill (swayr quit-window) và yazi-open
+      # không gán phím — chạy tay: `swayr quit-window`, hoặc `y` / `yazi-open`.
+      bindsym $mod+y exec ~/.local/bin/ticktick-focus
       # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+t = ép
       # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en

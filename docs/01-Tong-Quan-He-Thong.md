@@ -42,7 +42,7 @@ trong terminal cùng Bash integration; cấu hình này không phụ thuộc Yaz
 
 1. Boot → **systemd-boot** chọn generation.
 2. **greetd** (tuigreet) hiện màn hình đăng nhập → chạy Sway.
-3. Sway kích hoạt `sway-session.target`: Waybar, Fcitx5, wlsunset, awww-daemon + `wallpaper-set` (tự đổi ảnh random mỗi lần vào Sway)… (timer đổi nền 30 phút **đã TẮT**, xem [02](02-Van-Hanh-Hang-Ngay.md#ảnh-nền-wallpaper)). Wi-Fi và Bluetooth mở từ Utilities (`$mod+p`); Pomodoro dùng `$mod+o`.
+3. Sway kích hoạt `sway-session.target`: Waybar, Fcitx5, wlsunset, awww-daemon + `wallpaper-set` (tự đổi ảnh random mỗi lần vào Sway)… (timer đổi nền 30 phút **đã TẮT**, xem [02](02-Van-Hanh-Hang-Ngay.md#ảnh-nền-wallpaper)). Wi-Fi và Bluetooth mở từ Utilities (`$mod+Shift+o`); Pomodoro dùng `$mod+p`.
 4. **swayidle** lo chuỗi khóa màn hình → tắt màn → suspend (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)).
 
 ## Config vs Dữ liệu (quan trọng nhất)

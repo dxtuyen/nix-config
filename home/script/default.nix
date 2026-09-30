@@ -26,7 +26,9 @@
     ./screenshot-menu.nix
     ./quick-lang.nix
     ./study.nix
-    ./countdown-menu.nix
+    ./pomodoro.nix
+    ./obsidian-focus.nix
+    ./ticktick-focus.nix
     ./focus-sleep-watch.nix
     ./setup-remnote.nix
     ./remnote-focus.nix

@@ -184,7 +184,7 @@ in
         exec = "~/.local/bin/study status";
         signal = 8;
         return-type = "json";
-        "on-click" = "~/.local/bin/countdown-menu";
+        "on-click" = "~/.local/bin/pomodoro";
       };
       # Icon mắt: xanh = phiên chạy, vàng = bật tay, mờ = không chống idle.
       "custom/inhibit" = {

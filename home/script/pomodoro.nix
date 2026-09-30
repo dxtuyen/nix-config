@@ -2,11 +2,11 @@
 
 {
   home.file = {
-    ".local/bin/countdown-menu" = {
+    ".local/bin/pomodoro" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Countdown menu: start, pause/resume, reset, hoặc thêm thời gian.
+        # Pomodoro menu (trước đây là countdown-menu): start, pause/resume, reset, hoặc thêm thời gian.
         set -u
 
         STUDY="$HOME/.local/bin/study"
@@ -54,12 +54,12 @@
           ITEMS+=("⏱ 120 min")
         fi
 
-        choice=$(printf '%s\n' "''${ITEMS[@]}" | rofi -dmenu -i -p "Countdown" \
+        choice=$(printf '%s\n' "''${ITEMS[@]}" | rofi -dmenu -i -p "Pomodoro" \
           -mesg "⌨ start 1–480 · ⏱ 30/60/120 min · ⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
 
         # Hủy (rỗng) → thoát im lặng; sai định dạng → báo lỗi.
         ask_minutes() {
-          local prompt="''${1:-Countdown — minutes (1–480)}"
+          local prompt="''${1:-Pomodoro — minutes (1–480)}"
           local minutes
           minutes=$(rofi -dmenu -p "$prompt")
           if [ -z "$minutes" ]; then
@@ -67,7 +67,7 @@
           fi
           if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
             notify-send -a focus -i "dialog-error" -t 4000 \
-              "Countdown" "Invalid minutes: $minutes (need 1–480)"
+              "Pomodoro" "Invalid minutes: $minutes (need 1–480)"
             exit 1
           fi
           echo "$minutes"
@@ -86,7 +86,7 @@
           "▶ "*) exec "$STUDY" toggle ;;
           "↺ Reset") exec "$STUDY" reset ;;
           "＋ Add minutes...")
-            m=$(ask_minutes "Countdown — add minutes (1–480)") || exit $?
+            m=$(ask_minutes "Pomodoro — add minutes (1–480)") || exit $?
             [ -n "$m" ] || exit 0
             exec "$STUDY" add "$m"
             ;;
