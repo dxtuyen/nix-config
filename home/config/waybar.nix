@@ -73,13 +73,13 @@ in
         tooltip-format-disabled = "Wi-Fi disabled";
       };
       bluetooth = {
-        format = "${faSpan ""} {status}";
-        "format-disabled" = "${faSpan ""} Disabled";
-        "format-off" = "${faSpan ""} Off";
-        "format-on" = "${faSpan ""} On";
-        "format-connected" = "${faSpan ""} {device_alias}";
-        "format-no-controller" = "${faSpan ""} N/A";
-        "max-length" = 18;
+        # Chỉ icon cho gọn — hover để xem chi tiết thiết bị qua tooltip.
+        format = faSpan "";
+        "format-disabled" = faSpan "";
+        "format-off" = faSpan "";
+        "format-on" = faSpan "";
+        "format-connected" = faSpan "";
+        "format-no-controller" = faSpan "";
         tooltip = true;
         "tooltip-format" = "{controller_alias}: {status}";
         "tooltip-format-connected" = "{controller_alias} · {num_connections} connected\n{device_enumerate}";
