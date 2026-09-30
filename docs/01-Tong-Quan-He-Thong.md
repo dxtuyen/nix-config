@@ -31,7 +31,7 @@
 |---|---|
 | `default.nix` | Thiết lập tài khoản Home Manager, shell và imports ba nhóm cấu hình. |
 | `config/` | Gói người dùng, Git, Nixvim, Sway, Waybar, terminal, theme, MIME và bộ gõ. |
-| `apps/` | Tích hợp ứng dụng có cấu hình riêng: Countdown, RemNote, Sioyek, Thunar, wallpaper/awww và Yazi. |
+| `apps/` | Tích hợp ứng dụng có cấu hình riêng: Pomodoro, RemNote, Sioyek, Thunar, wallpaper/awww và Yazi. |
 | `script/` | Mỗi lệnh `~/.local/bin` có một file riêng; `default.nix` liệt kê các script. `quick-lang.nix` chứa model, prompt và Gemini API. |
 
 Neovim được cấu hình bằng Nixvim tại `home/config/nixvim.nix`; phím leader là Space.
@@ -42,7 +42,7 @@ trong terminal cùng Bash integration; cấu hình này không phụ thuộc Yaz
 
 1. Boot → **systemd-boot** chọn generation.
 2. **greetd** (tuigreet) hiện màn hình đăng nhập → chạy Sway.
-3. Sway kích hoạt `sway-session.target`: Waybar, Fcitx5, wlsunset, awww-daemon + `wallpaper-set` (tự đổi ảnh random mỗi lần vào Sway)… (timer đổi nền 30 phút **đã TẮT**, xem [02](02-Van-Hanh-Hang-Ngay.md#ảnh-nền-wallpaper)). Wi-Fi và Bluetooth mở từ Utilities (`$mod+Shift+o`); Countdown dùng `$mod+c`, `$mod+r` nhảy tới cửa sổ urgent/LRU.
+3. Sway kích hoạt `sway-session.target`: Waybar, Fcitx5, wlsunset, awww-daemon + `wallpaper-set` (tự đổi ảnh random mỗi lần vào Sway)… (timer đổi nền 30 phút **đã TẮT**, xem [02](02-Van-Hanh-Hang-Ngay.md#ảnh-nền-wallpaper)). Wi-Fi và Bluetooth mở từ Utilities (`$mod+Shift+o`); Pomodoro dùng `$mod+p`, `$mod+r` nhảy tới cửa sổ urgent/LRU.
 4. **swayidle** lo chuỗi khóa màn hình → tắt màn → suspend (xem [02-Van-Hanh-Hang-Ngay](02-Van-Hanh-Hang-Ngay.md)).
 
 ## Config vs Dữ liệu (quan trọng nhất)

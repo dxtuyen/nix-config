@@ -179,23 +179,23 @@ in
           ""
         ];
       };
-      # Đồng hồ đếm ngược (engine: home/script/countdown-engine.nix, menu: countdown).
+      # Đồng hồ Pomodoro (engine: home/script/pomodoro-engine.nix, menu: pomodoro).
       # Giữ id module `custom/study` để không phải sửa `modules-center` ở trên.
       "custom/study" = {
-        exec = "~/.local/bin/countdown-engine status";
+        exec = "~/.local/bin/pomodoro-engine status";
         signal = 8;
         return-type = "json";
-        "on-click" = "~/.local/bin/countdown";
+        "on-click" = "~/.local/bin/pomodoro";
       };
       # Icon mắt: xanh = phiên chạy, vàng = bật tay, mờ = không chống idle.
       "custom/inhibit" = {
-        exec = "~/.local/bin/countdown-engine inhibit";
+        exec = "~/.local/bin/pomodoro-engine inhibit";
         # Script in glyph mắt; `escape = true` chỉ escape &<> trong tooltip.
         format = faSpan "{text}";
         escape = true;
         signal = 7;
         return-type = "json";
-        "on-click" = "~/.local/bin/countdown-engine inhibit-toggle";
+        "on-click" = "~/.local/bin/pomodoro-engine inhibit-toggle";
       };
       clock = {
         format = "{:%a %d %b | %I:%M %p}";

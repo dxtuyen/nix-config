@@ -2,20 +2,22 @@
 
 {
   home.file = {
-    ".local/bin/countdown" = {
+    ".local/bin/pomodoro" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Countdown menu: start, pause/resume, reset, hoặc thêm thời gian.
+        # Pomodoro menu: start, pause/resume, reset, hoặc thêm thời gian.
         set -u
 
-        ENGINE="$HOME/.local/bin/countdown-engine"
-        # Tương thích phiên đang chạy lúc switch: engine mới đọc countdown-state,
-        # countdown (menu) đọc được cả file cũ study-state.
-        # Fallback `study` cho máy chưa switch xong (binary cũ vẫn còn).
-        if [ ! -x "$ENGINE" ] && [ -x "$HOME/.local/bin/study" ]; then
-          ENGINE="$HOME/.local/bin/study"
-        fi
+        ENGINE="$HOME/.local/bin/pomodoro-engine"
+        # Tương thích lúc switch: engine mới đọc pomodoro-state, menu này đọc
+        # được cả file cũ (countdown-state, study-state). Fallback binary cũ cho
+        # máy chưa switch xong (countdown-engine, study vẫn còn trong ~/.local/bin).
+        for candidate in "$HOME/.local/bin/countdown-engine" "$HOME/.local/bin/study"; do
+          if [ ! -x "$ENGINE" ] && [ -x "$candidate" ]; then
+            ENGINE="$candidate"
+          fi
+        done
         STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
 
         format_time() {
@@ -30,8 +32,11 @@
         RUNNING="false"
         END_TIME=""
         REMAINING=""
-        MENU_STATE="$STATE_DIR/countdown-state"
-        [ -f "$MENU_STATE" ] || MENU_STATE="$STATE_DIR/study-state"
+        MENU_STATE="$STATE_DIR/pomodoro-state"
+        for legacy in "$STATE_DIR/countdown-state" "$STATE_DIR/study-state"; do
+          [ -f "$MENU_STATE" ] || [ -f "$legacy" ] || continue
+          MENU_STATE="$legacy"
+        done
         if [ -f "$MENU_STATE" ]; then
           # shellcheck disable=SC1090
           . "$MENU_STATE"
@@ -62,20 +67,20 @@
           ITEMS+=("⏱ 120 min")
         fi
 
-        choice=$(printf '%s\n' "''${ITEMS[@]}" | rofi -dmenu -i -p "Countdown" \
+        choice=$(printf '%s\n' "''${ITEMS[@]}" | rofi -dmenu -i -p "Pomodoro" \
           -mesg "⌨ start 1–480 · ⏱ 30/60/120 min · ⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
 
         # Hủy (rỗng) → thoát im lặng; sai định dạng → báo lỗi.
         ask_minutes() {
-          local prompt="''${1:-Countdown — minutes (1–480)}"
+          local prompt="''${1:-Pomodoro — minutes (1–480)}"
           local minutes
           minutes=$(rofi -dmenu -p "$prompt")
           if [ -z "$minutes" ]; then
             exit 0
           fi
           if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
-            notify-send -a countdown -i "dialog-error" -t 4000 \
-              "Countdown" "Invalid minutes: $minutes (need 1–480)"
+            notify-send -a pomodoro -i "dialog-error" -t 4000 \
+              "Pomodoro" "Invalid minutes: $minutes (need 1–480)"
             exit 1
           fi
           echo "$minutes"
@@ -94,7 +99,7 @@
           "▶ "*) exec "$ENGINE" toggle ;;
           "↺ Reset") exec "$ENGINE" reset ;;
           "＋ Add minutes...")
-            m=$(ask_minutes "Countdown — add minutes (1–480)") || exit $?
+            m=$(ask_minutes "Pomodoro — add minutes (1–480)") || exit $?
             [ -n "$m" ] || exit 0
             exec "$ENGINE" add "$m"
             ;;

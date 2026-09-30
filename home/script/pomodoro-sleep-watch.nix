@@ -2,7 +2,7 @@
 
 {
   home.file = {
-    ".local/bin/countdown-sleep-watch" = {
+    ".local/bin/pomodoro-sleep-watch" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
@@ -15,7 +15,7 @@
 
         log() {
           printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" \
-            >> "$STATE_DIR/countdown-sleep-watch.log"
+            >> "$STATE_DIR/pomodoro-sleep-watch.log"
         }
 
         log "watcher khởi động (đang theo dõi PrepareForSleep trên system bus)"
@@ -32,16 +32,16 @@
               if [ "${"pending:-0"}" -eq 1 ]; then
                 pending=0
                 log "máy chuẩn bị ngủ → sleep-pause"
-                "$HOME/.local/bin/countdown-engine" sleep-pause \
-                  >> "$STATE_DIR/countdown-sleep-watch.log" 2>&1
+                "$HOME/.local/bin/pomodoro-engine" sleep-pause \
+                  >> "$STATE_DIR/pomodoro-sleep-watch.log" 2>&1
               fi
               ;;
             *"boolean false"*)
               if [ "${"pending:-0"}" -eq 1 ]; then
                 pending=0
                 log "máy vừa dậy → sleep-resume"
-                "$HOME/.local/bin/countdown-engine" sleep-resume \
-                  >> "$STATE_DIR/countdown-sleep-watch.log" 2>&1
+                "$HOME/.local/bin/pomodoro-engine" sleep-resume \
+                  >> "$STATE_DIR/pomodoro-sleep-watch.log" 2>&1
               fi
               ;;
           esac
