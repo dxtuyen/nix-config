@@ -49,12 +49,14 @@ in
       if prompt.casefold().startswith("quit") and len(rows) > 1:
           rows = list(reversed(rows[:-1])) + rows[-1:]
 
-      # Tiền tố [S]: cửa sổ nào XUẤT HIỆN trong menu scratchpad ($mod+m)
-      # thì cũng có tiền tố [S] ở cả 2 menu swayr (kill + tổng). Điều kiện
-      # chung duy nhất: scratchpad_state != "none" (ĐANG CẤT, visible=False).
-      # Popup scratchpad đang hiện (visible=True) KHÔNG gắn — nó đang ngay
-      # trước mắt, không có nguy cơ kill nhầm.
+      # Tiền tố [S]/[F]: đồng nhất với menu scratchpad ($mod+m).
+      # [S] = cửa sổ ĐANG CẤT trong scratchpad (scratchpad_state != "none",
+      #   visible=False) — kill nó là mất hút, cần cảnh báo.
+      # [F] = popup floating ĐANG HIỆN ngoài scratchpad (type floating_con,
+      #   visible=True: RemNote/TickTick và các float khác) — kill là mất ngay
+      #   trước mắt. Nếu trùng tên cả 2 tập thì ưu tiên [S].
       in_scratchpad = set()
+      in_floating = set()
       swaymsg = shutil.which("swaymsg")
       if swaymsg:
           try:
@@ -65,13 +67,17 @@ in
 
               def collect_ids(node):
                   if node.get("type") in ("con", "floating_con"):
+                      ident = node.get("app_id") or (node.get("window_properties") or {}).get("class") or ""
+                      name = node.get("name") or (node.get("window_properties") or {}).get("title") or ""
+                      keys = set()
+                      if ident:
+                          keys.add(ident.casefold())
+                      if name:
+                          keys.add(name.casefold())
                       if node.get("scratchpad_state") not in (None, "none") and not node.get("visible"):
-                          ident = node.get("app_id") or (node.get("window_properties") or {}).get("class") or ""
-                          name = node.get("name") or (node.get("window_properties") or {}).get("title") or ""
-                          if ident:
-                              in_scratchpad.add(ident.casefold())
-                          if name:
-                              in_scratchpad.add(name.casefold())
+                          in_scratchpad.update(keys)
+                      elif node.get("type") == "floating_con" and node.get("visible"):
+                          in_floating.update(keys)
                   for key in ("nodes", "floating_nodes"):
                       for child in node.get(key, []):
                           collect_ids(child)
@@ -146,7 +152,7 @@ in
           if delimiter and pwa_id.fullmatch(app_name):
               label = title.encode("utf-8")
           # So khớp theo app_id HOẶC title (swayr hiển thị "app — title",
-          # PWA chỉ hiện title) — khớp cái nào cũng gắn [S].
+          # PWA chỉ hiện title) — [S] ưu tiên trước [F] khi trùng tên.
           haystacks = {app_name.casefold()}
           if delimiter:
               haystacks.add(title.casefold())
@@ -154,6 +160,8 @@ in
               haystacks.add(text.casefold())
           if haystacks & in_scratchpad:
               label = b"[S] " + label
+          elif haystacks & in_floating:
+              label = b"[F] " + label
           icon_path = icon.partition(b"icon\x1f")[2].decode("utf-8", "replace") if separator else ""
           if not icon_path or not Path(icon_path).is_file():
               found = find_icon(app_name)

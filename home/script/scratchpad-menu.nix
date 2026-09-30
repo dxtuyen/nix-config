@@ -138,7 +138,7 @@ in
               label = app_name
 
           # [S] cửa sổ đang cất · [F] popup floating đang hiện. Đồng nhất
-          # với 2 menu swayr ($mod+q, $mod+Shift+m): cửa sổ đang cất gắn [S].
+          # cả 3 menu: scratchpad ($mod+m) + 2 menu swayr ($mod+q, $mod+Shift+m).
           label = f"[{kinds.get(window['id'], 'S')}] {label}"
 
           icon_path = entry.get("icon")
