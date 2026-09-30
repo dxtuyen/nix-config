@@ -33,8 +33,10 @@ in
     executable = true;
     text = ''
       #!${pkgs.python3}/bin/python3
+      import json
       import re
       import os
+      import shutil
       import subprocess
       import sys
       from pathlib import Path
@@ -46,6 +48,38 @@ in
       # windows are lower in the list. swayr puts the focused window last.
       if prompt.casefold().startswith("quit") and len(rows) > 1:
           rows = list(reversed(rows[:-1])) + rows[-1:]
+
+      # Tiền tố [S]: cửa sổ nào XUẤT HIỆN trong menu scratchpad ($mod+m)
+      # thì cũng có tiền tố [S] ở cả 2 menu swayr (kill + tổng). Điều kiện
+      # chung duy nhất: scratchpad_state != "none" (ĐANG CẤT, visible=False).
+      # Popup scratchpad đang hiện (visible=True) KHÔNG gắn — nó đang ngay
+      # trước mắt, không có nguy cơ kill nhầm.
+      in_scratchpad = set()
+      swaymsg = shutil.which("swaymsg")
+      if swaymsg:
+          try:
+              tree = json.loads(subprocess.run(
+                  [swaymsg, "-t", "get_tree"],
+                  check=True, capture_output=True, text=True,
+              ).stdout)
+
+              def collect_ids(node):
+                  if node.get("type") in ("con", "floating_con"):
+                      if node.get("scratchpad_state") not in (None, "none") and not node.get("visible"):
+                          ident = node.get("app_id") or (node.get("window_properties") or {}).get("class") or ""
+                          name = node.get("name") or (node.get("window_properties") or {}).get("title") or ""
+                          if ident:
+                              in_scratchpad.add(ident.casefold())
+                          if name:
+                              in_scratchpad.add(name.casefold())
+                  for key in ("nodes", "floating_nodes"):
+                      for child in node.get(key, []):
+                          collect_ids(child)
+
+              collect_ids(tree)
+          except (subprocess.CalledProcessError, ValueError, OSError):
+              pass
+
       display_rows = []
       icon_dirs = [Path(path) for path in ${builtins.toJSON iconDirs}]
       desktop_dirs = [Path(path) for path in ${builtins.toJSON desktopDirs}]
@@ -111,6 +145,15 @@ in
           app_name, delimiter, title = text.partition(" — ")
           if delimiter and pwa_id.fullmatch(app_name):
               label = title.encode("utf-8")
+          # So khớp theo app_id HOẶC title (swayr hiển thị "app — title",
+          # PWA chỉ hiện title) — khớp cái nào cũng gắn [S].
+          haystacks = {app_name.casefold()}
+          if delimiter:
+              haystacks.add(title.casefold())
+          else:
+              haystacks.add(text.casefold())
+          if haystacks & in_scratchpad:
+              label = b"[S] " + label
           icon_path = icon.partition(b"icon\x1f")[2].decode("utf-8", "replace") if separator else ""
           if not icon_path or not Path(icon_path).is_file():
               found = find_icon(app_name)
