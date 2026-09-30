@@ -73,7 +73,7 @@ in
       for_window [app_id="(?i)^(org[.]pulseaudio[.])?pavucontrol$"] floating enable, resize set width 30 ppt height 40 ppt
       for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
       # RemNote: mở mặc định dạng popup float giữa màn hình (không scratchpad).
-      for_window [class="(?i).*remnote.*"] floating enable, resize set width 1000 px height 700 px, move position center
+      # AppImage chạy native Wayland -> chỉ app_id là đủ.
       for_window [app_id="(?i).*remnote.*"] floating enable, resize set width 1000 px height 700 px, move position center
 
       # Obsidian: mở mặc định dạng popup float giữa màn hình, giống RemNote/TickTick.
@@ -82,22 +82,20 @@ in
       #   md.Obsidian         — bản .desktop gốc của Obsidian
       #   obsidian            — AppImage/Flatpak
       # → khớp theo tên cho chắc, thay vì hard-code app_id của riêng máy này.
+      # Không khai `class` ở đây: Electron chạy native Wayland nên class luôn None.
       for_window [app_id="(?i)^(md([.]obsidian)?[.]obsidian|obsidian)$"] floating enable, resize set width 1000 px height 700 px, move position center
-      for_window [class="(?i)^(md([.]obsidian)?[.]obsidian|obsidian)$"] floating enable, resize set width 1000 px height 700 px, move position center
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
       # GoldenDict float như popup (mod+g bật/tắt; đóng = ẩn về tray).
       for_window [app_id="io.github.xiaoyifang.goldendict_ng"] floating enable, resize set width 50 ppt height 65 ppt
       # Sioyek: cửa sổ mới hiện ở workspace đang focus.
-      for_window [class="(?i)^sioyek$"] move container to workspace current
       for_window [app_id="(?i)^sioyek$"] move container to workspace current
 
-      # Foliate: app_id theo .desktop; khai cả `class` để phòng XWayland.
-      for_window [class="(?i)^foliate$"] move container to workspace current
+      # Foliate: app_id theo .desktop.
       for_window [app_id="(?i)^com\.github\.johnfactotum\.foliate$"] move container to workspace current
 
-      # Thunar float kiểu popup (mod+Shift+space để tiled lại).
-      for_window [class="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
+      # Thunar float kiểu popup (mod+Shift+space để tiled lại). GTK3 chạy native
+      # Wayland nên chỉ app_id; desktop entry không khai StartupWMClass.
       for_window [app_id="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
 
       # Yazi chạy trong foot (app_id vẫn là "foot") → phải match theo TITLE mà
@@ -137,11 +135,10 @@ in
       for_window [app_id="(?i)^chrome-[a-z0-9]+-Default$"] floating enable, resize set width 1000 px height 700 px, move position center
 
       # VS Code luôn mở vào workspace 3.code.
-      for_window [class="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
       for_window [app_id="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
 
       # Inhibit idle
-      for_window [class="google-chrome"] inhibit_idle fullscreen
+      for_window [app_id="(?i)^google-chrome$"] inhibit_idle fullscreen
 
       # Keybindings - App & Session
       bindsym $mod+Return exec $term

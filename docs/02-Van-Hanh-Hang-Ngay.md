@@ -197,6 +197,7 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 | `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
 | `pomodoro-engine` / `pomodoro` / `pomodoro-sleep-watch` | Đồng hồ Pomodoro phiên tập trung (`$mod+p` mở menu `pomodoro`, click pill Waybar cũng mở `pomodoro`): rảnh → ⌨ tự nhập 1–480 / ⏱ 30/60/120 phút; có phiên → ⏸/▶, ↺ reset, ＋ cộng phút; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
+| `app-id-check` | Chẩn đoán rule `for_window`: in `app_id` của cửa sổ đang mở, đối chiếu với regex trong `sway.nix`, báo app nào **không khớp** + dòng `for_window` gợi ý. Chạy khi lên máy mới hoặc khi app không float/đóng workspace đúng (xem mục [Sang máy mới](#sang-máy-mới-app_id-đổi-làm-rule-float-hỏng)) |
 
 > Các phím tắt chi tiết được khai trong `home/config/sway.nix` — tra cứu tại đó khi cần.
 
@@ -220,17 +221,26 @@ Vì vậy rule đã viết theo **tên**, không theo hash cụ thể:
 `foot` (script truyền `--app-id=scratchpad-terminal`), `wifitui`, `bluetui`,
 `yazi-popup` (đặt qua `--title=yazi-popup`).
 
-**Khi sang máy mới, app nào không float đúng thì tra app_id thật:**
+**Khi sang máy mới: chạy `app-id-check`** — mở app đang nghi ngờ rồi chạy lệnh này:
 ```bash
-# 1. Mở app lên rồi tra (nhanh nhất, chính xác nhất)
-swaymsg -t get_tree | jq -r '..|objects|select(.app_id?)|.app_id' | sort -u
+app-id-check
+```
+Script đọc các rule `for_window` trực tiếp từ `~/.config/sway/config` (nên không bao
+giờ lệch với file đang chạy), in `app_id` của từng cửa sổ đang mở và cho biết cái nào
+**không khớp rule nào** — kèm luôn dòng `for_window` gợi ý để copy. `!!` là app chưa có
+rule (thường không phải lỗi), `  ` là app đã khớp.
 
-# 2. Hoặc đọc StartupWMClass trong desktop entry
-grep -H StartupWMClass /run/current-system/sw/share/applications/<app>.desktop
+Tra thủ công khi script không đủ:
+```bash
+swaymsg -t get_tree | jq -r '..|objects|select(.app_id?)|.app_id' | sort -u
 grep -H StartupWMClass ~/.local/share/applications/*.desktop
 ```
-Rồi sửa rule trong `home/config/sway.nix` cho khớp — ưu tiên regex theo tên thay vì chép
-nguyên hash, để lần chuyển máy sau không phải làm lại.
+Rồi sửa rule trong `home/config/sway.nix` — ưu tiên regex theo tên thay vì chép nguyên
+hash, để lần chuyển máy sau không phải làm lại.
+
+> **Về `class`:** theo `sway(5)`, `class` chỉ dùng cho app **X11/XWayland**; app native
+> Wayland chỉ có `app_id` (đã kiểm tra trên máy này: 0/6 cửa sổ có `class`). Config hiện
+> **không dùng `class=` ở đâu** — nếu thêm app mới thì khai `app_id=`, đừng khai `class=`.
 
 ## Ảnh nền (wallpaper)
 
