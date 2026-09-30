@@ -134,9 +134,10 @@ in
       # Terminal scratchpad là terminal duy nhất giữ lại (đã xóa obsidian-focus).
       bindsym $mod+o exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
-      # Mod+p: về cửa sổ urgent (nếu có) hoặc cửa sổ dùng gần nhất (swayr LRU);
+      # Mod+r: về cửa sổ urgent (nếu có) hoặc cửa sổ dùng gần nhất (swayr LRU);
       # Mod+Shift+m: menu chuyển cửa sổ tổng; Mod+Shift+q: kill ngay cửa sổ đang focus.
-      bindsym $mod+p exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
+      # $mod+p để TRỐNG (từng là mod+p, chuyển sang $mod+r ngày 2026-09-30).
+      bindsym $mod+r exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+Shift+m exec ${pkgs.swayr}/bin/swayr switch-window
       # $mod+q: menu danh sách kill — chọn cửa sổ trong danh sách để đóng.
       bindsym $mod+q exec ${pkgs.swayr}/bin/swayr quit-window
@@ -221,8 +222,9 @@ in
       # $mod+c Countdown · $mod+Shift+p menu nguồn. Chrome mở qua $mod+d rofi.
       bindsym $mod+c exec ~/.local/bin/countdown
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
-      # $mod+i, $mod+r đã xóa (cùng ticktick-focus/remnote-focus); $mod+u, $mod+x để
-      # TRỐNG; menu danh sách kill nằm ở $mod+q.
+      # $mod+i đã xóa (cùng ticktick-focus). $mod+r nay là swayr urgent/LRU
+      # (xem phần App & Session); $mod+u, $mod+x, $mod+p để TRỐNG. Menu danh
+      # sách kill nằm ở $mod+q.
       # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+t = ép
       # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en

@@ -190,10 +190,10 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 | `countdown-engine inhibit-toggle` | Bật/tắt chống idle thủ công; trạng thái đồng bộ giữa `$mod+Shift+o` và biểu tượng mắt Waybar. Phiên đếm ngược tiếp tục giữ chống idle tự động |
 | `bluetui` | `Utilities` (`$mod+Shift+o`) → `Bluetooth`, hoặc nhấp Bluetooth trên Waybar; mở device manager trong floating terminal |
 | `Wi-Fi popup` | `Utilities` (`$mod+Shift+o`) → `Wi-Fi`, hoặc nhấp Wi-Fi trên Waybar: mở `wifitui` trong Foot, hỗ trợ `r` bật/tắt Wi-Fi, `/` tìm kiếm fuzzy, `s` quét lại sóng, `Enter` kết nối, `q`/`Esc` để đóng |
-| `RemNote popup` | RemNote mở mặc định dạng **popup floating giữa màn hình** (1000x700, rule trong `home/config/sway.nix`), mở qua `$mod+d` rofi hoặc desktop entry, chọn trong `$mod+m` (tiền tố `[F]`). Không còn tự vào scratchpad, không còn phím `$mod+r` |
+| `RemNote popup` | RemNote mở mặc định dạng **popup floating giữa màn hình** (1000x700, rule trong `home/config/sway.nix`), mở qua `$mod+d` rofi hoặc desktop entry, chọn trong `$mod+m` (tiền tố `[F]`). Không còn tự vào scratchpad, không còn phím riêng (`$mod+r` nay là swayr urgent/LRU) |
 | `Obsidian` | Script `obsidian-focus` **ĐÃ XÓA cùng phím `$mod+o`** — `$mod+o` giờ là terminal scratchpad. Mở Obsidian qua `$mod+d` rofi như app thường |
 | `TickTick popup` | Script `ticktick-focus` **ĐÃ XÓA cùng phím `$mod+i`** — TickTick (PWA Chrome) mở mặc định dạng **popup floating giữa màn hình** (1000x700, rule trong `sway.nix`), mở qua Chrome `--app-id` hoặc `$mod+d`, chọn trong `$mod+m` (tiền tố `[F]`) |
-| `swayr` | `$mod+p`: **nhảy tới cửa sổ urgent nếu có, không thì về cửa sổ dùng gần nhất (LRU)** — thay thế `$mod+Tab` cũ; `$mod+q`: menu **danh sách kill** — chọn cửa sổ trong danh sách để đóng; `$mod+Shift+q`: kill ngay cửa sổ đang focus. Menu chuyển cửa sổ **tổng** (mọi workspace) `$mod+Shift+m` giữ thứ tự mặc định. Cả 2 menu swayr đều gắn tiền tố `[S]` (đang cất trong scratchpad) / `[F]` (popup floating đang hiện) **giống hệt `$mod+m`**, nên nhìn là biết cửa sổ nào đang cất, cái nào đang nổi trước mắt — tránh kill nhầm |
+| `swayr` | `$mod+r`: **nhảy tới cửa sổ urgent nếu có, không thì về cửa sổ dùng gần nhất (LRU)** — thay thế `$mod+Tab` cũ (từng là `$mod+p`, đổi sang `$mod+r` để trống `$mod+p`); `$mod+q`: menu **danh sách kill** — chọn cửa sổ trong danh sách để đóng; `$mod+Shift+q`: kill ngay cửa sổ đang focus. Menu chuyển cửa sổ **tổng** (mọi workspace) `$mod+Shift+m` giữ thứ tự mặc định. Cả 2 menu swayr đều gắn tiền tố `[S]` (đang cất trong scratchpad) / `[F]` (popup floating đang hiện) **giống hệt `$mod+m`**, nên nhìn là biết cửa sổ nào đang cất, cái nào đang nổi trước mắt — tránh kill nhầm |
 | `yazi` | `$mod+y`: file manager trong terminal, mở dạng **popup** nhỏ ở thư mục hiện tại (gõ `yazi` trong terminal thì ra cửa sổ thường, xem trước ảnh đẹp hơn). `<Enter>` tự rẽ nhánh: thư mục thì vào, file thì mở app · `d` xoá vào thùng rác · `g` `t` menu thùng rác (xem [Thùng rác](#thùng-rác-tự-động-dọn-lúc-0300)). Thunar vẫn dùng được cho việc khác |
 | `countdown-engine` / `countdown` / `countdown-sleep-watch` | Đồng hồ đếm ngược phiên tập trung (`$mod+c` mở menu `countdown`, click pill Waybar cũng mở `countdown`): rảnh → ⌨ tự nhập 1–480 / ⏱ 30/60/120 phút; có phiên → ⏸/▶, ↺ reset, ＋ cộng phút; phiên chạy → tự dừng swayidle (chống khóa/tắt màn/ngủ); ngủ → tự pause, dậy → tự tiếp tục (xem mục bên dưới) |
 | `screenshot` / `screenshot-menu` | Chụp màn hình (vùng/toàn màn × clipboard/file) |
@@ -349,7 +349,7 @@ sudo nixos-rebuild switch --flake ~/nix-config#laptop
 
 Chọn `Display` để mở menu con có ba chế độ: `Warm 4000K`, `Cool 6500K` và `Natural (automatic)`. Dấu `●` đánh dấu chế độ đang chạy. `$mod+Shift+p` mở menu nguồn với Poweroff, Reboot, Suspend, Hibernate, Lock, Reload Sway và Exit Sway. Bluetooth có trạng thái trên Waybar ngay sau Wi-Fi; nhấp vào Bluetooth trên Waybar mở Bluetui, nhấp vào Wi-Fi mở Wifitui.
 
-`$mod+c` mở menu Countdown (đồng hồ đếm ngược). `$mod+p` nhảy tới cửa sổ urgent (nếu có) hoặc về cửa sổ dùng gần nhất. `$mod+m` chọn cửa sổ scratchpad `[S]` + popup floating `[F]`, `$mod+Shift+m` menu chuyển cửa sổ tổng, `$mod+o` focus terminal scratchpad (ẩn bằng `$mod+minus`), `$mod+Alt+w` chọn ảnh nền, còn `$mod+Shift+w` đổi ảnh nền ngẫu nhiên. Tiền tố `[S]`/`[F]` (đang cất / popup floating) hiện ở **cả 3 menu**: `$mod+m`, `$mod+q`, `$mod+Shift+m`.
+`$mod+c` mở menu Countdown (đồng hồ đếm ngược). `$mod+r` nhảy tới cửa sổ urgent (nếu có) hoặc về cửa sổ dùng gần nhất. `$mod+m` chọn cửa sổ scratchpad `[S]` + popup floating `[F]`, `$mod+Shift+m` menu chuyển cửa sổ tổng, `$mod+o` focus terminal scratchpad (ẩn bằng `$mod+minus`), `$mod+Alt+w` chọn ảnh nền, còn `$mod+Shift+w` đổi ảnh nền ngẫu nhiên. Tiền tố `[S]`/`[F]` (đang cất / popup floating) hiện ở **cả 3 menu**: `$mod+m`, `$mod+q`, `$mod+Shift+m`.
 
 ## Đếm ngược phiên tập trung / Countdown (`$mod+c`)
 
@@ -577,4 +577,4 @@ xdg-open ~/Books/Reading/*.epub   # mở thẳng 1 cuốn
 
 - [01-Tong-Quan-He-Thong](01-Tong-Quan-He-Thong.md) — hệ thống có những gì
 - [03-Cai-May-Moi](03-Cai-May-Moi.md) — khi máy hỏng nặng / máy mới
-- [04-Sao-Luu-Phuc-Hoi](04-Sao-Luu-Phuc-Hoi.md) — backup trước khi rủi ro
+- [04-Sao-Luu-Phuc-Hoi](04-Sao-Luu-Phuc-Hoi.md) — backup trước khi rủi rr
