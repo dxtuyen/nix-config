@@ -68,17 +68,22 @@ in
       client.background        #1e1e2e
 
       # Floating rules
-      for_window [app_id="pavucontrol"] floating enable, resize set width 30 ppt height 40 ppt
+      # pavucontrol: GTK dùng reverse-DNS làm app_id (org.pulseaudio.pavucontrol),
+      # nhưng bản đóng gói khác có thể chỉ "pavucontrol" → khớp cả hai.
+      for_window [app_id="(?i)^(org[.]pulseaudio[.])?pavucontrol$"] floating enable, resize set width 30 ppt height 40 ppt
       for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
       # RemNote: mở mặc định dạng popup float giữa màn hình (không scratchpad).
       for_window [class="(?i).*remnote.*"] floating enable, resize set width 1000 px height 700 px, move position center
       for_window [app_id="(?i).*remnote.*"] floating enable, resize set width 1000 px height 700 px, move position center
 
       # Obsidian: mở mặc định dạng popup float giữa màn hình, giống RemNote/TickTick.
-      # Electron nên app_id là `md.obsidian.Obsidian` (đã xác nhận trên máy này);
-      # class fallback phủ bản cài đặt khác đặt class khác.
-      for_window [app_id="(?i)^md[.]obsidian[.]obsidian$"] floating enable, resize set width 1000 px height 700 px, move position center
-      for_window [class="(?i)^obsidian$"] floating enable, resize set width 1000 px height 700 px, move position center
+      # app_id của Electron ĐỔI THEO CÁCH CÀI (đã kiểm tra trong /nix/store):
+      #   md.obsidian.Obsidian — bản Nix sinh .desktop
+      #   md.Obsidian         — bản .desktop gốc của Obsidian
+      #   obsidian            — AppImage/Flatpak
+      # → khớp theo tên cho chắc, thay vì hard-code app_id của riêng máy này.
+      for_window [app_id="(?i)^(md([.]obsidian)?[.]obsidian|obsidian)$"] floating enable, resize set width 1000 px height 700 px, move position center
+      for_window [class="(?i)^(md([.]obsidian)?[.]obsidian|obsidian)$"] floating enable, resize set width 1000 px height 700 px, move position center
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
       # GoldenDict float như popup (mod+g bật/tắt; đóng = ẩn về tray).
@@ -120,12 +125,16 @@ in
       # Chrome Picture-in-Picture
       for_window [title="Picture in picture"] floating enable, sticky enable, resize set width 350 px height 197 px, move position 1530 px 800 px
 
-      # TickTick (PWA) → mở mặc định dạng popup float giữa màn hình. App_id cố định, sinh từ
-      # SHA256(start_url) + tên profile (xem app_id_helpers.cc) nên sang máy khác
-      # cài lại cùng PWA (cùng nguồn cài, profile Default) là giữ nguyên.
+      # TickTick (PWA) → mở mặc định dạng popup float giữa màn hình. App_id của PWA
+      # là hash sinh từ SHA256(start_url) + tên profile (app_id_helpers.cc) nên KHÔNG
+      # cố định: đổi profile/URL/version Chrome hay cài lại trên máy khác là đổi id.
       # Tìm app_id trên máy khác: ls ~/.local/share/applications/chrome-*-Default.desktop
       # hoặc mở PWA rồi: swaymsg -t get_tree | jq -r '..|objects|select(.app_id?)|.app_id'
-      for_window [app_id="^chrome-cfammbeebmjdpoppachopcohfchgjapd-Default$"] floating enable, resize set width 1000 px height 700 px, move position center
+      # KHÔNG hard-code hash: hash đổi theo URL + tên profile + version Chrome, cài
+      # lại trên máy khác là popup biến mất. Regex này khớp mọi PWA profile
+      # "Default" (Chrome thường không có hậu tố -Default nên không bị bắt nhầm).
+      # Nếu bạn dùng profile tên khác (vd "Profile 1") thì thêm hậu tố tương ứng.
+      for_window [app_id="(?i)^chrome-[a-z0-9]+-Default$"] floating enable, resize set width 1000 px height 700 px, move position center
 
       # VS Code luôn mở vào workspace 3.code.
       for_window [class="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code

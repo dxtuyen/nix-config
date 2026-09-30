@@ -200,6 +200,38 @@ của generation đã xoá tự được dọn, không cần xoá tay.
 
 > Các phím tắt chi tiết được khai trong `home/config/sway.nix` — tra cứu tại đó khi cần.
 
+## Sang máy mới: app_id đổi làm rule float hỏng
+
+`for_window [app_id=...]` trong `home/config/sway.nix` dễ vỡ khi chuyển máy, vì `app_id`
+phụ thuộc **cách đóng gói app**, không phải tên app. Ba trường hợp đã gặp:
+
+| App | app_id có thể là | Ghi chú |
+|---|---|---|
+| **Obsidian** | `md.obsidian.Obsidian` · `md.Obsidian` · `obsidian` | Nix sinh `.desktop` khác bản gốc; AppImage/Flatpak lại khác nữa |
+| **TickTick** (PWA) | `chrome-<hash>-Default` | `<hash>` = SHA256(URL) + tên profile → **đổi profile/URL/version Chrome là đổi id** |
+| **pavucontrol** | `org.pulseaudio.pavucontrol` · `pavucontrol` | GTK lấy reverse-DNS làm app_id |
+
+Vì vậy rule đã viết theo **tên**, không theo hash cụ thể:
+- Obsidian → `(?i)^(md([.]obsidian)?[.]obsidian|obsidian)$`
+- TickTick → `(?i)^chrome-[a-z0-9]+-Default$` (Chrome thường không có hậu tố `-Default` nên không bị bắt nhầm)
+- pavucontrol → `(?i)^(org[.]pulseaudio[.])?pavucontrol$`
+
+**Còn an toàn tuyệt đối** vì app tự đặt id, không phụ thuộc bên ngoài:
+`foot` (script truyền `--app-id=scratchpad-terminal`), `wifitui`, `bluetui`,
+`yazi-popup` (đặt qua `--title=yazi-popup`).
+
+**Khi sang máy mới, app nào không float đúng thì tra app_id thật:**
+```bash
+# 1. Mở app lên rồi tra (nhanh nhất, chính xác nhất)
+swaymsg -t get_tree | jq -r '..|objects|select(.app_id?)|.app_id' | sort -u
+
+# 2. Hoặc đọc StartupWMClass trong desktop entry
+grep -H StartupWMClass /run/current-system/sw/share/applications/<app>.desktop
+grep -H StartupWMClass ~/.local/share/applications/*.desktop
+```
+Rồi sửa rule trong `home/config/sway.nix` cho khớp — ưu tiên regex theo tên thay vì chép
+nguyên hash, để lần chuyển máy sau không phải làm lại.
+
 ## Ảnh nền (wallpaper)
 
 **Không có logic theo giờ, không chia pool:** mọi ảnh trong `~/Pictures/wallpapers/` đều random như nhau.
