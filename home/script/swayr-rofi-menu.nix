@@ -44,10 +44,8 @@ in
       rofi = "${pkgs.rofi}/bin/rofi"
       prompt = sys.argv[1] if len(sys.argv) > 1 else "Switch to window"
       rows = sys.stdin.buffer.read().splitlines()
-      # Keep switch-window's default order; reverse only the quit menu so recent
-      # windows are lower in the list. swayr puts the focused window last.
-      if prompt.casefold().startswith("quit") and len(rows) > 1:
-          rows = list(reversed(rows[:-1])) + rows[-1:]
+      # Giữ nguyên thứ tự LRU swayr trả về. Trước đây có đảo riêng menu quit
+      # ($mod+q) — nay phím đó đã bỏ nên không cần nhánh đảo nữa.
 
       # Tiền tố [S]/[F]: đồng nhất với menu scratchpad ($mod+m).
       # [S] = cửa sổ ĐANG CẤT trong scratchpad (scratchpad_state != "none",

@@ -73,6 +73,12 @@ in
       # RemNote: mở mặc định dạng popup float giữa màn hình (không scratchpad).
       for_window [class="(?i).*remnote.*"] floating enable, resize set width 1000 px height 700 px, move position center
       for_window [app_id="(?i).*remnote.*"] floating enable, resize set width 1000 px height 700 px, move position center
+
+      # Obsidian: mở mặc định dạng popup float giữa màn hình, giống RemNote/TickTick.
+      # Electron nên app_id là `md.obsidian.Obsidian` (đã xác nhận trên máy này);
+      # class fallback phủ bản cài đặt khác đặt class khác.
+      for_window [app_id="(?i)^md[.]obsidian[.]obsidian$"] floating enable, resize set width 1000 px height 700 px, move position center
+      for_window [class="(?i)^obsidian$"] floating enable, resize set width 1000 px height 700 px, move position center
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
       # GoldenDict float như popup (mod+g bật/tắt; đóng = ẩn về tray).
@@ -135,12 +141,14 @@ in
       bindsym $mod+o exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
       # Mod+r: về cửa sổ urgent (nếu có) hoặc cửa sổ dùng gần nhất (swayr LRU);
-      # Mod+Shift+m: menu chuyển cửa sổ tổng; Mod+Shift+q: kill ngay cửa sổ đang focus.
+      # Mod+Shift+m: menu chuyển cửa sổ tổng. Menu này của swayr KHÔNG kill được
+      # (swayr chỉ đọc index rồi tự focus, không trả con_id cho wrapper) — muốn
+      # đóng thì dùng $mod+m rồi bấm Delete, hoặc $mod+Shift+q để kill luôn.
       # $mod+p nay là Pomodoro (xem phần Custom Utilities).
       bindsym $mod+r exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+Shift+m exec ${pkgs.swayr}/bin/swayr switch-window
-      # $mod+q: menu danh sách kill — chọn cửa sổ trong danh sách để đóng.
-      bindsym $mod+q exec ${pkgs.swayr}/bin/swayr quit-window
+      # Đã bỏ menu kill $mod+q: trùng danh sách với $mod+Shift+m, và kill đã có
+      # ở $mod+m (Delete) + $mod+Shift+q (kill cửa sổ đang focus).
       bindsym $mod+Shift+q kill
 
       # Menu ảnh: Mod+Alt+w · menu scratchpad+popup: Mod+m · đổi ảnh: Mod+Shift+w.
@@ -224,8 +232,8 @@ in
       bindsym $mod+p exec ~/.local/bin/pomodoro
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
       # $mod+i đã xóa (cùng ticktick-focus). $mod+r là swayr urgent/LRU
-      # (xem phần App & Session); $mod+u, $mod+x để TRỐNG. Menu danh sách
-      # kill nằm ở $mod+q.
+      # (xem phần App & Session); $mod+u, $mod+x, $mod+q để TRỐNG. Kill cửa sổ:
+      # $mod+m rồi Delete, hoặc $mod+Shift+q cho cửa sổ đang focus.
       # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+t = ép
       # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en

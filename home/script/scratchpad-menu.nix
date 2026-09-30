@@ -163,13 +163,22 @@ in
               row = label_bytes + suffix + (separator + icon if separator else b"")
           rows.append(row)
 
+      # Menu tự viết bằng swaymsg nên giữ được con_id -> thêm Delete để đóng cửa
+      # sổ. Menu swayr ($mod+Shift+m) không làm được: swayr chỉ đọc index trên
+      # stdout rồi tự focus, không trả con_id ra cho wrapper.
       choice = subprocess.run(
-          ["${pkgs.rofi}/bin/rofi", "-dmenu", "-i", "-matching", "fuzzy", "-show-icons", "-format", "i", "-p", "Scratchpad"],
+          [
+              "${pkgs.rofi}/bin/rofi", "-dmenu", "-i", "-matching", "fuzzy",
+              "-show-icons", "-format", "i", "-p", "Scratchpad",
+              "-kb-custom-1", "Delete",
+              "-mesg", "Enter: mở / focus · Delete: đóng cửa sổ này",
+          ],
           input=b"\n".join(rows) + (b"\n" if rows else b""),
           capture_output=True,
           check=False,
       )
-      if choice.returncode != 0:
+      # rofi: 0 = Enter, 10 = custom-1 (Delete), 1 = hủy.
+      if choice.returncode not in (0, 10):
           sys.exit(0)
       try:
           window = windows[int(choice.stdout.strip())]
@@ -177,6 +186,9 @@ in
           sys.exit("scratchpad-menu: invalid selection")
 
       criteria = f"[con_id={window['id']}]"
+      if choice.returncode == 10:
+          subprocess.run([swaymsg, f"{criteria} kill"], check=False)
+          sys.exit(0)
       command = "focus" if window.get("visible") else "scratchpad show"
       subprocess.run([swaymsg, f"{criteria} {command}"], check=True)
     '';
