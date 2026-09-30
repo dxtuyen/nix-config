@@ -32,8 +32,15 @@
           criteria = f"[con_id={terminal['id']}]"
 
           if terminal.get("focused"):
-              # Đang focus sẵn: bấm mod+grave chỉ để gọi lên, KHÔNG ẩn nữa.
-              pass
+              # Đang focus: bấm mod+grave lần nữa → cất về scratchpad (toggle).
+              # Thuộc scratchpad ("fresh"/"changed") → scratchpad show = ẩn;
+              # đã bị gỡ khỏi scratchpad ("none") → move container to scratchpad.
+              command = (
+                  "scratchpad show"
+                  if terminal.get("scratchpad_state") not in (None, "none")
+                  else "move container to scratchpad"
+              )
+              subprocess.run([swaymsg, f"{criteria} {command}"], check=True)
           elif terminal.get("visible"):
               # Đang hiện trên workspace hiện tại (kể cả tiled chiếm trọn màn
               # hình hay fullscreen): chỉ focus, không đổi kích thước/trạng thái.

@@ -56,6 +56,9 @@ in
       # $mod + chuột trái/phải = move/resize cửa sổ float.
       floating_modifier $mod normal
       focus_follows_mouse yes
+      # App xin activate (vd Chrome mở link từ app khác) → focus thẳng cửa sổ đó,
+      # thay vì mặc định `urgent` chỉ viền cam rồi nằm im.
+      focus_on_window_activation focus
       smart_borders off
 
       client.focused           #89b4fa #313244 #cdd6f4 #cba6f7 #89b4fa
@@ -94,7 +97,7 @@ in
       for_window [title="(?i)^yazi-popup"] floating enable, resize set 1000 px 700 px
 
       # Foot terminal scratchpad: một cửa sổ riêng, giữ phiên shell khi ẩn; luôn
-      # nằm trong scratchpad để $mod+minus ẩn/hiện và $mod+grave chỉ focus.
+      # nằm trong scratchpad để $mod+minus ẩn/hiện và $mod+grave gọi lên/ẩn đi.
       # KHÔNG resize: "move scratchpad" tự float + size mặc định của Sway.
       for_window [app_id="scratchpad-terminal"] move scratchpad, scratchpad show
 
@@ -123,14 +126,17 @@ in
 
       # Keybindings - App & Session
       bindsym $mod+Return exec $term
-      # $mod+grave: focus terminal scratchpad (bấm lại KHÔNG ẩn; ẩn bằng $mod+minus).
-      bindsym $mod+Shift+Return exec ~/.local/bin/scratchpad-terminal
+      # $mod+grave: focus terminal scratchpad (bấm lại khi đang focus → cất về scratchpad).
+      bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+q exec ${pkgs.swayr}/bin/swayr quit-window
       bindsym $mod+d exec $menu
       # Mod+Tab: quay lại cửa sổ vừa dùng; Mod+m: menu MRU;
       # Mod+Shift+q: kill ngay cửa sổ đang focus.
       bindsym $mod+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+m exec ${pkgs.swayr}/bin/swayr switch-window
+      # $mod+Shift+p: nhảy tới cửa sổ Chrome/PWA đang mở, kể cả chưa từng được
+      # focus (MRU/urgent không với tới cửa sổ kiểu này); chưa focus thì về LRU.
+      bindsym $mod+Shift+p exec ${pkgs.swayr}/bin/swayr switch-to-matching-or-urgent-or-lru-window '[app_id="^(google-chrome|chrome-)"]'
       bindsym $mod+Shift+q kill
 
       # Menu ảnh: Mod+Shift+m · menu scratchpad: Mod+n · đổi ảnh: Mod+Shift+w.
@@ -138,7 +144,7 @@ in
       bindsym $mod+Shift+m exec ~/.local/bin/wallpaper-menu
       bindsym $mod+n exec ~/.local/bin/scratchpad-menu
       bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-set
-      # $mod+r: focus RemNote scratchpad (bấm lại KHÔNG ẩn; ẩn bằng $mod+minus).
+      # $mod+r: focus RemNote scratchpad (bấm lại khi đang focus → cất về scratchpad).
       bindsym $mod+r exec ~/.local/bin/remnote-focus
       # $mod+y: yazi dạng POPUP nhỏ; gõ `yazi` trong terminal thì cửa sổ thường.
       bindsym $mod+y exec ~/.local/bin/yazi-open
