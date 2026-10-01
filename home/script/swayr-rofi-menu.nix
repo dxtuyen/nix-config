@@ -47,12 +47,14 @@ in
       # Giữ nguyên thứ tự LRU swayr trả về. Trước đây có đảo riêng menu quit
       # ($mod+q) — nay phím đó đã bỏ nên không cần nhánh đảo nữa.
 
-      # Tiền tố [S]/[F]: đồng nhất với menu scratchpad ($mod+m).
-      # [S] = cửa sổ ĐANG CẤT trong scratchpad (scratchpad_state != "none",
-      #   visible=False) — kill nó là mất hút, cần cảnh báo.
-      # [F] = popup floating ĐANG HIỆN ngoài scratchpad (type floating_con,
-      #   visible=True: RemNote/TickTick và các float khác) — kill là mất ngay
-      #   trước mắt. Nếu trùng tên cả 2 tập thì ưu tiên [S].
+      # Tiền tố [S]/[F]: đồng nhất với menu scratchpad ($mod+m) và chỉ báo
+      # Waybar [S]/[F] (winmode).
+      # [S] = MỌI thành viên scratchpad (scratchpad_state != "none", kể cả
+      #   đang hiện) — kill là mất khỏi scratchpad, cần cảnh báo.
+      # [F] = popup floating ngoài scratchpad (RemNote/TickTick/…) — kill là
+      #   mất ngay trước mắt. Ưu tiên [S] trước [F] khi trùng tên.
+      #   (Bỏ dựa `visible`: nó gán nhầm [F] cho scratchpad đang hiện và làm
+      #   mất prefix popup ở workspace khác.)
       in_scratchpad = set()
       in_floating = set()
       swaymsg = shutil.which("swaymsg")
@@ -72,9 +74,9 @@ in
                           keys.add(ident.casefold())
                       if name:
                           keys.add(name.casefold())
-                      if node.get("scratchpad_state") not in (None, "none") and not node.get("visible"):
+                      if node.get("scratchpad_state") not in (None, "none"):
                           in_scratchpad.update(keys)
-                      elif node.get("type") == "floating_con" and node.get("visible"):
+                      elif node.get("type") == "floating_con":
                           in_floating.update(keys)
                   for key in ("nodes", "floating_nodes"):
                       for child in node.get(key, []):
@@ -171,7 +173,10 @@ in
           display_rows.append(row_for_menu)
 
       result = subprocess.run(
-          [rofi, "-dmenu", "-i", "-matching", "fuzzy", "-show-icons", "-format", "i", "-p", prompt],
+          # Tìm kiếm kiểu dmenu như $mod+m: normal = khớp chuỗi con, -no-sort
+          # giữ thứ tự LRU, -no-custom chỉ chọn dòng thật.
+          [rofi, "-dmenu", "-i", "-matching", "normal", "-no-sort",
+           "-no-custom", "-show-icons", "-format", "i", "-p", prompt],
           input=b"\n".join(display_rows) + (b"\n" if display_rows else b""),
           stdout=subprocess.PIPE,
           check=False,

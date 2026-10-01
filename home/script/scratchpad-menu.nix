@@ -48,22 +48,27 @@ in
           [swaymsg, "-t", "get_tree"], check=True, capture_output=True, text=True
       ).stdout)
 
-      def scratchpad_windows(node):
-          # [S] = đang cất trong scratchpad; [F] = popup floating đang hiện
-          # (RemNote/TickTick và các float khác — không nằm trong scratchpad).
+      def scratchpad_windows(node, ws=None):
+          # [S] = thành viên scratchpad; [F] = popup floating (không thuộc
+          # scratchpad). Ghi thêm tên workspace tổ tiên — dấu hiệu duy nhất
+          # biết cửa sổ đang ở đâu: đang ẩn trong scratchpad thì nằm dưới
+          # workspace "__i3_scratch", còn popup thì nằm dưới ws thật của nó.
+          if node.get("type") == "workspace":
+              ws = node.get("name") or ws
           node_type = node.get("type")
           if node.get("scratchpad_state") not in (None, "none"):
               if node_type in ("con", "floating_con"):
-                  yield (node, "S")
+                  yield (node, "S", ws)
           elif node_type == "floating_con":
-              yield (node, "F")
+              yield (node, "F", ws)
           for key in ("nodes", "floating_nodes"):
               for child in node.get(key, []):
-                  yield from scratchpad_windows(child)
+                  yield from scratchpad_windows(child, ws)
 
       found = list(scratchpad_windows(tree))
-      windows = [window for window, _ in found]
-      kinds = {window["id"]: kind for window, kind in found}
+      windows = [window for window, _, _ in found]
+      kinds = {window["id"]: kind for window, kind, _ in found}
+      window_ws = {window["id"]: ws for window, _, ws in found}
       if not windows:
           subprocess.run([
               shutil.which("notify-send") or "notify-send",
@@ -137,8 +142,8 @@ in
           else:
               label = app_name
 
-          # [S] cửa sổ đang cất · [F] popup floating đang hiện. Đồng nhất
-          # cả 3 menu: scratchpad ($mod+m) + 2 menu swayr ($mod+q, $mod+Shift+m).
+          # [S] thành viên scratchpad · [F] popup floating. Đồng nhất
+          # các bề mặt: menu $mod+m, menu swayr $mod+Shift+m, chỉ báo Waybar.
           label = f"[{kinds.get(window['id'], 'S')}] {label}"
 
           icon_path = entry.get("icon")
@@ -167,16 +172,21 @@ in
       # Menu tự viết bằng swaymsg nên giữ được con_id -> thêm Delete để đóng cửa
       # sổ. Menu swayr ($mod+Shift+m) không làm được: swayr chỉ đọc index trên
       # stdout rồi tự focus, không trả con_id ra cho wrapper.
+      # Tìm kiếm kiểu dmenu: -matching normal = khớp chuỗi con nguyên vẹn
+      # (dự đoán được; fuzzy khớp ký tự rải rác nên cảm giác loạn khi gõ),
+      # -no-sort giữ nguyên thứ tự danh sách, -no-custom chỉ cho chọn dòng
+      # thật (input tự do vô nghĩa với menu chọn cửa sổ).
       choice = subprocess.run(
           [
-              "${pkgs.rofi}/bin/rofi", "-dmenu", "-i", "-matching", "fuzzy",
-              "-show-icons", "-format", "i", "-p", "Scratchpad",
+              "${pkgs.rofi}/bin/rofi", "-dmenu", "-i", "-matching", "normal",
+              "-no-sort", "-no-custom", "-show-icons", "-format", "i",
+              "-p", "Scratchpad",
               # KHÔNG dùng "Delete": rofi đã gán sẵn cho kb-remove-char-forward
               # (và Shift+Delete cho kb-delete-entry) → trùng binding bị rofi từ
               # chối, in ra dòng đỏ "Failed to set binding Delete ...". Control+Delete
               # thì chưa ai dùng nên nhận.
               "-kb-custom-1", "Control+Delete",
-              "-mesg", "Enter: mở / focus · Ctrl+Delete: đóng cửa sổ này",
+              "-mesg", "Enter: mở / focus / kéo về ws hiện tại · Ctrl+Delete: đóng cửa sổ này",
           ],
           input=b"\n".join(rows) + (b"\n" if rows else b""),
           capture_output=True,
@@ -188,14 +198,43 @@ in
       try:
           window = windows[int(choice.stdout.strip())]
       except (ValueError, IndexError):
-          sys.exit("scratchpad-menu: invalid selection")
+          sys.exit(0)  # -no-custom: không có dòng nào khớp → coi như hủy
 
-      criteria = f"[con_id={window['id']}]"
       if choice.returncode == 10:
-          subprocess.run([swaymsg, f"{criteria} kill"], check=False)
+          subprocess.run([swaymsg, f"[con_id={window['id']}] kill"],
+                         check=False)
           sys.exit(0)
-      command = "focus" if window.get("visible") else "scratchpad show"
-      subprocess.run([swaymsg, f"{criteria} {command}"], check=True)
+
+      # Workspace hiện tại — Enter cần biết cửa sổ có đang "ở ws khác" không.
+      try:
+          workspaces = json.loads(subprocess.run(
+              [swaymsg, "-t", "get_workspaces"], check=True,
+              capture_output=True, text=True).stdout)
+          current_ws = next(w["name"] for w in workspaces if w.get("focused"))
+      except (subprocess.CalledProcessError, ValueError, StopIteration, KeyError):
+          current_ws = None
+
+      SCRATCH_WS = "__i3_scratch"
+
+      def enter_command(con_id, ws_of, ws_current):
+          """Lệnh Enter cho 1 dòng menu (thuần → unit-test được):
+          - ẩn trong scratchpad → mở ra;
+          - ở workspace khác → KÉO về workspace hiện tại rồi focus;
+          - cùng workspace (hoặc không rõ) → chỉ focus.
+          Trả về danh sách lệnh swaymsg (thứ tự thực thi)."""
+          criteria = f"[con_id={con_id}]"
+          if ws_of == SCRATCH_WS:
+              return [f"{criteria} scratchpad show"]
+          if ws_of is None or ws_current is None or ws_of == ws_current:
+              return [f"{criteria} focus"]
+          return [
+              f"{criteria} move container to workspace current",
+              f"{criteria} focus",
+          ]
+
+      for command in enter_command(
+              window["id"], window_ws.get(window["id"]), current_ws):
+          subprocess.run([swaymsg, command], check=True)
     '';
   };
 }
