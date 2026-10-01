@@ -51,14 +51,16 @@
 
       watch() {
         # PID Waybar: dò một lần; dò lại khi kill thất bại (Waybar restart).
-        pid=$(pgrep -x waybar 2>/dev/null | head -n1)
+        # KHÔNG dùng `pgrep -x`: comm thật của Waybar là `.waybar-wrapped` (do
+        # wrapper home-manager đặt) nên -x không khớp → không gửi được signal.
+        pid=$(pgrep waybar 2>/dev/null | head -n1)
         # swaymsg thoát (Sway chết) → vòng lặp dừng → systemd Restart=always
         # hồi sinh; sway-session.target dừng thì service dừng theo (PartOf).
         "$SWAYMSG" -m -t subscribe '["window"]' | while read -r _line; do
           # Mọi sự kiện window (focus/move/close) đều có thể đổi trạng thái;
           # gửi signal rẻ hơn nhiều so với tự phân tích JSON từng dòng.
           if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
-            pid=$(pgrep -x waybar 2>/dev/null | head -n1)
+            pid=$(pgrep waybar 2>/dev/null | head -n1)
           fi
           [ -n "$pid" ] && kill -s RTMIN+9 "$pid" 2>/dev/null
         done
