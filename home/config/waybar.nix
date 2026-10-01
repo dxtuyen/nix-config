@@ -21,9 +21,8 @@ in
       spacing = 4;
       "modules-left" = [
         "sway/workspaces"
-        # [S]/[F] là TIỀN TỐ của tiêu đề → phải đứng TRƯỚC sway/window.
+        # Thay sway/window: script ghép "[S]/[F] tiêu đề" trong cùng một pill.
         "custom/winmode"
-        "sway/window"
         "sway/mode"
         "sway/scratchpad"
       ];
@@ -101,11 +100,6 @@ in
           }) ws
         );
       };
-      "sway/window" = {
-        format = "{title}";
-        "max-length" = 60;
-        tooltip = true;
-      };
       "sway/scratchpad" = {
         format = "${faSpan "{icon}"} {count}";
         "show-empty" = false;
@@ -181,14 +175,16 @@ in
           ""
         ];
       };
-      # Chỉ báo mode cửa sổ focus (script: home/script/winmode.nix):
-      # [S] = scratchpad · [F] = popup floating · rỗng = tiled (module ẩn).
-      # Cập nhật event-driven: daemon winmode-watch gửi signal 9 (không poll).
+      # Tiêu đề cửa sổ focus (script: home/script/winmode.nix), thay sway/window:
+      # tiled = tiêu đề trần · scratchpad/popup = "[S] tiêu đề" / "[F] tiêu đề"
+      # (tiền tố đứng trước chữ, cùng một pill). Signal 9, không poll.
       "custom/winmode" = {
         exec = "~/.local/bin/winmode status";
         signal = 9;
         return-type = "json";
         format = "{text}";
+        "max-length" = 64;
+        tooltip = true;
         "on-click" = "~/.local/bin/scratchpad-menu";
       };
       # Đồng hồ Countdown (engine: home/script/countdown-engine.nix, menu: countdown).
@@ -247,7 +243,11 @@ in
       }
       #workspaces button.urgent { color: #f38ba8; border-bottom-color: #f38ba8; }
       #workspaces button.persistent.empty { color: @muted; }
-      #window { background: @pill-hover; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: @txt-strong; font-weight: bold; }
+      /* Tiêu đề focus — winmode thay sway/window. tiled/s/f cùng một pill. */
+      #custom-winmode { background: @pill-hover; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: @txt-strong; font-weight: bold; }
+      #custom-winmode.s { color: #f9e2af; }
+      #custom-winmode.f { color: #89b4fa; }
+      #custom-winmode:empty { background: transparent; border: none; padding: 0; margin: 0; min-width: 0; }
       #custom-inhibit, #tray, #mode, #scratchpad,
       box#devices, box#hardware, box#power {
         background: @pill;
@@ -280,11 +280,6 @@ in
       #bluetooth.connected { color: #a6e3a1; }
       #custom-inhibit.manual { color: #fab387; }
       #custom-inhibit.idle { color: @muted; }
-      /* Chỉ báo [S]/[F] — pill chỉ vẽ khi có class s/f (tiled → text rỗng, không
-         match rule nào → module co về 0, không để lại pill rỗng). */
-      #custom-winmode.s, #custom-winmode.f { background: @pill; border: 1px solid @edge; border-radius: 10px; padding: 0 6px; margin: 4px 2px; font-weight: bold; }
-      #custom-winmode.s { color: #f9e2af; }
-      #custom-winmode.f { color: #89b4fa; }
       #network.disconnected, #network.disabled { color: #f38ba8; }
       #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: #fab387; }
       #battery.critical { color: #f38ba8; }

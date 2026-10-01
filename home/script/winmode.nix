@@ -1,18 +1,20 @@
 { pkgs, ... }:
 
-# Winmode: chỉ báo LOẠI cửa sổ đang focus trên Waybar — [S] = scratchpad,
-# [F] = popup floating, rỗng = tiled (Waybar ẩn module). Lý do tồn tại: 2 loại
-# floating trông giống hệt nhau trên màn nhưng phím thao tác KHÁC nhau
-# ($mod+minus chỉ toggle scratchpad). Cập nhật event-driven: daemon
-# `winmode watch` nghe sự kiện window của Sway rồi báo Waybar (SIGRTMIN+9)
-# → không poll, ~0% CPU khi chờ, không tốn pin.
+# Winmode: tiêu đề cửa sổ đang focus trên Waybar (THAY sway/window) — tiled =
+# tiêu đề trần, scratchpad = "[S] tiêu đề", popup floating = "[F] tiêu đề"
+# (tiền tố nằm TRƯỚC chữ, cùng một pill). Lý do gộp: Waybar không có cách gắn
+# prefix vào sway/window, nên script tự ghép tiền tố + title. Phân biệt 2 loại
+# floating vì trông giống hệt nhau nhưng phím thao tác KHÁC nhau ($mod+minus
+# chỉ toggle scratchpad). Cập nhật event-driven: daemon `winmode watch` nghe sự
+# kiện window của Sway rồi báo Waybar (SIGRTMIN+9) → không poll, ~0% CPU khi
+# chờ, không tốn pin.
 {
   home.file.".local/bin/winmode" = {
     executable = true;
     text = ''
       #!${pkgs.python3}/bin/python3
-      # winmode status|watch — chỉ báo mode cửa sổ focus cho Waybar (signal 9).
-      #   status: in JSON {"text": "[S]|[F]|<rỗng>", "class": ..., "tooltip": ...}
+      # winmode status|watch — tiêu đề cửa sổ focus cho Waybar (signal 9).
+      #   status: in JSON {"text": "<title>|[S] <title>|[F] <title>", "class": ...}
       #   watch : nghe sự kiện window của Sway → pkill -RTMIN+9 waybar.
       import json
       import subprocess
@@ -48,21 +50,21 @@
               return
           node, in_floating = hit
           state = node.get("scratchpad_state") or "none"
+          title = (node.get("name") or "").replace("\n", " ").strip()
+          # Tiền tố dính tiêu đề trong CÙNG pill — Waybar không có chỗ gắn
+          # prefix vào sway/window, nên script tự ghép "[S] tiêu đề".
           if state != "none":
-              out = {
-                  "text": "[S]",
-                  "class": "s",
-                  "tooltip": "Focus: scratchpad — $mod+minus ẩn/hiện · $mod+Shift+minus cất lại",
-              }
+              prefix, klass, hint = "[S]", "s", "scratchpad — $mod+minus ẩn/hiện"
           elif in_floating:
-              out = {
-                  "text": "[F]",
-                  "class": "f",
-                  "tooltip": "Focus: popup floating — $mod+Shift+minus cất vào scratchpad · $mod+Shift+q hoặc Ctrl+Delete trong $mod+m để đóng",
-              }
+              prefix, klass, hint = "[F]", "f", "popup floating — $mod+Shift+minus cất"
           else:
-              out = {"text": "", "class": "tiled", "tooltip": ""}
-          print(json.dumps(out, ensure_ascii=False))
+              prefix, klass, hint = "", "tiled", ""
+          text = f"{prefix} {title}".strip() if prefix else title
+          print(json.dumps({
+              "text": text,
+              "class": klass,
+              "tooltip": f"{hint} · {title}".strip(" ·") if title else hint,
+          }, ensure_ascii=False))
 
 
       def watch():
