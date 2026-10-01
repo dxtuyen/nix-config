@@ -76,12 +76,15 @@ in
       };
       bluetooth = {
         # Chỉ icon cho gọn — hover để xem chi tiết thiết bị qua tooltip.
+        # Ngoại lệ: các trạng thái on/off ghi thêm chữ "on"/"off" bên phải icon
+        # cho dễ đọc khi không có thiết bị nào đang kết nối; đã kết nối
+        # thì vẫn chỉ icon, màu xanh (#bluetooth.connected trong style.css).
         format = faSpan "";
-        "format-disabled" = faSpan "";
-        "format-off" = faSpan "";
-        "format-on" = faSpan "";
+        "format-disabled" = "${faSpan ""}<span class='bt-label'>off</span>";
+        "format-off" = "${faSpan ""}<span class='bt-label'>off</span>";
+        "format-on" = "${faSpan ""}<span class='bt-label'>on</span>";
         "format-connected" = faSpan "";
-        "format-no-controller" = faSpan "";
+        "format-no-controller" = "${faSpan ""}<span class='bt-label'>off</span>";
         tooltip = true;
         "tooltip-format" = "{controller_alias}: {status}";
         "tooltip-format-connected" = "{controller_alias} · {num_connections} connected\n{device_enumerate}";
@@ -292,6 +295,8 @@ in
       #custom-inhibit { padding: 2px 10px; margin: 4px 4px 4px 2px; }
       #power-profiles-daemon { padding: 0 4px; }
       #bluetooth.off, #bluetooth.disabled, #bluetooth.no-controller { color: @muted; }
+      /* Chữ on/off nhỏ hơn chữ icon để module gọn gàng. */
+      #bluetooth .bt-label { font-size: 13px; }
       #bluetooth.connected { color: #a6e3a1; }
       #custom-inhibit.manual { color: #fab387; }
       #custom-inhibit.idle { color: @muted; }
