@@ -164,6 +164,9 @@ in
       # $mod+y: yazi dạng POPUP nhỏ; gõ `yazi` trong terminal thì cửa sổ thường.
       bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
+      # $mod+Shift+b: ẩn/hiện Waybar (SIGUSR1 — toggle, không restart).
+      # $mod+b vẫn giữ là `splith`; phím này là bản Shift của nó.
+      bindsym $mod+Shift+b exec ~/.local/bin/bar-toggle
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       # Focus movement
       bindsym $mod+$left focus left
