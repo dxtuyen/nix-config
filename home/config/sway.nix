@@ -144,7 +144,7 @@ in
       bindsym $mod+Return exec $term
       # $mod+o: focus terminal scratchpad (bấm lại khi đang focus → cất về scratchpad).
       # Terminal scratchpad là terminal duy nhất giữ lại (đã xóa obsidian-focus).
-      bindsym $mod+o exec ~/.local/bin/scratchpad-terminal
+      bindsym $mod+p exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
       # Mod+r: về cửa sổ urgent (nếu có) hoặc cửa sổ dùng gần nhất (swayr LRU);
       # Mod+Shift+m: menu chuyển cửa sổ tổng. Menu này của swayr KHÔNG kill được
