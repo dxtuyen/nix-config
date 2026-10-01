@@ -21,8 +21,9 @@ in
       spacing = 4;
       "modules-left" = [
         "sway/workspaces"
-        # Thay sway/window: script ghép "[S]/[F] tiêu đề" trong cùng một pill.
+        # Huy hiệu [S]/[F] là pill NHỎ RIÊNG, đứng NGAY TRƯỚC tiêu đề gốc.
         "custom/winmode"
+        "sway/window"
         "sway/mode"
         "sway/scratchpad"
       ];
@@ -100,6 +101,14 @@ in
           }) ws
         );
       };
+      "sway/window" = {
+        format = "{title}";
+        "max-length" = 60;
+        tooltip = true;
+        # Bấm vào tiêu đề cũng mở menu scratchpad ($mod+m), như huy hiệu bên trái.
+        "on-click" = "~/.local/bin/scratchpad-menu";
+      };
+
       "sway/scratchpad" = {
         format = "${faSpan "{icon}"} {count}";
         "show-empty" = false;
@@ -175,18 +184,18 @@ in
           ""
         ];
       };
-      # Tiêu đề cửa sổ focus (script: home/script/winmode.nix), thay sway/window:
-      # tiled = tiêu đề trần · scratchpad/popup = "[S] tiêu đề" / "[F] tiêu đề"
-      # (tiền tố đứng trước chữ, cùng một pill). Signal 9, không poll.
+      # Huy hiệu loại cửa sổ focus (script: home/script/winmode.nix): pill nhỏ
+      # [S] = scratchpad · [F] = popup floating · rỗng = tiled (hide-empty-text
+      # ẩn module). Đứng ngay trước `sway/window` gốc. Signal 9, không poll.
       "custom/winmode" = {
         exec = "~/.local/bin/winmode status";
         signal = 9;
         return-type = "json";
         format = "{text}";
-        "max-length" = 64;
+        "max-length" = 4;
         tooltip = true;
         # Waybar không hỗ trợ pseudo-class :empty — dùng option chính thức để
-        # ẩn module khi không có cửa sổ focus (text rỗng).
+        # ẩn module khi cửa sổ tiled / không có cửa sổ focus.
         "hide-empty-text" = true;
         "on-click" = "~/.local/bin/scratchpad-menu";
       };
@@ -246,8 +255,12 @@ in
       }
       #workspaces button.urgent { color: #f38ba8; border-bottom-color: #f38ba8; }
       #workspaces button.persistent.empty { color: @muted; }
-      /* Tiêu đề focus — winmode thay sway/window. tiled/s/f cùng một pill. */
-      #custom-winmode { background: @pill-hover; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: @txt-strong; font-weight: bold; }
+      #window { background: @pill-hover; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: @txt-strong; font-weight: bold; }
+      /* Huy hiệu [S]/[F] — pill nhỏ RIÊNG, đứng ngay trước tiêu đề (#window). */
+      #custom-winmode.s, #custom-winmode.f {
+        background: @pill; border: 1px solid @edge; border-radius: 10px;
+        padding: 0 8px; margin: 4px 2px; font-weight: bold;
+      }
       #custom-winmode.s { color: #f9e2af; }
       #custom-winmode.f { color: #89b4fa; }
       #custom-inhibit, #tray, #mode, #scratchpad,
