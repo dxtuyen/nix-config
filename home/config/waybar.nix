@@ -185,6 +185,9 @@ in
         format = "{text}";
         "max-length" = 64;
         tooltip = true;
+        # Waybar không hỗ trợ pseudo-class :empty — dùng option chính thức để
+        # ẩn module khi không có cửa sổ focus (text rỗng).
+        "hide-empty-text" = true;
         "on-click" = "~/.local/bin/scratchpad-menu";
       };
       # Đồng hồ Countdown (engine: home/script/countdown-engine.nix, menu: countdown).
@@ -247,7 +250,6 @@ in
       #custom-winmode { background: @pill-hover; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: @txt-strong; font-weight: bold; }
       #custom-winmode.s { color: #f9e2af; }
       #custom-winmode.f { color: #89b4fa; }
-      #custom-winmode:empty { background: transparent; border: none; padding: 0; margin: 0; min-width: 0; }
       #custom-inhibit, #tray, #mode, #scratchpad,
       box#devices, box#hardware, box#power {
         background: @pill;
