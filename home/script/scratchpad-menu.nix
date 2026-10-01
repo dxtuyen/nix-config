@@ -143,7 +143,7 @@ in
               label = app_name
 
           # [S] thành viên scratchpad · [F] popup floating. Đồng nhất
-          # các bề mặt: menu $mod+m, menu swayr $mod+Shift+m, chỉ báo Waybar.
+          # với huy hiệu [S]/[F] trên Waybar (module winmode).
           label = f"[{kinds.get(window['id'], 'S')}] {label}"
 
           icon_path = entry.get("icon")
@@ -169,9 +169,9 @@ in
               row = label_bytes + f" ({index})".encode("utf-8") + (separator + icon if separator else b"")
           rows.append(row)
 
-      # Menu tự viết bằng swaymsg nên giữ được con_id -> thêm Delete để đóng cửa
-      # sổ. Menu swayr ($mod+Shift+m) không làm được: swayr chỉ đọc index trên
-      # stdout rồi tự focus, không trả con_id ra cho wrapper.
+      # Menu tự viết bằng swaymsg nên giữ được con_id -> thêm phím đóng cửa
+      # sổ. Menu $mod+Shift+m giờ là `rofi -show window` mặc định nên không
+      # phải làm gì thêm (Shift+Delete của rofi đã tự đóng cửa sổ được).
       # Tìm kiếm kiểu dmenu: -matching normal = khớp chuỗi con nguyên vẹn
       # (dự đoán được; fuzzy khớp ký tự rải rác nên cảm giác loạn khi gõ),
       # -no-sort giữ nguyên thứ tự danh sách, -no-custom chỉ cho chọn dòng
@@ -181,18 +181,20 @@ in
               "${pkgs.rofi}/bin/rofi", "-dmenu", "-i", "-matching", "normal",
               "-no-sort", "-no-custom", "-show-icons", "-format", "i",
               "-p", "Scratchpad",
-              # KHÔNG dùng "Delete": rofi đã gán sẵn cho kb-remove-char-forward
-              # (và Shift+Delete cho kb-delete-entry) → trùng binding bị rofi từ
-              # chối, in ra dòng đỏ "Failed to set binding Delete ...". Control+Delete
-              # thì chưa ai dùng nên nhận.
-              "-kb-custom-1", "Control+Delete",
-              "-mesg", "Enter: mở / focus / kéo về ws hiện tại · Ctrl+Delete: đóng cửa sổ này",
+              # Đồng bộ với `rofi -show window`: Shift+Delete = đóng cửa sổ.
+              # Shift+Delete mặc định đã gán cho kb-delete-entry (xoá dòng) →
+              # phải unset ("") trước, nếu không rofi từ chối và in dòng đỏ
+              # "Failed to set binding ...". Delete trần cũng vậy (đã gán cho
+              # kb-remove-char-forward) nên không dùng.
+              "-kb-delete-entry", "",
+              "-kb-custom-1", "Shift+Delete",
+              "-mesg", "Enter: mở / focus / kéo về ws hiện tại · Shift+Delete: đóng cửa sổ này",
           ],
           input=b"\n".join(rows) + (b"\n" if rows else b""),
           capture_output=True,
           check=False,
       )
-      # rofi: 0 = Enter, 10 = custom-1 (Delete), 1 = hủy.
+      # rofi: 0 = Enter, 10 = custom-1 (Shift+Delete = kill), 1 = hủy.
       if choice.returncode not in (0, 10):
           sys.exit(0)
       try:

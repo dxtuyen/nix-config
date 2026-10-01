@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   ws = import ./workspaces.nix; # tên workspace dùng chung với Waybar
@@ -24,6 +29,9 @@ in
       set $right l
       set $term foot
       set $menu rofi -show drun
+      # Menu cửa sổ mặc định của rofi (thay menu của swayr). Phần -mesg để ở
+      # dòng bindsym bên dưới vì sway chỉ chắc chắn bóc dấu nháy ở đó.
+      set $winmenu rofi -show window
 
       # Wallpaper: mỗi lần bật máy vào Sway → đổi ảnh nền random (khác
       # ảnh đang hiển thị). KHÔNG dùng --if-empty nữa (cờ đó = giữ ảnh phiên
@@ -145,15 +153,15 @@ in
       # Terminal scratchpad là terminal duy nhất giữ lại (đã xóa obsidian-focus).
       bindsym $mod+p exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
-      # Mod+r: về cửa sổ urgent (nếu có) hoặc cửa sổ dùng gần nhất (swayr LRU);
-      # Mod+Shift+m: menu chuyển cửa sổ tổng. Menu này của swayr KHÔNG kill được
-      # (swayr chỉ đọc index rồi tự focus, không trả con_id cho wrapper) — muốn
-      # đóng thì dùng $mod+m rồi bấm Ctrl+Delete, hoặc $mod+Shift+q để kill luôn.
+      # Mod+r: về cửa sổ urgent (nếu có) hoặc cửa sổ dùng gần nhất (swayr LRU).
+      # Mod+Shift+m: menu cửa sổ MẶC ĐỊNH của rofi (`rofi -show window`), không
+      # phải menu của swayr nữa. Trên Sway, window mode của rofi chạy qua
+      # protocol wlr-foreign-toplevel nên thấy cửa sổ native Wayland; Shift+Delete
+      # (mặc định của rofi) = đóng cửa sổ. Lưu ý: cửa sổ đang CẤT trong
+      # scratchpad không có surface nên không xuất hiện ở menu này — dùng $mod+m.
       # $mod+p để TRỐNG; $mod+c là Countdown (xem phần Custom Utilities).
       bindsym $mod+r exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
-      bindsym $mod+Shift+m exec ${pkgs.swayr}/bin/swayr switch-window
-      # Đã bỏ menu kill $mod+q: trùng danh sách với $mod+Shift+m, và kill đã có
-      # ở $mod+m (Ctrl+Delete) + $mod+Shift+q (kill cửa sổ đang focus).
+      bindsym $mod+Shift+m exec $winmenu -mesg "Enter: nhảy tới cửa sổ · Shift+Delete: đóng cửa sổ này"
       bindsym $mod+Shift+q kill
 
       # Menu ảnh: Mod+Alt+w · menu scratchpad+popup: Mod+m · đổi ảnh: Mod+Shift+w.
@@ -241,7 +249,7 @@ in
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
       # $mod+i đã xóa (cùng ticktick-focus). $mod+r là swayr urgent/LRU
       # (xem phần App & Session); $mod+p, $mod+u, $mod+x, $mod+q để TRỐNG. Kill cửa sổ:
-      # $mod+m rồi Ctrl+Delete, hoặc $mod+Shift+q cho cửa sổ đang focus.
+      # $mod+m rồi Shift+Delete, hoặc $mod+Shift+q cho cửa sổ đang focus.
       # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+t = ép
       # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
@@ -269,42 +277,10 @@ in
     '';
   };
 
-  # swayr giữ format mặc định cho ứng dụng thường; wrapper chỉ ẩn app ID PWA.
-  xdg.configFile."swayr/config.toml".text = ''
-    [menu]
-    executable = "${config.home.homeDirectory}/.local/bin/swayr-rofi-menu"
-    args = ["{prompt}"]
-
-    [format]
-    window_format = "{app_name} — {title}\u0000icon\u001f{app_icon}"
-    html_escape = true
-    icon_dirs = [
-      "${config.home.homeDirectory}/.local/share/icons/hicolor/16x16/apps",
-      "${config.home.homeDirectory}/.local/share/icons/hicolor/32x32/apps",
-      "${config.home.homeDirectory}/.local/share/icons/hicolor/48x48/apps",
-      "${config.home.homeDirectory}/.local/share/icons/hicolor/64x64/apps",
-      "${config.home.homeDirectory}/.local/share/icons/hicolor/128x128/apps",
-      "${config.home.homeDirectory}/.local/share/icons/hicolor/256x256/apps",
-      "${config.home.homeDirectory}/.local/share/icons/hicolor/scalable/apps",
-      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/16x16/apps",
-      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/32x32/apps",
-      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/48x48/apps",
-      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/64x64/apps",
-      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/128x128/apps",
-      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/256x256/apps",
-      "/etc/profiles/per-user/${config.home.username}/share/icons/hicolor/scalable/apps",
-      "/run/current-system/sw/share/icons/hicolor/16x16/apps",
-      "/run/current-system/sw/share/icons/hicolor/32x32/apps",
-      "/run/current-system/sw/share/icons/hicolor/48x48/apps",
-      "/run/current-system/sw/share/icons/hicolor/64x64/apps",
-      "/run/current-system/sw/share/icons/hicolor/128x128/apps",
-      "/run/current-system/sw/share/icons/hicolor/256x256/apps",
-      "/run/current-system/sw/share/icons/hicolor/scalable/apps",
-      "/run/current-system/sw/share/icons/Adwaita/48x48/apps",
-      "/run/current-system/sw/share/icons/Adwaita/scalable/apps",
-      "/run/current-system/sw/share/pixmaps",
-    ]
-  '';
+  # Menu cửa sổ KHÔNG còn dùng swayr nữa ($mod+Shift+m đã chuyển sang
+  # `rofi -show window`), nên bỏ hẳn file config + wrapper swayr-rofi-menu.
+  # swayrd vẫn chạy cho $mod+r (nhảy tới cửa sổ urgent / LRU).
+  xdg.configFile."swayr/config.toml".source = lib.mkForce null;
 
   # Ghi lịch sử focus trong suốt phiên Sway; target được start sau khi import SWAYSOCK.
   systemd.user.services.swayrd = {
