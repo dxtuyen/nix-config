@@ -1,5 +1,14 @@
 { config, pkgs, ... }:
 
+# window-menu — menu cửa sổ cho Sway, dùng CHUNG một engine cho hai phím:
+#   $mod+Shift+m → window-menu              (mọi cửa sổ)
+#   $mod+m       → window-menu --scratchpad (chỉ [S] + [F])
+# Tiền tố [S]/[F] luôn ghi kèm nhãn ở cả hai menu, đồng bộ với huy hiệu
+# trên Waybar (script winmode) để nhìn ra loại cửa sổ: đang cất trong
+# scratchpad, popup floating hay tiled thường. Trước đây $mod+Shift+m gọi
+# thẳng `rofi -show window` — mode dựng sẵn nên không chèn được tiền tố.
+#
+# Tên theo convention kebab-case của repo (wallpaper-menu, power-menu, …).
 let
   iconSizes = [
     "16x16"
@@ -28,7 +37,7 @@ let
   ];
 in
 {
-  home.file.".local/bin/scratchpad-menu" = {
+  home.file.".local/bin/window-menu" = {
     executable = true;
     text = ''
       #!${pkgs.python3}/bin/python3
@@ -42,17 +51,26 @@ in
 
       swaymsg = shutil.which("swaymsg")
       if not swaymsg:
-          sys.exit("scratchpad-menu: swaymsg is not in PATH")
+          sys.exit("window-menu: swaymsg is not in PATH")
+
+      # window-menu [--scratchpad]
+      #   (mặc định) MỌI cửa sổ: scratchpad [S] + popup floating [F] + tiled.
+      #       → $mod+Shift+m
+      #   --scratchpad  chỉ [S] + [F]. → $mod+m
+      # Một engine chung cho cả hai menu nên tiền tố [S]/[F] LUÔN có mặt ở
+      # cả hai, giống huy hiệu trên Waybar (module winmode).
+      stashed_only = "--scratchpad" in sys.argv[1:]
 
       tree = json.loads(subprocess.run(
           [swaymsg, "-t", "get_tree"], check=True, capture_output=True, text=True
       ).stdout)
 
-      def scratchpad_windows(node, ws=None):
+      def collect_windows(node, ws=None):
           # [S] = thành viên scratchpad; [F] = popup floating (không thuộc
-          # scratchpad). Ghi thêm tên workspace tổ tiên — dấu hiệu duy nhất
-          # biết cửa sổ đang ở đâu: đang ẩn trong scratchpad thì nằm dưới
-          # workspace "__i3_scratch", còn popup thì nằm dưới ws thật của nó.
+          # scratchpad); cờ rỗng = tiled. Ghi thêm tên workspace tổ tiên — dấu
+          # hiệu duy nhất biết cửa sổ đang ở đâu: đang ẩn trong scratchpad thì
+          # nằm dưới workspace "__i3_scratch", còn popup thì nằm dưới ws thật.
+          # Cửa sổ tiled chỉ gom khi KHÔNG lọc (menu đầy đủ $mod+Shift+m).
           if node.get("type") == "workspace":
               ws = node.get("name") or ws
           node_type = node.get("type")
@@ -61,18 +79,22 @@ in
                   yield (node, "S", ws)
           elif node_type == "floating_con":
               yield (node, "F", ws)
+          elif not stashed_only and node_type == "con":
+              yield (node, "", ws)
           for key in ("nodes", "floating_nodes"):
               for child in node.get(key, []):
-                  yield from scratchpad_windows(child, ws)
+                  yield from collect_windows(child, ws)
 
-      found = list(scratchpad_windows(tree))
+      found = list(collect_windows(tree))
       windows = [window for window, _, _ in found]
       kinds = {window["id"]: kind for window, kind, _ in found}
       window_ws = {window["id"]: ws for window, _, ws in found}
       if not windows:
           subprocess.run([
               shutil.which("notify-send") or "notify-send",
-              "Scratchpad", "Không có cửa sổ nào đang cất hay popup",
+              "Scratchpad",
+              ("Không có cửa sổ nào đang cất hay popup" if stashed_only
+               else "Không có cửa sổ nào đang mở"),
           ], check=False)
           sys.exit(0)
 
@@ -142,9 +164,13 @@ in
           else:
               label = app_name
 
-          # [S] thành viên scratchpad · [F] popup floating. Đồng nhất
-          # với huy hiệu [S]/[F] trên Waybar (module winmode).
-          label = f"[{kinds.get(window['id'], 'S')}] {label}"
+          # [S] thành viên scratchpad · [F] popup floating · (rỗng) tiled.
+          # Đồng nhất với huy hiệu [S]/[F] trên Waybar (module winmode).
+          # Cửa sổ tiled không gắn tiền tố nào — hành vi `rofi -show window`
+          # cũ không có tiền tố, giữ nguyên để danh sách không bị rối.
+          kind = kinds.get(window["id"], "S")
+          if kind:
+              label = f"[{kind}] {label}"
 
           icon_path = entry.get("icon")
           if not icon_path:
@@ -170,8 +196,10 @@ in
           rows.append(row)
 
       # Menu tự viết bằng swaymsg nên giữ được con_id -> thêm phím đóng cửa
-      # sổ. Menu $mod+Shift+m giờ là `rofi -show window` mặc định nên không
-      # phải làm gì thêm (Shift+Delete của rofi đã tự đóng cửa sổ được).
+      # sổ. Menu này phục vụ CẢ $mod+m (lọc --scratchpad) LẪN $mod+Shift+m
+      # (mọi cửa sổ), xem sway.nix. Phải tự dựng danh sách thay vì dùng
+      # `rofi -show window` vì đó là mode DỰNG SẴN của rofi → không chèn
+      # được tiền tố [S]/[F] vào nhãn.
       # Tìm kiếm kiểu dmenu: -matching normal = khớp chuỗi con nguyên vẹn
       # (dự đoán được; fuzzy khớp ký tự rải rác nên cảm giác loạn khi gõ),
       # -no-sort giữ nguyên thứ tự danh sách, -no-custom chỉ cho chọn dòng
@@ -180,7 +208,7 @@ in
           [
               "${pkgs.rofi}/bin/rofi", "-dmenu", "-i", "-matching", "normal",
               "-no-sort", "-no-custom", "-show-icons", "-format", "i",
-              "-p", "Scratchpad",
+              "-p", "Scratchpad" if stashed_only else "Cửa sổ",
               # Đồng bộ với `rofi -show window`: Shift+Delete = đóng cửa sổ.
               # Shift+Delete mặc định đã gán cho kb-delete-entry (xoá dòng) →
               # phải unset ("") trước, nếu không rofi từ chối và in dòng đỏ
@@ -188,7 +216,10 @@ in
               # kb-remove-char-forward) nên không dùng.
               "-kb-delete-entry", "",
               "-kb-custom-1", "Shift+Delete",
-              "-mesg", "Enter: mở / focus / kéo về ws hiện tại · Shift+Delete: đóng cửa sổ này",
+              "-mesg",
+              ("Enter: mở / focus / kéo về ws hiện tại · Shift+Delete: đóng cửa sổ này"
+               if stashed_only else
+               "Enter: nhảy tới cửa sổ · Shift+Delete: đóng cửa sổ này"),
           ],
           input=b"\n".join(rows) + (b"\n" if rows else b""),
           capture_output=True,
@@ -221,12 +252,16 @@ in
       def enter_command(con_id, ws_of, ws_current):
           """Lệnh Enter cho 1 dòng menu (thuần → unit-test được):
           - ẩn trong scratchpad → mở ra;
-          - ở workspace khác → KÉO về workspace hiện tại rồi focus;
-          - cùng workspace (hoặc không rõ) → chỉ focus.
+          - menu lọc (--scratchpad): ở workspace khác → KÉO về workspace hiện
+            tại rồi focus (đây là hành vi riêng của $mod+m);
+          - menu đầy đủ (mặc định): chỉ focus, KHÔNG kéo cửa sổ đi chỗ, để giữ
+            đúng cảm giác "nhảy tới" như `rofi -show window` trước đây.
           Trả về danh sách lệnh swaymsg (thứ tự thực thi)."""
           criteria = f"[con_id={con_id}]"
           if ws_of == SCRATCH_WS:
               return [f"{criteria} scratchpad show"]
+          if not stashed_only:
+              return [f"{criteria} focus"]
           if ws_of is None or ws_current is None or ws_of == ws_current:
               return [f"{criteria} focus"]
           return [

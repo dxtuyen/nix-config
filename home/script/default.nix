@@ -30,7 +30,7 @@
     ./countdown-engine.nix
     ./countdown-sleep-watch.nix
     ./setup-remnote.nix
-    ./scratchpad-menu.nix
+    ./window-menu.nix
     ./scratchpad-terminal.nix
     ./winmode.nix
     ./app-id-check.nix

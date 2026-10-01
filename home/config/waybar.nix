@@ -75,16 +75,19 @@ in
         tooltip-format-disabled = "Wi-Fi disabled";
       };
       bluetooth = {
-        # Chỉ icon cho gọn — hover để xem chi tiết thiết bị qua tooltip.
-        # Ngoại lệ: các trạng thái on/off ghi thêm chữ "on"/"off" bên phải icon
-        # cho dễ đọc khi không có thiết bị nào đang kết nối; đã kết nối
-        # thì vẫn chỉ icon, màu xanh (#bluetooth.connected trong style.css).
+        # Chu viet HOA dau, cach icon bang dau cach thuan - khong boc
+        # <span>: Pango markup CHI cho phep attribute hop le, Waybar se tu
+        # choi ca text (mat luon ca icon). Day la style da tung dung de hanh,
+        # khop voi network/battery dung ben canh.
+        # Rieng format-connected CHI de icon + mau xanh (#bluetooth.connected):
+        # ban cu {device_alias}/{num_connections} qua nhieu thong so, de chi tiet
+        # o tooltip (hover) thay vi kem ten trong thanh.
         format = faSpan "";
-        "format-disabled" = "${faSpan ""}<span class='bt-label'>off</span>";
-        "format-off" = "${faSpan ""}<span class='bt-label'>off</span>";
-        "format-on" = "${faSpan ""}<span class='bt-label'>on</span>";
+        "format-disabled" = "${faSpan ""} Disabled";
+        "format-off" = "${faSpan ""} Off";
+        "format-on" = "${faSpan ""} On";
         "format-connected" = faSpan "";
-        "format-no-controller" = "${faSpan ""}<span class='bt-label'>off</span>";
+        "format-no-controller" = "${faSpan ""} N/A";
         tooltip = true;
         "tooltip-format" = "{controller_alias}: {status}";
         "tooltip-format-connected" = "{controller_alias} · {num_connections} connected\n{device_enumerate}";
@@ -109,7 +112,7 @@ in
         "max-length" = 60;
         tooltip = true;
         # Bấm vào tiêu đề cũng mở menu scratchpad ($mod+m), như huy hiệu bên trái.
-        "on-click" = "~/.local/bin/scratchpad-menu";
+        "on-click" = "~/.local/bin/window-menu --scratchpad";
       };
 
       "sway/scratchpad" = {
@@ -200,7 +203,7 @@ in
         # Waybar không hỗ trợ pseudo-class :empty — dùng option chính thức để
         # ẩn module khi cửa sổ tiled / không có cửa sổ focus.
         "hide-empty-text" = true;
-        "on-click" = "~/.local/bin/scratchpad-menu";
+        "on-click" = "~/.local/bin/window-menu --scratchpad";
       };
       # Đồng hồ Countdown (engine: home/script/countdown-engine.nix, menu: countdown).
       # Giữ id module `custom/study` để không phải sửa `modules-center` ở trên.
@@ -295,8 +298,6 @@ in
       #custom-inhibit { padding: 2px 10px; margin: 4px 4px 4px 2px; }
       #power-profiles-daemon { padding: 0 4px; }
       #bluetooth.off, #bluetooth.disabled, #bluetooth.no-controller { color: @muted; }
-      /* Chữ on/off nhỏ hơn chữ icon để module gọn gàng. */
-      #bluetooth .bt-label { font-size: 13px; }
       #bluetooth.connected { color: #a6e3a1; }
       #custom-inhibit.manual { color: #fab387; }
       #custom-inhibit.idle { color: @muted; }
