@@ -135,7 +135,6 @@ in
       for_window [app_id="(?i)^chrome-[a-z0-9]+-Default$"] floating enable, resize set width 1000 px height 700 px, move position center
 
       # VS Code luôn mở vào workspace 3.code.
-      for_window [app_id="(?i)^code$"] move container to workspace number 3.code, workspace number 3.code
 
       # Inhibit idle
       for_window [app_id="(?i)^google-chrome$"] inhibit_idle fullscreen
