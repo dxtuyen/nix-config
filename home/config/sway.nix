@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ config, pkgs, ... }:
 
 let
   ws = import ./workspaces.nix; # tên workspace dùng chung với Waybar
@@ -278,9 +273,11 @@ in
   };
 
   # Menu cửa sổ KHÔNG còn dùng swayr nữa ($mod+Shift+m đã chuyển sang
-  # `rofi -show window`), nên bỏ hẳn file config + wrapper swayr-rofi-menu.
+  # `rofi -show window`) nên bỏ luôn file config của swayr + wrapper
+  # swayr-rofi-menu. Không khai báo `xdg.configFile."swayr/config.toml"` nữa:
+  # Home Manager tự dọn file nó từng quản lý khi switch. Lưu ý: KHÔNG dùng
+  # `source = null` — option này bắt buộc là absolute path, null sẽ lỗi eval.
   # swayrd vẫn chạy cho $mod+r (nhảy tới cửa sổ urgent / LRU).
-  xdg.configFile."swayr/config.toml".source = lib.mkForce null;
 
   # Ghi lịch sử focus trong suốt phiên Sway; target được start sau khi import SWAYSOCK.
   systemd.user.services.swayrd = {
