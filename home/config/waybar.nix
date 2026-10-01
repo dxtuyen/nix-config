@@ -21,10 +21,11 @@ in
       spacing = 4;
       "modules-left" = [
         "sway/workspaces"
+        # [S]/[F] là TIỀN TỐ của tiêu đề → phải đứng TRƯỚC sway/window.
+        "custom/winmode"
         "sway/window"
         "sway/mode"
         "sway/scratchpad"
-        "custom/winmode"
       ];
       "modules-center" = [
         "custom/study"
