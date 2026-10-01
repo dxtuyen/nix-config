@@ -430,7 +430,7 @@
             if [ -z "$DURATION" ]; then
               text="⏱"
               class="idle"
-              tooltip="🍅 Focus — no session"
+              tooltip="🍅 Foculocks — no session"
             else
               if [ "$RUNNING" = "true" ]; then
                 s_icon="▶"
@@ -530,6 +530,10 @@
               write_state || exit 1
               pkill -f "countdown-engine daemon" 2>/dev/null || true
               sleep_paused=1
+            elif [ -n "$DURATION" ]; then
+              # Đã bị pause sẵn (lock-pause chạy trước) → vẫn đánh dấu để
+              # sleep-resume biết máy vừa dậy và báo người dùng mở khóa.
+              touch "$SLEEP_MARKER"
             fi
             state_unlock
             if [ "$sleep_paused" -eq 1 ]; then
@@ -538,20 +542,18 @@
             ;;
 
           sleep-resume)
-            # Máy dậy: còn marker → tiếp tục phiên; hết giờ lúc ngủ → finalize.
+            # Máy dậy: KHÔNG tự resume — phiên GIỮ NGUYÊN pause, người dùng bấm
+            # ▶ để tiếp tục (mở khóa xong cũng vậy). Chức năng còn lại: hết giờ
+            # trong lúc ngủ → finalize; không có marker → chỉ đồng bộ anti-idle.
             state_lock
             read_state
-            resumed=0
+            woken_paused=0
             finished_duration=""
             if [ -f "$SLEEP_MARKER" ]; then
               rm -f "$SLEEP_MARKER" 2>/dev/null || true
               if [ "$RUNNING" != "true" ] && [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
-                now=$(date +%s)
-                END_TIME=$((now + REMAINING))
-                RUNNING="true"
-                write_state || exit 1
-                ensure_daemon
-                resumed=1
+                # REMAINING đã được sleep-pause giữ lại → giữ nguyên, chỉ báo.
+                woken_paused=1
               elif [ -n "$DURATION" ] && [ "$REMAINING" = "0" ]; then
                 finished_duration="$DURATION"
                 DURATION=""
@@ -561,13 +563,14 @@
                 write_state || exit 1
                 pkill -f "countdown-engine daemon" 2>/dev/null || true
               fi
+              sync_idle_inhibit
             else
               sync_idle_inhibit
             fi
             state_unlock
-            if [ "$resumed" -eq 1 ]; then
-              notify-send -a countdown -i "chronometer" -t 3000 \
-                "Focus" "Máy vừa thức dậy — phiên tiếp tục ▶"
+            if [ "$woken_paused" -eq 1 ]; then
+              notify-send -a countdown -i "chronometer" -t 5000 \
+                "Focus" "Máy vừa thức dậy — mở khóa, phiên đang TẠM DỪNG ⏸ (bấm ▶ để tiếp tục)"
             elif [ -n "$finished_duration" ]; then
               play_sound
               notify-send -a countdown -i "chronometer" -t 10000 -u critical \
@@ -577,8 +580,32 @@
             notify_waybar
             ;;
 
+          lock-pause)
+            # Khóa màn hình (tay qua power-menu, timeout 300s, hoặc trước-sleep)
+            # → tạm dừng phiên, giữ REMAINING. Mở khóa KHÔNG tự resume — bấm ▶.
+            state_lock
+            read_state
+            lock_paused=0
+            if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
+              now=$(date +%s)
+              REMAINING=$((END_TIME - now))
+              [ "$REMAINING" -lt 0 ] && REMAINING=0
+              RUNNING="false"
+              END_TIME=""
+              write_state || exit 1
+              pkill -f "countdown-engine daemon" 2>/dev/null || true
+              lock_paused=1
+            fi
+            state_unlock
+            if [ "$lock_paused" -eq 1 ]; then
+              notify_waybar
+              notify-send -a countdown -i "chronometer" -t 3000 \
+                "Focus" "Đã khóa màn hình — phiên tạm dừng ⏸ (mở khóa rồi bấm ▶)"
+            fi
+            ;;
+
           *)
-            echo "Usage: countdown-engine {start <1-480>|add <1-480>|pause|resume|toggle|reset|status|inhibit|inhibit-state|inhibit-toggle|sleep-pause|sleep-resume|daemon}" >&2
+            echo "Usage: countdown-engine {start <1-480>|add <1-480>|pause|resume|toggle|reset|status|inhibit|inhibit-state|inhibit-toggle|lock-pause|sleep-pause|sleep-resume|daemon}" >&2
             exit 1
             ;;
         esac

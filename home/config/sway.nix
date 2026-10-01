@@ -329,8 +329,10 @@ in
     };
     Service = {
       Type = "simple";
-      # Diệt instance cũ trước khi start (dấu "-" = không có gì để diệt vẫn OK).
-      ExecStartPre = "-${pkgs.procps}/bin/pkill -x swayidle";
+      # Diệt instance cũ CỦA CHÍNH NÓ (dấu "-" = không có gì để diệt vẫn OK).
+      # Match cụ thể "swayidle -w timeout 300" để KHÔNG giết nhầm instance
+      # lock-on-sleep của Countdown (cmdline của nó bắt đầu bằng "-w before-sleep").
+      ExecStartPre = "-${pkgs.procps}/bin/pkill -f 'swayidle -w timeout 300'";
       # PATH cho lệnh con swayidle spawn (swaymsg, systemctl, lock-screen).
       Environment = [
         "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"

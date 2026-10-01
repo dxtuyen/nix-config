@@ -6,6 +6,11 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
+        # Khóa màn → tạm dừng phiên ngay (no-op nếu không có phiên/paused sẵn);
+        # mở khóa KHÔNG tự resume — bấm ▶ để tiếp tục. Đặt TRƯỚC guard để trường
+        # hợp swaylock đang chạy (khóa chồng) cũng không bỏ lỡ pause.
+        "$HOME/.local/bin/countdown-engine" lock-pause 2>/dev/null || true
+
         # Tránh khóa chồng (không thì phải mở khóa 2 lần).
         if pgrep -x swaylock >/dev/null 2>&1; then
           exit 0
