@@ -150,7 +150,7 @@ in
       # Mod+Shift+m: menu chuyển cửa sổ tổng. Menu này của swayr KHÔNG kill được
       # (swayr chỉ đọc index rồi tự focus, không trả con_id cho wrapper) — muốn
       # đóng thì dùng $mod+m rồi bấm Ctrl+Delete, hoặc $mod+Shift+q để kill luôn.
-      # $mod+p nay là Pomodoro (xem phần Custom Utilities).
+      # $mod+p để TRỐNG; $mod+c là Countdown (xem phần Custom Utilities).
       bindsym $mod+r exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+Shift+m exec ${pkgs.swayr}/bin/swayr switch-window
       # Đã bỏ menu kill $mod+q: trùng danh sách với $mod+Shift+m, và kill đã có
@@ -233,12 +233,12 @@ in
       # Custom Utilities & Screenshot
       # $mod+Shift+o menu tiện ích.
       bindsym $mod+Shift+o exec ~/.local/bin/options
-      # $mod+c Chrome · $mod+p Pomodoro · $mod+Shift+p menu nguồn.
-      bindsym $mod+c exec ${pkgs.google-chrome}/bin/google-chrome
-      bindsym $mod+p exec ~/.local/bin/pomodoro
+      # $mod+c Countdown · $mod+p để TRỐNG · $mod+Shift+p menu nguồn.
+      # Chrome không còn phím riêng — mở qua $mod+d (rofi) hoặc click link.
+      bindsym $mod+c exec ~/.local/bin/countdown
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
       # $mod+i đã xóa (cùng ticktick-focus). $mod+r là swayr urgent/LRU
-      # (xem phần App & Session); $mod+u, $mod+x, $mod+q để TRỐNG. Kill cửa sổ:
+      # (xem phần App & Session); $mod+p, $mod+u, $mod+x, $mod+q để TRỐNG. Kill cửa sổ:
       # $mod+m rồi Ctrl+Delete, hoặc $mod+Shift+q cho cửa sổ đang focus.
       # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+t = ép
       # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
@@ -263,7 +263,7 @@ in
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
       # swayidle (systemd): khoá 300s → tắt màn 310s → ngủ 900s khi dùng pin.
-      # Phiên Pomodoro chạy → pomodoro-engine stop service này, xong tự start lại.
+      # Phiên Countdown chạy → countdown-engine stop service này, xong tự start lại.
     '';
   };
 

@@ -8,7 +8,7 @@
         #! /usr/bin/env bash
         # Chỉ ngủ khi dùng pin. Cắm sạc → thức tiếp (màn vẫn tắt & khóa).
         # Phiên Focus chạy → không suspend (END_TIME wall-clock).
-        if pgrep -f "pomodoro-engine daemon" >/dev/null 2>&1; then
+        if pgrep -f "(countdown|pomodoro)-engine daemon" >/dev/null 2>&1; then
           exit 0
         fi
         for bat in /sys/class/power_supply/BAT*; do

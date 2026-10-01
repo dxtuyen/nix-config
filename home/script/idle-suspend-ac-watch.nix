@@ -14,7 +14,7 @@
           if printf '%s' "$out" | grep -q '"power": true'; then
             exit 0
           fi
-          if pgrep -f "pomodoro-engine daemon" >/dev/null 2>&1; then
+          if pgrep -f "(countdown|pomodoro)-engine daemon" >/dev/null 2>&1; then
             exit 0
           fi
           for bat in /sys/class/power_supply/BAT*; do

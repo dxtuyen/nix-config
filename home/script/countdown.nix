@@ -2,18 +2,18 @@
 
 {
   home.file = {
-    ".local/bin/pomodoro" = {
+    ".local/bin/countdown" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Pomodoro menu: start, pause/resume, reset, hoặc thêm thời gian.
+        # Countdown menu: start, pause/resume, reset, hoặc thêm thời gian.
         set -u
 
-        ENGINE="$HOME/.local/bin/pomodoro-engine"
-        # Tương thích lúc switch: engine mới đọc pomodoro-state, menu này đọc
-        # được cả file cũ (countdown-state, study-state). Fallback binary cũ cho
-        # máy chưa switch xong (countdown-engine, study vẫn còn trong ~/.local/bin).
-        for candidate in "$HOME/.local/bin/countdown-engine" "$HOME/.local/bin/study"; do
+        ENGINE="$HOME/.local/bin/countdown-engine"
+        # Tương thích lúc switch: engine mới đọc countdown-state, menu này đọc
+        # được cả file cũ (pomodoro-state, study-state). Fallback binary cũ cho
+        # máy chưa switch xong (pomodoro-engine, study vẫn còn trong ~/.local/bin).
+        for candidate in "$HOME/.local/bin/pomodoro-engine" "$HOME/.local/bin/study"; do
           if [ ! -x "$ENGINE" ] && [ -x "$candidate" ]; then
             ENGINE="$candidate"
           fi
@@ -32,11 +32,19 @@
         RUNNING="false"
         END_TIME=""
         REMAINING=""
-        MENU_STATE="$STATE_DIR/pomodoro-state"
-        for legacy in "$STATE_DIR/countdown-state" "$STATE_DIR/study-state"; do
-          [ -f "$MENU_STATE" ] || [ -f "$legacy" ] || continue
-          MENU_STATE="$legacy"
-        done
+        # Ưu tiên state file mới; chỉ fallback sang tên cũ khi file mới chưa
+        # có. (Bẫy cũ: `[ -f "$MENU_STATE" ] || ... || continue` đúng là KHÔNG
+        # continue → vẫn ghi đè MENU_STATE bằng tên legacy → menu không thấy
+        # phiên đang chạy và luôn hiện màn hình khởi động.)
+        MENU_STATE="$STATE_DIR/countdown-state"
+        if [ ! -f "$MENU_STATE" ]; then
+          for legacy in "$STATE_DIR/pomodoro-state" "$STATE_DIR/study-state"; do
+            if [ -f "$legacy" ]; then
+              MENU_STATE="$legacy"
+              break
+            fi
+          done
+        fi
         if [ -f "$MENU_STATE" ]; then
           # shellcheck disable=SC1090
           . "$MENU_STATE"
@@ -67,20 +75,20 @@
           ITEMS+=("⏱ 120 min")
         fi
 
-        choice=$(printf '%s\n' "''${ITEMS[@]}" | rofi -dmenu -i -p "Pomodoro" \
+        choice=$(printf '%s\n' "''${ITEMS[@]}" | rofi -dmenu -i -p "Countdown" \
           -mesg "⌨ start 1–480 · ⏱ 30/60/120 min · ⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
 
         # Hủy (rỗng) → thoát im lặng; sai định dạng → báo lỗi.
         ask_minutes() {
-          local prompt="''${1:-Pomodoro — minutes (1–480)}"
+          local prompt="''${1:-Countdown — minutes (1–480)}"
           local minutes
           minutes=$(rofi -dmenu -p "$prompt")
           if [ -z "$minutes" ]; then
             exit 0
           fi
           if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
-            notify-send -a pomodoro -i "dialog-error" -t 4000 \
-              "Pomodoro" "Invalid minutes: $minutes (need 1–480)"
+            notify-send -a countdown -i "dialog-error" -t 4000 \
+              "Countdown" "Invalid minutes: $minutes (need 1–480)"
             exit 1
           fi
           echo "$minutes"
@@ -99,7 +107,7 @@
           "▶ "*) exec "$ENGINE" toggle ;;
           "↺ Reset") exec "$ENGINE" reset ;;
           "＋ Add minutes...")
-            m=$(ask_minutes "Pomodoro — add minutes (1–480)") || exit $?
+            m=$(ask_minutes "Countdown — add minutes (1–480)") || exit $?
             [ -n "$m" ] || exit 0
             exec "$ENGINE" add "$m"
             ;;

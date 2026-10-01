@@ -25,9 +25,9 @@
     ./screenshot.nix
     ./screenshot-menu.nix
     ./quick-lang.nix
-    ./pomodoro.nix
-    ./pomodoro-engine.nix
-    ./pomodoro-sleep-watch.nix
+    ./countdown.nix
+    ./countdown-engine.nix
+    ./countdown-sleep-watch.nix
     ./setup-remnote.nix
     ./scratchpad-menu.nix
     ./scratchpad-terminal.nix

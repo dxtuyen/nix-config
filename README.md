@@ -46,11 +46,11 @@ nix-config/
 ├── home/                        # Home Manager (user-level)
 │   ├── default.nix              # Thiết lập user + imports ba nhóm bên dưới
 │   ├── config/                  # Cấu hình desktop, gói user và ứng dụng mặc định
-│   ├── apps/                    # Tích hợp từng ứng dụng (Pomodoro, RemNote, Yazi…)
+│   ├── apps/                    # Tích hợp từng ứng dụng (Countdown, RemNote, Yazi…)
 │   └── script/                  # Mọi lệnh ~/.local/bin, mỗi lệnh một file riêng
 │       ├── default.nix          # Danh sách import các script
 │       ├── quick-lang.nix       # Model, prompt và Gemini API
-│       └── ...                  # pomodoro, pomodoro-engine, setup-remnote, wallpaper-set…
+│       └── ...                  # countdown, countdown-engine, setup-remnote, wallpaper-set…
 ├── modules/nixos/               # Module NixOS (system-level)
 │   ├── core.nix                 # Nền tảng: Nix/flake, boot, mạng, user
 │   ├── desktop.nix              # Sway/greetd, PipeWire, Fcitx5, fonts

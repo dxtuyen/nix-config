@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ./pomodoro.nix
+    ./countdown.nix
     ./remnote.nix
     ./sioyek.nix
     ./thunar.nix

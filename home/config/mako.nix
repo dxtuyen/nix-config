@@ -30,8 +30,8 @@
       "app-name=power-profiles".default-timeout = 2000;
       "app-name=toggle-touchpad".default-timeout = 2000;
       # Countdown: viền theo màu đồng hồ Waybar.
-      "app-name=pomodoro".border-color = "#89b4fa";
-      "app-name=pomodoro".default-timeout = 5000;
+      "app-name=countdown".border-color = "#89b4fa";
+      "app-name=countdown".default-timeout = 5000;
       "app-name=screenshot".default-timeout = 2000;
       "app-name=power".default-timeout = 2000;
     };
