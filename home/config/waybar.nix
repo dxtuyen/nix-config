@@ -24,6 +24,7 @@ in
         "sway/window"
         "sway/mode"
         "sway/scratchpad"
+        "custom/winmode"
       ];
       "modules-center" = [
         "custom/study"
@@ -179,6 +180,16 @@ in
           ""
         ];
       };
+      # Chỉ báo mode cửa sổ focus (script: home/script/winmode.nix):
+      # [S] = scratchpad · [F] = popup floating · rỗng = tiled (module ẩn).
+      # Cập nhật event-driven: daemon winmode-watch gửi signal 9 (không poll).
+      "custom/winmode" = {
+        exec = "~/.local/bin/winmode status";
+        signal = 9;
+        return-type = "json";
+        format = "{text}";
+        "on-click" = "~/.local/bin/scratchpad-menu";
+      };
       # Đồng hồ Countdown (engine: home/script/countdown-engine.nix, menu: countdown).
       # Giữ id module `custom/study` để không phải sửa `modules-center` ở trên.
       "custom/study" = {
@@ -268,6 +279,11 @@ in
       #bluetooth.connected { color: #a6e3a1; }
       #custom-inhibit.manual { color: #fab387; }
       #custom-inhibit.idle { color: @muted; }
+      /* Chỉ báo [S]/[F] — pill chỉ vẽ khi có class s/f (tiled → text rỗng, không
+         match rule nào → module co về 0, không để lại pill rỗng). */
+      #custom-winmode.s, #custom-winmode.f { background: @pill; border: 1px solid @edge; border-radius: 10px; padding: 0 6px; margin: 4px 2px; font-weight: bold; }
+      #custom-winmode.s { color: #f9e2af; }
+      #custom-winmode.f { color: #89b4fa; }
       #network.disconnected, #network.disabled { color: #f38ba8; }
       #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: #fab387; }
       #battery.critical { color: #f38ba8; }

@@ -32,6 +32,7 @@
     ./scratchpad-menu.nix
     ./scratchpad-terminal.nix
     ./swayr-rofi-menu.nix
+    ./winmode.nix
     ./app-id-check.nix
   ];
 
