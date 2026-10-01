@@ -2,6 +2,10 @@
 # **sixel** → yazi hiện được ảnh thật trong khung preview; bản nixpkgs build kèm
 # `--sixel` + terminfo (`TERM=foot`).
 #
+# 📌 `alpha`: foot tự làm nền trong suốt (Sway gốc không có blur tầng
+# compositor, nên đây là hiệu ứng duy nhất). 0.75 = nền vừa mờ để thấy
+# wallpaper phía sau mà chữ vẫn rõ; tăng lên 0.9+ là nền gần như đục.
+#
 # ⚠️ CÚ PHÁP MÀU: đơn = `RRGGBB` (6 hex, KHÔNG có `#`); cặp (cursor, jump-labels,
 # scrollback-indicator, search-box-*) = HAI màu hex cách nhau KHOẢNG TRẮNG, thứ
 # tự `màu-chữ màu-nền`. Sai cú pháp thì foot in `err: config.c:...`; kiểm tra
@@ -37,7 +41,8 @@
       # Chỉ khai 16 màu ANSI + nền/foreground/cursor; bảng 256 màu
       # (term-colors 16-255) giữ mặc định của foot. Muốn thêm thì khai ở đây.
       colors-dark = {
-        alpha = 0.9; # trong suốt phẳng (không có blur — xem chú thích trên đầu file)
+        # 0.75 (không phải 0.9): nền mờ vừa đủ thấy wallpaper, chữ vẫn rõ.
+        alpha = 0.85;
         background = "1e1e2e";
         foreground = "cdd6f4";
         cursor = "1e1e2e f5e0dc"; # chữ `1e1e2e` trên nền con trỏ `f5e0dc`
