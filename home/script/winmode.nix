@@ -1,90 +1,74 @@
 { pkgs, ... }:
 
 # Winmode: huy hiệu LOẠI cửa sổ đang focus trên Waybar — [S] = scratchpad,
-# [F] = popup floating, rỗng = tiled (module ẩn). Module này là một pill NHỎ
-# RIÊNG, đứng NGAY TRƯỚC tiêu đề (module `sway/window` gốc giữ nguyên, không
-# phải viết lại title). Lý do tồn tại: 2 loại floating trông giống hệt nhau
-# nhưng phím thao tác KHÁC nhau ($mod+minus chỉ toggle scratchpad). Cập nhật
-# event-driven: daemon `winmode watch` nghe sự kiện window của Sway rồi báo
-# Waybar (SIGRTMIN+9) → không poll, ~0% CPU khi chờ, không tốn pin.
+# [F] = popup floating, rỗng = tiled (module ẩn). Là pill NHỎ RIÊNG đứng NGAY
+# SAU tiêu đề (module `sway/window` gốc giữ nguyên, không viết lại title). Lý
+# do tồn tại: 2 loại floating trông giống hệt nhau nhưng phím thao tác KHÁC
+# nhau ($mod+minus chỉ toggle scratchpad).
+#
+# Tối ưu độ trễ để huy hiệu khớp tiêu đề gần như tức thì (bản cũ ~90ms):
+#   - `status` (Waybar spawn mỗi lần cập nhật): shell + jq (~7ms) thay vì
+#     python3 (~62ms).
+#   - `watch` (daemon): gửi signal bằng builtin `kill` thay vì `pkill` quét
+#     /proc (~23ms mỗi sự kiện).
 {
   home.file.".local/bin/winmode" = {
     executable = true;
     text = ''
-      #!${pkgs.python3}/bin/python3
+      #!/bin/sh
       # winmode status|watch — huy hiệu loại cửa sổ focus cho Waybar (signal 9).
       #   status: in JSON {"text": "[S]|[F]|<rỗng>", "class": ..., "tooltip": ...}
-      #   watch : nghe sự kiện window của Sway → pkill -RTMIN+9 waybar.
-      import json
-      import subprocess
-      import sys
+      #   watch : nghe sự kiện window của Sway → gửi SIGRTMIN+9 cho Waybar.
+      # Dùng đường dẫn store tuyệt đối (swaymsg/jq) → không phụ thuộc PATH.
+      SWAYMSG=${pkgs.sway}/bin/swaymsg
+      JQ=${pkgs.jq}/bin/jq
 
-      SIGNAL = "-RTMIN+9"
+      status() {
+        tree=$("$SWAYMSG" -t get_tree 2>/dev/null) || tree=""
+        if [ -z "$tree" ]; then
+          # Không có Sway / IPC lỗi → text rỗng, module tự ẩn (hide-empty-text).
+          printf '%s\n' '{"text":"","class":"tiled","tooltip":""}'
+          return 0
+        fi
+        printf '%s' "$tree" | "$JQ" -c '
+          [ paths as $p | getpath($p) | objects | select(.focused == true)
+          | { title: ((.name // "") | gsub("\\n"; " ") | sub("^ +"; "") | sub(" +$"; "")),
+              scratchpad: (.scratchpad_state // "none"),
+              floating: ($p | index("floating_nodes") != null) } ]
+          | first as $w
+          | if $w == null then {text:"",class:"tiled",tooltip:""}
+            elif $w.scratchpad != "none" then
+              {text:"[S]", class:"s",
+               tooltip:("scratchpad — $mod+minus ẩn/hiện"
+                        + (if $w.title != "" then " · " + $w.title else "" end))}
+            elif $w.floating then
+              {text:"[F]", class:"f",
+               tooltip:("popup floating — $mod+Shift+minus cất"
+                        + (if $w.title != "" then " · " + $w.title else "" end))}
+            else {text:"",class:"tiled",tooltip:""}
+            end'
+      }
 
+      watch() {
+        # PID Waybar: dò một lần; dò lại khi kill thất bại (Waybar restart).
+        pid=$(pgrep -x waybar 2>/dev/null | head -n1)
+        # swaymsg thoát (Sway chết) → vòng lặp dừng → systemd Restart=always
+        # hồi sinh; sway-session.target dừng thì service dừng theo (PartOf).
+        "$SWAYMSG" -m -t subscribe '["window"]' | while read -r _line; do
+          # Mọi sự kiện window (focus/move/close) đều có thể đổi trạng thái;
+          # gửi signal rẻ hơn nhiều so với tự phân tích JSON từng dòng.
+          if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
+            pid=$(pgrep -x waybar 2>/dev/null | head -n1)
+          fi
+          [ -n "$pid" ] && kill -s RTMIN+9 "$pid" 2>/dev/null
+        done
+      }
 
-      def find_focused(node, in_floating=False):
-          """Trả về (node đang focus, có nằm trong floating_nodes) hoặc None."""
-          if node.get("focused"):
-              return node, in_floating
-          for child in node.get("nodes", []):
-              hit = find_focused(child, in_floating)
-              if hit is not None:
-                  return hit
-          for child in node.get("floating_nodes", []):
-              hit = find_focused(child, True)
-              if hit is not None:
-                  return hit
-          return None
-
-
-      def status():
-          try:
-              tree = json.loads(subprocess.check_output(
-                  ["swaymsg", "-t", "get_tree"], text=True))
-              hit = find_focused(tree)
-          except Exception:
-              hit = None  # không có Sway / IPC lỗi → in rỗng, module ẩn
-          if hit is None:
-              print(json.dumps({"text": "", "class": "tiled", "tooltip": ""}))
-              return
-          node, in_floating = hit
-          state = node.get("scratchpad_state") or "none"
-          title = (node.get("name") or "").replace("\n", " ").strip()
-          if state != "none":
-              text, klass, hint = "[S]", "s", "scratchpad — $mod+minus ẩn/hiện"
-          elif in_floating:
-              text, klass, hint = "[F]", "f", "popup floating — $mod+Shift+minus cất"
-          else:
-              text, klass, hint = "", "tiled", ""
-          out = {"text": text, "class": klass, "tooltip": hint}
-          if hint and title:
-              out["tooltip"] = f"{hint} · {title}"
-          print(json.dumps(out, ensure_ascii=False))
-
-
-      def watch():
-          # Sway chết → swaymsg thoát → watch thoát → systemd (Restart=always)
-          # hồi sinh; sway-session.target dừng thì service dừng theo (PartOf).
-          proc = subprocess.Popen(
-              ["swaymsg", "-m", "-t", "subscribe", '["window"]'],
-              stdout=subprocess.PIPE, text=True, bufsize=1,
-          )
-          for _line in proc.stdout:
-              # Mọi sự kiện window đều báo: focus/move/close đều làm đổi trạng
-              # thái được; pkill còn rẻ hơn tự phân tích JSON từng dòng.
-              subprocess.run(["pkill", SIGNAL, "waybar"], check=False)
-          sys.exit(proc.wait())
-
-
-      if __name__ == "__main__":
-          cmd = sys.argv[1] if len(sys.argv) > 1 else ""
-          if cmd == "status":
-              status()
-          elif cmd == "watch":
-              watch()
-          else:
-              print("usage: winmode status|watch", file=sys.stderr)
-              sys.exit(2)
+      case "''${1:-}" in
+        status) status ;;
+        watch) watch ;;
+        *) printf '%s\n' 'usage: winmode status|watch' >&2; exit 2 ;;
+      esac
     '';
   };
 
@@ -99,7 +83,7 @@
     };
     Service = {
       Type = "simple";
-      # PATH cho swaymsg + pkill.
+      # PATH chỉ cần cho `pgrep` (swaymsg/jq dùng đường dẫn store tuyệt đối).
       Environment = [
         "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
       ];
