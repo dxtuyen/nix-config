@@ -111,8 +111,8 @@ in
         format = "{title}";
         "max-length" = 60;
         tooltip = true;
-        # Bấm vào tiêu đề cũng mở menu scratchpad ($mod+m), như huy hiệu bên trái.
-        "on-click" = "~/.local/bin/window-menu --scratchpad";
+        # Bấm vào tiêu đề cũng mở menu cửa sổ đầy đủ ($mod+m), như huy hiệu bên trái.
+        "on-click" = "~/.local/bin/window-menu";
       };
 
       "sway/scratchpad" = {
@@ -203,7 +203,7 @@ in
         # Waybar không hỗ trợ pseudo-class :empty — dùng option chính thức để
         # ẩn module khi cửa sổ tiled / không có cửa sổ focus.
         "hide-empty-text" = true;
-        "on-click" = "~/.local/bin/window-menu --scratchpad";
+        "on-click" = "~/.local/bin/window-menu";
       };
       # Đồng hồ Countdown (engine: home/script/countdown-engine.nix, menu: countdown).
       # Giữ id module `custom/study` để không phải sửa `modules-center` ở trên.

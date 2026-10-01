@@ -146,22 +146,27 @@ in
       bindsym $mod+p exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
       # Mod+r: về cửa sổ urgent (nếu có) hoặc cửa sổ dùng gần nhất (swayr LRU).
-      # Mod+Shift+m: menu MỌI cửa sổ. Trước đây là `rofi -show window`, nhưng đó là
-      # mode DỰNG SẴN của rofi → không chèn được tiền tố vào nhãn, nên không
-      # phân biệt được cửa sổ scratchpad [S] với popup floating [F]. Nay cùng
-      # dùng script window-menu với $mod+m: liệt kê cả cửa sổ tiled và gắn
-      # tiền tố [S]/[F] đồng bộ với huy hiệu trên Waybar. Enter chỉ focus
-      # (không kéo cửa sổ về ws hiện tại) — giữ đúng cảm giác "nhảy tới" cũ.
+      # Mod+m: menu MỌI cửa sổ (dùng hằng ngày → phím không cần Shift).
+      # Trước đây là `rofi -show window`, nhưng đó là mode DỰNG SẴN của rofi →
+      # không chèn được tiền tố vào nhãn, nên không phân biệt được cửa sổ
+      # scratchpad [S] với popup floating [F]. Nay gọi script window-menu: tự
+      # dựng danh sách nên gắn được tiền tố, đồng bộ với huy hiệu trên Waybar;
+      # bonus là thấy được cả cửa sổ đang CẤT trong scratchpad (rofi cũ không
+      # thấy vì cửa sổ ẩn không có surface). Enter chỉ focus, không kéo cửa
+      # sổ đi chỗ — giữ đúng cảm giác "nhảy tới" như trước.
+      # Mod+Shift+m: bản LỌC của cùng menu đó, chỉ [S] + [F] (ngắn, tiện khi
+      # đang nhiều cửa sổ tiled). Cần lọc nhanh mà không bấm Shift thì gõ
+      # "[S]" / "[F]" — tìm kiếm dmenu khớp chuỗi con.
       # $mod+p để TRỐNG; $mod+c là Countdown (xem phần Custom Utilities).
       bindsym $mod+r exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
-      bindsym $mod+Shift+m exec ~/.local/bin/window-menu
+      bindsym $mod+m exec ~/.local/bin/window-menu
       bindsym $mod+Shift+q kill
 
-      # Menu ảnh: Mod+Alt+w · menu cửa sổ: Mod+m (chỉ [S]/[F]) và Mod+Shift+m
-      # (mọi cửa sổ) · đổi ảnh: Mod+Shift+w.
+      # Menu ảnh: Mod+Alt+w · menu cửa sổ: Mod+m (mọi cửa sổ) và
+      # Mod+Shift+m (chỉ [S]/[F]) · đổi ảnh: Mod+Shift+w.
       # ~/Pictures/wallpapers (lưới thumbnail, phím ←→↑↓ duyệt ảnh).
       bindsym $mod+Mod1+w exec ~/.local/bin/wallpaper-menu
-      bindsym $mod+m exec ~/.local/bin/window-menu --scratchpad
+      bindsym $mod+Shift+m exec ~/.local/bin/window-menu --scratchpad
       bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-set
       # $mod+y: yazi dạng POPUP nhỏ; gõ `yazi` trong terminal thì cửa sổ thường.
       bindsym $mod+y exec ~/.local/bin/yazi-open
@@ -328,4 +333,5 @@ in
     Install = {
       WantedBy = [ "sway-session.target" ];
     };
-  };}
+  };
+}
