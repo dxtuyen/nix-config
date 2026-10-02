@@ -257,14 +257,13 @@ in
 
       SCRATCH_WS = "__i3_scratch"
 
-      def enter_command(con_id, ws_of, ws_current, kind="", pull=False):
+      def enter_command(con_id, ws_of, ws_current, pull=False):
           """Enter command for one menu row (pure -> unit-testable):
           - hidden in scratchpad -> reveal it (already lands on current ws);
           - pull (Shift+Enter in full menu, or Enter while filtering with
             --scratchpad, i.e. $mod+Shift+Tab): window on another ws -> move
-            it to the current ws then focus. Tiled windows live on their ws,
-            you go to them; scratchpad and floating popups are carry-along
-            tools, they come to you;
+            it to the current ws then focus. Applies to ANY window type:
+            Shift+Enter always means "bring it here";
           - plain Enter in the full menu -> focus only, NEVER moves the
             window, same "jump to" feel as the old `rofi -show window`.
           Returns a list of swaymsg commands (execution order)."""
@@ -272,7 +271,7 @@ in
           if ws_of == SCRATCH_WS:
               return [f"{criteria} scratchpad show"]
           want_pull = pull or stashed_only
-          if want_pull and kind in ("S", "F"):
+          if want_pull:
               if ws_of is not None and ws_current is not None and ws_of != ws_current:
                   return [
                       f"{criteria} move container to workspace current",
@@ -283,7 +282,7 @@ in
       pull_here = choice.returncode == 11
       for command in enter_command(
               window["id"], window_ws.get(window["id"]), current_ws,
-              kinds.get(window["id"], ""), pull=pull_here):
+              pull=pull_here):
           subprocess.run([swaymsg, command], check=True)
     '';
   };
