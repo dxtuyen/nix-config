@@ -217,17 +217,23 @@ in
               # to kb-remove-char-forward) so it is not used.
               "-kb-delete-entry", "",
               "-kb-custom-1", "Shift+Delete",
+              # Shift+Enter = pull to current ws: kb-accept-alt defaults to
+              # Shift+Return -> must unset ("") first before rebinding it to a
+              # custom key, same pattern as Shift+Delete above (rofi exits 11).
+              "-kb-accept-alt", "",
+              "-kb-custom-2", "Shift+Return",
               "-mesg",
               ("Enter: open / focus / pull to current ws · Shift+Delete: close this window"
                if stashed_only else
-               "Enter: jump to window · Shift+Delete: close this window"),
+               "Enter: jump to window · Shift+Enter: pull here · Shift+Delete: close"),
           ],
           input=b"\n".join(rows) + (b"\n" if rows else b""),
           capture_output=True,
           check=False,
       )
-      # rofi: 0 = Enter, 10 = custom-1 (Shift+Delete = kill), 1 = cancel.
-      if choice.returncode not in (0, 10):
+      # rofi: 0 = Enter, 10 = custom-1 (Shift+Delete = kill),
+      # 11 = custom-2 (Shift+Enter = pull here), 1 = cancel.
+      if choice.returncode not in (0, 10, 11):
           sys.exit(0)
       try:
           window = windows[int(choice.stdout.strip())]
@@ -251,28 +257,33 @@ in
 
       SCRATCH_WS = "__i3_scratch"
 
-      def enter_command(con_id, ws_of, ws_current):
+      def enter_command(con_id, ws_of, ws_current, kind="", pull=False):
           """Enter command for one menu row (pure -> unit-testable):
-          - hidden in scratchpad -> reveal it;
-          - filtered menu (--scratchpad): on another ws -> PULL it to the current
-            ws then focus (this is the filtered menu's own behavior, $mod+Shift+Tab);
-          - full menu (default): focus only, NEVER move the window, to keep the
-            same "jump to" feel as the old `rofi -show window`.
+          - hidden in scratchpad -> reveal it (already lands on current ws);
+          - pull (Shift+Enter in full menu, or Enter while filtering with
+            --scratchpad, i.e. $mod+Shift+Tab): window on another ws -> move
+            it to the current ws then focus. Tiled windows live on their ws,
+            you go to them; scratchpad and floating popups are carry-along
+            tools, they come to you;
+          - plain Enter in the full menu -> focus only, NEVER moves the
+            window, same "jump to" feel as the old `rofi -show window`.
           Returns a list of swaymsg commands (execution order)."""
           criteria = f"[con_id={con_id}]"
           if ws_of == SCRATCH_WS:
               return [f"{criteria} scratchpad show"]
-          if not stashed_only:
-              return [f"{criteria} focus"]
-          if ws_of is None or ws_current is None or ws_of == ws_current:
-              return [f"{criteria} focus"]
-          return [
-              f"{criteria} move container to workspace current",
-              f"{criteria} focus",
-          ]
+          want_pull = pull or stashed_only
+          if want_pull and kind in ("S", "F"):
+              if ws_of is not None and ws_current is not None and ws_of != ws_current:
+                  return [
+                      f"{criteria} move container to workspace current",
+                      f"{criteria} focus",
+                  ]
+          return [f"{criteria} focus"]
 
+      pull_here = choice.returncode == 11
       for command in enter_command(
-              window["id"], window_ws.get(window["id"]), current_ws):
+              window["id"], window_ws.get(window["id"]), current_ws,
+              kinds.get(window["id"], ""), pull=pull_here):
           subprocess.run([swaymsg, command], check=True)
     '';
   };
