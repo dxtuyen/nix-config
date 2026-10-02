@@ -74,8 +74,10 @@ in
       for_window [app_id="(?i)^(org[.]pulseaudio[.])?pavucontrol$"] floating enable, resize set width 30 ppt height 40 ppt
       for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
       # RemNote: opens as a centered floating popup by default (not a scratchpad).
-      # AppImage runs native Wayland -> matching app_id alone is enough.
+      # RemNote AppImage runs via XWayland -> app_id is None, class is "RemNote".
+      # Keep both rules: app_id covers native Wayland builds, class covers XWayland.
       for_window [app_id="(?i).*remnote.*"] floating enable, resize set width 1000 px height 700 px, move position center
+      for_window [class="(?i).*remnote.*"] floating enable, resize set width 1000 px height 700 px, move position center
 
       # Obsidian: opens as a centered floating popup by default, like RemNote/TickTick.
       # Electron's app_id CHANGES WITH THE INSTALL METHOD (checked in /nix/store):
