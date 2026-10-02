@@ -1,6 +1,6 @@
 name: Nix checks
 
-# push chỉ chạy trên main để PR nội bộ không chạy đôi.
+# Only run on main for pushes so internal PRs do not run twice.
 on:
   push:
     branches:
@@ -15,10 +15,10 @@ jobs:
 
       - uses: DeterminateSystems/nix-installer-action@v20
 
-      # Kiểm tra định dạng (nixfmt trong flake).
+      # Check formatting (nixfmt from the flake).
       - name: Check Nix format
         run: nix fmt -- --check
 
-      # Kiểm tra flake (bỏ qua build).
+      # Check the flake (skip builds).
       - name: Check Nix flake
         run: nix flake check --no-build

@@ -6,7 +6,7 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Kiểm tra exit slurp để hủy không báo sai.
+        # Check slurp's exit code so cancelling does not report a false error.
         set -u
 
         mode="''${1:?missing mode}"

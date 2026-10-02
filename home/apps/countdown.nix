@@ -1,10 +1,10 @@
 { pkgs, ... }:
 
-# Countdown: trạng thái tập trung, chống idle và tự tạm dừng khi máy ngủ.
-# Menu là `countdown`, engine nội bộ là `countdown-engine` (từng tên `study`, `pomodoro`).
+# Countdown: focus state, idle inhibition, and auto-pause when the machine sleeps.
+# Menu is `countdown`, internal engine is `countdown-engine` (formerly `study`, `pomodoro`).
 
 {
-  # Watcher chạy qua systemd (tự hồi sinh, log journald, dừng theo phiên Sway).
+  # Watcher runs via systemd (auto-restart, journald logging, stops with the Sway session).
   systemd.user.services.countdown-sleep-watch = {
     Unit = {
       Description = "Auto pause/resume Countdown timer on system sleep/wake (logind PrepareForSleep)";
@@ -14,7 +14,7 @@
     };
     Service = {
       Type = "simple";
-      # PATH cho dbus-monitor + countdown-engine.
+      # PATH for dbus-monitor + countdown-engine.
       Environment = [
         "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
       ];
@@ -27,10 +27,11 @@
     };
   };
 
-  # KHÓA MÀN TRƯỚC KHI MÁY NGỦ — chạy ĐỘC LẬP swayidle chính, vì swayidle
-  # chính bị engine TẮT suốt phiên (chống tắt màn/ngủ). Không có service này
-  # thì đóng nắp/sleep trong phiên sẽ ra về mà KHÔNG khóa gì cả.
-  # `swayidle -w` giữ delay-inhibitor → lock chạy xong mới cho phép suspend.
+  # LOCK BEFORE THE MACHINE SLEEPS — runs INDEPENDENTLY of the main swayidle,
+  # because the engine TURNS OFF the main swayidle for the whole session
+  # (anti screen-off/suspend). Without this service, closing the lid/sleeping
+  # during a session would power off WITHOUT locking anything.
+  # `swayidle -w` holds a delay-inhibitor -> suspend only happens after the lock runs.
   systemd.user.services.countdown-lock-on-sleep = {
     Unit = {
       Description = "Lock screen before sleep while Countdown stops swayidle (logind before-sleep)";
@@ -40,11 +41,11 @@
     };
     Service = {
       Type = "simple";
-      # PATH cho lệnh con (lock-screen, swaymsg).
+      # PATH for child commands (lock-screen, swaymsg).
       Environment = [
         "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
       ];
-      # "always" để hồi sinh nếu có gì đụng phải instance này.
+      # "always" so it restarts if anything touches this instance.
       Restart = "always";
       RestartSec = 2;
       ExecStart = ''

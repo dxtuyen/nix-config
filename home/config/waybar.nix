@@ -111,7 +111,7 @@ in
         format = "{title}";
         "max-length" = 60;
         tooltip = true;
-        # Bấm vào tiêu đề cũng mở menu cửa sổ đầy đủ ($mod+m), như huy hiệu bên trái.
+        # Clicking the title also opens the full window menu ($mod+Tab), same as the badge on the left.
         "on-click" = "~/.local/bin/window-menu";
       };
 

@@ -1,5 +1,5 @@
-# Tên workspace dùng chung cho Sway và Waybar.
-# Thứ tự = số phím ($mod+1, $mod+2...). Thêm tên mới vào cuối list.
+# Workspace names shared by Sway and Waybar.
+# Order = key number ($mod+1, $mod+2...). Add new names at the end of the list.
 [
   "1.main"
   "2.code"

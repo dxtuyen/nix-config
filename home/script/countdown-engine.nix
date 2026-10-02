@@ -7,14 +7,14 @@
       text = ''
         #! /usr/bin/env bash
         # Usage: countdown-engine {start|add|pause|resume|toggle|reset|status|inhibit|inhibit-state|...|daemon}
-        # Tên cũ: `study` → `pomodoro` → nay về lại `countdown` (khớp phím $mod+c).
+        # Old names: `study` -> `pomodoro` -> back to `countdown` (matches key $mod+c).
 
         STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
-        # State file chuẩn: countdown-state. Lộ trình tên cũ: study-state →
-        # countdown-state → pomodoro-state → countdown-state. Nếu lỡ còn nhiều
-        # file cùng lúc (đổi tên để sót) thì file có mtime MỚI NHẤT thắng:
-        # write_state luôn mv nên mtime = lần ghi trạng thái cuối → không bao
-        # giờ đọc nhầm phiên cũ (bẫy đã gặp ở lần đổi tên trước).
+        # Canonical state file: countdown-state. Old-name journey: study-state ->
+        # countdown-state -> pomodoro-state -> countdown-state. If several files
+        # ever coexist (renames may leave some behind), the file with the NEWEST
+        # mtime wins: write_state always mv's, so mtime = last state write ->
+        # an old session can never be misread (a trap hit on a previous rename).
         STATE_FILE="$STATE_DIR/countdown-state"
         newest_state=""
         newest_mtime=-1
@@ -28,10 +28,10 @@
         if [ -n "$newest_state" ] && [ "$newest_state" != "$STATE_FILE" ]; then
           mv -f "$newest_state" "$STATE_FILE"
         fi
-        # Bản legacy sót lại là bản đã bị ghi đè → dọn đi (chỉ có trong trường
-        # hợp đổi tên để sót; phiên sống luôn nằm ở file mtime mới nhất).
-        # Chỉ rm khi đã có file chuẩn — lỡ mv lỗi thì giữ bản legacy để menu
-        # vẫn fallback được, không được mất phiên.
+        # A leftover legacy file is one that was overwritten → clean it up (only
+        # happens after a rename; a live session always sits in the newest-mtime file).
+        # Only rm once the canonical file exists — if the mv failed, keep the
+        # legacy copy so the menu can still fall back; never lose a session.
         if [ -f "$STATE_FILE" ]; then
           rm -f "$STATE_DIR/pomodoro-state" "$STATE_DIR/study-state"
         fi
@@ -39,7 +39,7 @@
         LOCK_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/countdown-state.lock"
         FLOCK="${pkgs.util-linux}/bin/flock"
         SLEEP_MARKER="$STATE_DIR/countdown-sleep-paused"
-        # Marker "ngủ tự pause" cũng đổi tên theo → migrate nốt nếu đang dở chu kỳ ngủ.
+        # The "auto-pause on sleep" marker is renamed too → migrate it if a sleep cycle is in progress.
         if [ -f "$STATE_DIR/pomodoro-sleep-paused" ]; then
           mv -f "$STATE_DIR/pomodoro-sleep-paused" "$SLEEP_MARKER"
         fi
@@ -47,8 +47,8 @@
         HISTORY_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/countdown-history.log"
         LEGACY_HISTORY_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/pomodoro-history.log"
         mkdir -p "$STATE_DIR" "$(dirname "$LOCK_FILE")" "$(dirname "$HISTORY_FILE")"
-        # Migrate từ tên cũ (pomodoro-history.log): chưa có file mới → mv;
-        # có cả 2 → nối cũ vào mới rồi xóa cũ. An toàn khi chạy nhiều lần.
+        # Migrate from the old name (pomodoro-history.log): no new file yet → mv;
+        # both exist → append old to new then delete old. Safe to run repeatedly.
         if [ -f "$LEGACY_HISTORY_FILE" ]; then
           if [ -f "$HISTORY_FILE" ]; then
             cat "$LEGACY_HISTORY_FILE" >> "$HISTORY_FILE" && rm -f "$LEGACY_HISTORY_FILE"
@@ -84,9 +84,9 @@
           fi
         }
 
-        # Chống idle từ 2 nguồn: phiên chạy (tự động) + bấm tay (thủ công).
-        # Có nguồn nào → stop swayidle. Gọi trong write_state nên chỉ chạy lúc
-        # chuyển trạng thái, không lặp mỗi giây.
+        # Anti-idle from 2 sources: running session (automatic) + manual press.
+        # Any source present → stop swayidle. Called inside write_state so it only
+        # runs on state transitions, never in a 1-second loop.
         sync_idle_inhibit() {
           if { [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; } || [ -f "$MANUAL_FLAG" ]; then
             systemctl --user stop swayidle 2>/dev/null || true
@@ -124,7 +124,7 @@
           echo "$remaining"
         }
 
-        # Giây đã học (kẹp trong [0, DURATION*60]).
+        # Seconds studied (clamped to [0, DURATION*60]).
         get_elapsed() {
           if [ -z "$DURATION" ]; then
             echo 0
@@ -152,26 +152,26 @@
         }
 
         log_history() {
-          # $1 = nhãn phiên, $2 = số phút
+          # $1 = session label, $2 = number of minutes
           printf '%s | %s | %s min\n' "$(date '+%Y-%m-%d %H:%M')" "$1" "$2" >> "$HISTORY_FILE"
         }
 
-        # Ghi lịch sử nếu phiên bị thay thế/reset khi đã học ≥ 1 phút.
+        # Log history if the session is replaced/reset after >= 1 minute studied.
         maybe_log_current() {
           elapsed=$(get_elapsed)
           if [ "$elapsed" -ge 60 ]; then
-            log_history "$1 (dở dang)" "$((elapsed / 60))"
+            log_history "$1 (interrupted)" "$((elapsed / 60))"
           fi
         }
 
         notify_waybar() {
-          # Signal 8 = đồng hồ, signal 7 = icon mắt; gọi lúc chuyển trạng thái.
+          # Signal 8 = clock, signal 7 = eye icon; called on state transitions.
           pkill -RTMIN+8 waybar 2>/dev/null || true
           pkill -RTMIN+7 waybar 2>/dev/null || true
         }
 
         notify_clock() {
-          # Chỉ refresh đồng hồ mỗi giây (icon mắt chỉ đổi lúc chuyển trạng thái).
+          # Only refresh the clock every second (the eye icon only changes on state transitions).
           pkill -RTMIN+8 waybar 2>/dev/null || true
         }
 
@@ -198,7 +198,7 @@
               if [ -n "$finished_duration" ]; then
                 play_sound
                 notify-send -a countdown -i "chronometer" -t 10000 -u critical \
-                  "Focus" "Phiên tập trung kết thúc! $finished_duration phút 🍅"
+                  "Focus" "Focus session finished! $finished_duration min 🍅"
                 log_history "countdown" "$finished_duration"
                 notify_waybar
                 exit 0
@@ -207,14 +207,14 @@
                 exit 0
               fi
             fi
-            # Mỗi giây chỉ refresh đồng hồ.
+            # Refresh only the clock each second.
             notify_clock
             sleep 1
           done
         }
 
-        # Luôn thay daemon cũ bằng daemon mới (tránh race pause → treo timer).
-        # Lần switch đầu còn sót daemon tên cũ (pomodoro/study) → diệt luôn.
+        # Always replace the old daemon with a new one (avoids the pause -> stuck-timer race).
+        # The first switch left daemons with old names (pomodoro/study) -> kill those too.
         ensure_daemon() {
           pkill -f "countdown-engine daemon" 2>/dev/null || true
           pkill -f "pomodoro-engine daemon" 2>/dev/null || true
@@ -222,7 +222,7 @@
           nohup "$HOME/.local/bin/countdown-engine" daemon 9>&- >/dev/null 2>&1 &
         }
 
-        # Xóa dấu "ngủ tự pause" khi người dùng thao tác tay.
+        # Clear the "sleep auto-pause" marker when the user acts manually.
         clear_sleep_marker() {
           rm -f "$SLEEP_MARKER" 2>/dev/null || true
         }
@@ -248,7 +248,7 @@
         case "''${1:-status}" in
           start)
             minutes="''${2:-}"
-            # Số nguyên 1–480 (preset đặt ở menu rofi).
+            # Integer 1-480 (presets set in the rofi menu).
             if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
               echo "Usage: countdown-engine start <1-480>" >&2
               exit 1
@@ -267,7 +267,7 @@
             state_unlock
             notify_waybar
             notify-send -a countdown -i "chronometer" -t 3000 \
-              "Focus" "Phiên tập trung $minutes phút bắt đầu 🍅"
+              "Focus" "Focus session of $minutes min started 🍅"
             ;;
 
           add)
@@ -283,14 +283,14 @@
             if [ -z "$DURATION" ]; then
               state_unlock
               notify-send -a countdown -i "dialog-error" -t 4000 \
-                "Focus" "Không có phiên để cộng thời gian."
+                "Focus" "No session to add time to."
               exit 1
             fi
             new_duration=$((DURATION + minutes))
             if [ "$new_duration" -gt 480 ]; then
               state_unlock
               notify-send -a countdown -i "dialog-error" -t 4000 \
-                "Focus" "Tổng thời lượng tối đa là 480 phút (hiện tại $DURATION phút)."
+                "Focus" "Maximum total is 480 min (currently $DURATION min)."
               exit 1
             fi
             remaining=$(get_remaining)
@@ -313,7 +313,7 @@
             state_unlock
             notify_waybar
             notify-send -a countdown -i "chronometer" -t 3000 \
-              "Focus" "Đã cộng $minutes phút · tổng phiên $DURATION phút"
+              "Focus" "Added $minutes min · session total $DURATION min"
             ;;
 
           pause)
@@ -326,11 +326,11 @@
               RUNNING="false"
               END_TIME=""
               write_state || exit 1
-              # Kill daemon ngay (không chờ tự thoát).
+              # Kill the daemon immediately (don't wait for it to exit on its own).
               pkill -f "countdown-engine daemon" 2>/dev/null || true
               state_unlock
               notify_waybar
-              notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Tạm dừng ⏸"
+              notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Paused ⏸"
             else
               state_unlock
             fi
@@ -348,7 +348,7 @@
               ensure_daemon
               state_unlock
               notify_waybar
-              notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Tiếp tục ▶"
+              notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Resumed ▶"
             else
               state_unlock
             fi
@@ -365,11 +365,11 @@
               RUNNING="false"
               END_TIME=""
               write_state || exit 1
-              # Kill daemon ngay (không chờ tự thoát).
+              # Kill the daemon immediately (don't wait for it to exit on its own).
               pkill -f "countdown-engine daemon" 2>/dev/null || true
               state_unlock
               notify_waybar
-              notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Tạm dừng ⏸"
+              notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Paused ⏸"
             elif [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
               now=$(date +%s)
               END_TIME=$((now + REMAINING))
@@ -378,7 +378,7 @@
               ensure_daemon
               state_unlock
               notify_waybar
-              notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Tiếp tục ▶"
+              notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Resumed ▶"
             else
               state_unlock
             fi
@@ -447,7 +447,7 @@
             if [ -n "$finished_duration" ]; then
               play_sound
               notify-send -a countdown -i "chronometer" -t 10000 -u critical \
-                "Focus" "Phiên tập trung kết thúc! $finished_duration phút 🍅"
+                "Focus" "Focus session finished! $finished_duration min 🍅"
               log_history "countdown" "$finished_duration"
               notify_waybar
             fi
@@ -516,7 +516,7 @@
             ;;
 
           sleep-pause)
-            # Máy ngủ: tạm dừng phiên, giữ REMAINING để thời gian ngủ không bị trừ.
+            # Machine sleeping: pause the session, keep REMAINING so sleep time is not deducted.
             state_lock
             read_state
             sleep_paused=0
@@ -531,8 +531,8 @@
               pkill -f "countdown-engine daemon" 2>/dev/null || true
               sleep_paused=1
             elif [ -n "$DURATION" ]; then
-              # Đã bị pause sẵn (lock-pause chạy trước) → vẫn đánh dấu để
-              # sleep-resume biết máy vừa dậy và báo người dùng mở khóa.
+              # Already paused (lock-pause ran first) -> still set the marker so
+              # sleep-resume knows the machine just woke and can tell the user to unlock.
               touch "$SLEEP_MARKER"
             fi
             state_unlock
@@ -542,9 +542,9 @@
             ;;
 
           sleep-resume)
-            # Máy dậy: KHÔNG tự resume — phiên GIỮ NGUYÊN pause, người dùng bấm
-            # ▶ để tiếp tục (mở khóa xong cũng vậy). Chức năng còn lại: hết giờ
-            # trong lúc ngủ → finalize; không có marker → chỉ đồng bộ anti-idle.
+            # Machine woke: do NOT auto-resume — the session STAYS paused, the user
+            # presses ▶ to continue (same after unlocking). Remaining behavior:
+            # expired during sleep -> finalize; no marker -> just sync anti-idle.
             state_lock
             read_state
             woken_paused=0
@@ -552,7 +552,7 @@
             if [ -f "$SLEEP_MARKER" ]; then
               rm -f "$SLEEP_MARKER" 2>/dev/null || true
               if [ "$RUNNING" != "true" ] && [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
-                # REMAINING đã được sleep-pause giữ lại → giữ nguyên, chỉ báo.
+                # REMAINING was preserved by sleep-pause -> keep it, just notify.
                 woken_paused=1
               elif [ -n "$DURATION" ] && [ "$REMAINING" = "0" ]; then
                 finished_duration="$DURATION"
@@ -570,19 +570,19 @@
             state_unlock
             if [ "$woken_paused" -eq 1 ]; then
               notify-send -a countdown -i "chronometer" -t 5000 \
-                "Focus" "Máy vừa thức dậy — mở khóa, phiên đang TẠM DỪNG ⏸ (bấm ▶ để tiếp tục)"
+                "Focus" "Just woke up — unlock, session is PAUSED ⏸ (press ▶ to continue)"
             elif [ -n "$finished_duration" ]; then
               play_sound
               notify-send -a countdown -i "chronometer" -t 10000 -u critical \
-                "Focus" "Phiên tập trung kết thúc trong lúc máy ngủ! $finished_duration phút 🍅"
+                "Focus" "Focus session finished while the machine slept! $finished_duration min 🍅"
               log_history "countdown" "$finished_duration"
             fi
             notify_waybar
             ;;
 
           lock-pause)
-            # Khóa màn hình (tay qua power-menu, timeout 300s, hoặc trước-sleep)
-            # → tạm dừng phiên, giữ REMAINING. Mở khóa KHÔNG tự resume — bấm ▶.
+            # Screen locked (manually via power-menu, 300s timeout, or before-sleep)
+            # -> pause the session, keep REMAINING. Unlocking does NOT auto-resume — press ▶.
             state_lock
             read_state
             lock_paused=0
@@ -600,7 +600,7 @@
             if [ "$lock_paused" -eq 1 ]; then
               notify_waybar
               notify-send -a countdown -i "chronometer" -t 3000 \
-                "Focus" "Đã khóa màn hình — phiên tạm dừng ⏸ (mở khóa rồi bấm ▶)"
+                "Focus" "Screen locked — session paused ⏸ (unlock, then press ▶)"
             fi
             ;;
 

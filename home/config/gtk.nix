@@ -1,12 +1,12 @@
-# Cursor + GTK theme (adw-gtk3-dark) + icon (Papirus-Dark).
-# Phần tử vẽ tự dùng Catppuccin Mocha; riêng GTK dùng adw-gtk3-dark trung tính:
-# catppuccin/gtk đã archive, tokyonight-gtk-theme đã bị xoá khỏi nixpkgs, và nó
-# cho app GTK3 trông giống app GTK4/libadwaita.
+# Cursor + GTK theme (adw-gtk3-dark) + icons (Papirus-Dark).
+# Most elements paint themselves with Catppuccin Mocha; GTK alone uses neutral
+# adw-gtk3-dark: catppuccin/gtk is archived, tokyonight-gtk-theme was removed
+# from nixpkgs, and it makes GTK3 apps look like GTK4/libadwaita apps.
 { pkgs, ... }:
 
 {
   home.pointerCursor = {
-    # Bắt buộc từ HM 25.11+ (thiếu sẽ warning deprecated).
+    # Required since HM 25.11+ (missing it triggers a deprecation warning).
     enable = true;
     name = "Bibata-Modern-Classic";
     package = pkgs.bibata-cursors;

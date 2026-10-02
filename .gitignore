@@ -9,10 +9,10 @@ result-*
 # Temp
 *.tmp
 
-# Python venv (phòng khi vô tình tạo lại trong repo)
+# Python venv (in case one is accidentally created inside the repo)
 .venv/
 venv/
 
-# Ảnh nền NẰM NGOÀI repo: ~/Pictures/wallpapers (tự cp/rm, không rebuild).
-# Dòng này chặn lỡ tay cp ảnh vào ~/nix-config/wallpapers rồi git add.
+# Wallpapers live OUTSIDE the repo: ~/Pictures/wallpapers (copy/rm manually, no rebuild).
+# This line blocks accidentally cp-ing images into ~/nix-config/wallpapers and git add-ing them.
 wallpapers/

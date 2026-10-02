@@ -6,11 +6,12 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Mở yazi trong cửa sổ foot NHỎ (popup) — gắn $mod+y, chọn nhanh file /
-        # thêm-xoá ảnh. Duyệt kỹ (xem trước ảnh/PDF) thì gõ `yazi` trong terminal.
+        # Open yazi in a SMALL (popup) foot window — bound to $mod+y for quick file
+        # picking / image add-remove. For careful browsing (image/PDF preview) type
+        # `yazi` in a terminal instead.
         #
-        # Yazi chạy BÊN TRONG foot nên sway chỉ thấy app_id="foot". Title riêng
-        # `yazi-popup` để chỉ cửa sổ này float (rule trong home/config/sway.nix).
+        # Yazi runs INSIDE foot so sway only sees app_id="foot". The dedicated title
+        # `yazi-popup` is what makes only this window float (rule in home/config/sway.nix).
         set -u
         TERM_BIN="${pkgs.foot}/bin/foot"
         FOOT_SIZE="--window-size-pixels=1000x700"

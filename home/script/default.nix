@@ -18,7 +18,7 @@
     ./quick-net-reload.nix
     ./toggle-touchpad.nix
     ./bar-toggle.nix
-    ./options.nix
+    ./utilities.nix
     ./wlsunset-menu.nix
     ./power-profile-menu.nix
     ./media-notify.nix

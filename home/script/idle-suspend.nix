@@ -6,8 +6,8 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Chỉ ngủ khi dùng pin. Cắm sạc → thức tiếp (màn vẫn tắt & khóa).
-        # Phiên Focus chạy → không suspend (END_TIME wall-clock).
+        # Only suspend on battery. Plugged in -> stay awake (screen still off & locked).
+        # Focus session running -> no suspend (END_TIME is wall-clock).
         if pgrep -f "(countdown|pomodoro)-engine daemon" >/dev/null 2>&1; then
           exit 0
         fi
@@ -17,8 +17,8 @@
             exec ${pkgs.systemd}/bin/systemctl suspend
           fi
         done
-        # Cắm sạc → trồng watcher: rút sạc khi vẫn idle → khóa + suspend
-        # (swayidle chỉ chạy timeout 900 một lần mỗi chu kỳ).
+        # Planted while plugged in: if unplugged while still idle -> lock + suspend
+        # (swayidle only fires the 900s timeout once per cycle).
         if ! pgrep -f idle-suspend-ac-watch >/dev/null 2>&1; then
           ${pkgs.bash}/bin/bash "$HOME/.local/bin/idle-suspend-ac-watch" >/dev/null 2>&1 &
         fi

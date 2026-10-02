@@ -1,26 +1,26 @@
 { pkgs, config, ... }:
 
-# RemNote AppImage: file ngoài Nix ở ~/Apps/RemNote/ (không nhúng vào build).
-# Dùng: tải file về ~/Downloads rồi `setup-remnote`. Chi tiết: docs/REMNOTE.md.
+# RemNote AppImage: an out-of-Nix file in ~/Apps/RemNote/ (not embedded in the build).
+# Usage: download the file to ~/Downloads then run `setup-remnote`.
 
 {
-  # Công cụ chạy AppImage + trích icon: appimage-run · squashfsTools (unsquashfs)
-  # · desktop-file-utils (update-desktop-database, Rofi/GIO đọc app list).
+  # Tools to run AppImages + extract icons: appimage-run · squashfsTools (unsquashfs)
+  # · desktop-file-utils (update-desktop-database, Rofi/GIO read the app list).
   home.packages = with pkgs; [
     appimage-run
     squashfsTools
     desktop-file-utils
   ];
 
-  # Tạo desktop entry cho Rofi. `exec` dùng ĐƯỜNG DẪN TUYỆT ĐỐI: Rofi loại bỏ
-  # entry khi không tìm thấy binary trong PATH.
+  # Desktop entry for Rofi. `exec` uses an ABSOLUTE PATH: Rofi drops the
+  # entry when it cannot find the binary in PATH.
   xdg.desktopEntries.remnote = {
     name = "RemNote";
     comment = "RemNote note-taking app";
     exec = "${pkgs.appimage-run}/bin/appimage-run ${config.home.homeDirectory}/Apps/RemNote/RemNote.AppImage";
 
-    # Icon do `setup-remnote` trích từ AppImage; trỏ đường dẫn TUYỆT ĐỐI để
-    # không phụ thuộc icon theme/cache của GTK.
+    # Icon extracted from the AppImage by `setup-remnote`; use an ABSOLUTE path so
+    # it does not depend on the GTK icon theme/cache.
     icon = "${config.home.homeDirectory}/.local/share/icons/hicolor/512x512/apps/remnote.png";
 
     terminal = false;
@@ -31,7 +31,7 @@
       "Utility"
     ];
 
-    # Lấy từ .desktop gốc trong AppImage: window map đúng icon/app khi nhóm cửa sổ.
+    # Taken from the original .desktop inside the AppImage: the window maps to the right icon/app when grouping.
     settings.StartupWMClass = "RemNote";
   };
 }

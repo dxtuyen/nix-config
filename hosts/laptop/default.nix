@@ -16,11 +16,11 @@
 
   networking.hostName = "laptop";
 
-  # Home-manager cấu hình tập trung tại đây.
+  # Home-manager is configured centrally here.
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
-    backupFileExtension = "backup"; # đè file cũ thành *.backup thay vì lỗi build
+    backupFileExtension = "backup"; # overwrite old file as *.backup instead of failing the build
     extraSpecialArgs = { inherit inputs userName; };
     users.${userName} = import ../../home;
   };

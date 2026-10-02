@@ -2,13 +2,13 @@
   description = "Doxuan Tuyen's reproducible NixOS laptop";
 
   inputs = {
-    # Rolling release (nixos-unstable), gate bởi test suite + rollback
-    # generation trivial — theo trick "Use NixOS-unstable" của matklad.
-    # Unstable là misnomer: thực chất là continuous release khá ổn định.
+    # Rolling release (nixos-unstable), gated by a test suite + trivial rollback
+    # generations — following matklad's "Use NixOS-unstable" trick.
+    # "Unstable" is a misnomer: it is actually a fairly stable continuous release.
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    # HM phát triển trên nixpkgs-unstable nên dùng thẳng master
-    # để khỏi lệch module/packages.
+    # Home Manager develops against nixpkgs-unstable, so use master directly
+    # to avoid module/package skew.
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";

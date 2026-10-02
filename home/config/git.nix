@@ -1,11 +1,11 @@
 { ... }:
 
-# Git identity cho máy mới (tự có sau nixos-install, khỏi `git config` tay).
+# Git identity for a fresh machine (comes with nixos-install, no manual `git config`).
 {
   programs.git = {
     enable = true;
 
-    # Thay cho extraConfig (đã deprecated ở HM mới).
+    # Replaces extraConfig (deprecated in new Home Manager).
     settings = {
       user = {
         name = "dxtuyen";
@@ -13,9 +13,9 @@
       };
 
       init.defaultBranch = "main";
-      pull.rebase = true; # lịch sử phẳng
+      pull.rebase = true; # linear history
       core = {
-        pager = "cat"; # không mở less khi diff/log
+        pager = "cat"; # no less for diff/log
         editor = "nvim";
       };
     };

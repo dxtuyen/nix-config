@@ -1,31 +1,23 @@
-# 📚 Tài liệu Nix-Config
+# 📚 Nix-Config Docs
 
-Tài liệu tiếng Việt của repo `nix-config` — **đọc thẳng trên GitHub**.
-Mỗi trang trả lời một câu hỏi thực tế, đọc theo nhu cầu, không cần theo thứ tự.
+Documentation for the `nix-config` repo — **read directly on GitHub**.
 
-## Bắt đầu ở đâu
+Each page answers one practical question; read by need, no particular order.
 
-| Trang | Nội dung | Đọc khi nào |
-|---|---|---|
-| **[01 — Tổng quan hệ thống](01-Tong-Quan-He-Thong.md)** | Repo bố trí thế nào, module nào lo gì, Config vs Dữ liệu | Muốn hiểu hệ thống đang chạy |
-| **[02 — Vận hành hằng ngày](02-Van-Hanh-Hang-Ngay.md)** | Rebuild, generation, scripts, lock/sleep, hibernate, sự cố | Dùng máy mỗi ngày |
-| **[03 — Cài máy mới từ đầu](03-Cai-May-Moi.md)** | Từ USB → phân vùng → `nixos-install` → kiểm tra hibernate → **Bước 10: Git & SSH** | Máy mới / máy hỏng nặng |
-| **[04 — Sao lưu & Khôi phục](04-Sao-Luu-Phuc-Hoi.md)** | Backup dữ liệu ngoài Nix (tar/zip, SSH giữa 2 máy), khôi phục sau khi cài | Chuẩn bị cài lại / sang máy mới |
-| **[05 — Từ điển thuật ngữ](05-Tu-Dien-Thuat-Ngu.md)** | Tra nhanh: Nix, flake, zram, hibernate, module... | Gặp thuật ngữ lạ |
-| **[06 — Luyện VM](06-Luyen-Tap-VM.md)** | Tập cài máy bằng máy ảo (QEMU/KVM), không rủi ro | Muốn làm quen cài máy |
-| **[RemNote](REMNOTE.md)** | Cài & cập nhật RemNote AppImage | Cần xài / cập nhật RemNote |
+## Where to start
 
-## Luồng nhanh theo tình huống
+| Page | Contents |
+|---|---|
+| **[03 — Fresh install from scratch](03-Cai-May-Moi.md)** | USB → partitioning → `nixos-install` → hibernate check → **Step 10: Git & SSH** |
+| **[06 — VM practice](06-Luyen-Tap-VM.md)** | Practice installing with a virtual machine (QEMU/KVM), zero risk |
 
-- **Sửa config hàng ngày** → [02](02-Van-Hanh-Hang-Ngay.md)
-- **Đổi app mặc định khi mở file (ảnh/video/pdf/epub)** → [02 — Mở file ≠ Xem trước](02-Van-Hanh-Hang-Ngay.md#mở-file--xem-trước-preview)
-- **yazi không hiện ảnh xem trước** → [02 — Sự cố thường gặp](02-Van-Hanh-Hang-Ngay.md#sự-cố-thường-gặp)
-- **Cài máy mới** → [03](03-Cai-May-Moi.md) rồi [04](04-Sao-Luu-Phuc-Hoi.md) (đừng quên khôi phục dữ liệu!)
-- **Cài hệ thống mới**: đặt mật khẩu ([03 Bước 7.5](03-Cai-May-Moi.md)) và SSH key lên GitHub ([03 Bước 10](03-Cai-May-Moi.md)); dữ liệu cá nhân khôi phục theo [04](04-Sao-Luu-Phuc-Hoi.md)
-- **Hỏng máy nặng / mất dữ liệu** → [04](04-Sao-Luu-Phuc-Hoi.md)
-- **Không hiểu thuật ngữ** → [05](05-Tu-Dien-Thuat-Ngu.md)
+## Quick flows by situation
 
-## Ghi nhớ quan trọng nhất
+- **New machine** → [03](03-Cai-May-Moi.md)
+- **Practice installing first** → [06](06-Luyen-Tap-VM.md)
+- **New system checklist**: set a password ([03 Step 7.5](03-Cai-May-Moi.md)) and SSH key on GitHub ([03 Step 10](03-Cai-May-Moi.md))
 
-- Thay đổi chỉ có hiệu lực sau `sudo nixos-rebuild switch --flake .#laptop` (hoặc `nh os switch`).
-- **Config** nằm trong Nix → tái tạo được từ repo. **Dữ liệu** (RemNote AppImage, API key, tài liệu...) nằm ngoài Nix → **nhớ backup** (xem [04](04-Sao-Luu-Phuc-Hoi.md)).
+## Most important takeaway
+
+- Changes only take effect after `sudo nixos-rebuild switch --flake .#laptop` (or `nh os switch`).
+- **Config** lives in Nix → reproducible from the repo. **Data** (API keys, documents…) lives outside Nix → remember to back it up.

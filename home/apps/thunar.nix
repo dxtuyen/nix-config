@@ -1,12 +1,12 @@
-# Thunar cho việc đồ hoạ. Thùng rác GIO chạy sẵn nhờ `services.gvfs.enable` ở
-# modules/nixos/desktop.nix (xoá mềm bằng `d` của yazi), dọn lúc 03:00 hằng ngày
-# do user timer `trash-clean` đảm nhiệm — thùng rác ngoài repo nên không khai
-# ở đây (chi tiết: docs/02).
+# Thunar for graphical file work. The GIO trash is already running thanks to
+# `services.gvfs.enable` in modules/nixos/desktop.nix (soft delete via yazi's `d`),
+# emptied daily at 03:00 by the user timer `trash-clean` — the trash lives outside
+# the repo so it is not declared here.
 #
-# Module này chỉ còn việc đúng nghĩa: đặt terminal cho libexo (Thunar đọc
-# `TerminalEmulator` cho action "Open Terminal Here" — action mặc định của
-# thunar-uca nên không cần khai uca.xml). Ứng dụng mặc định theo loại file và
-# entry `nvim.desktop` cho text nằm ở `home/config/mimeapps.nix`.
+# This module only does its real job: set the terminal for libexo (Thunar reads
+# `TerminalEmulator` for the "Open Terminal Here" action — the default action of
+# thunar-uca so no uca.xml is needed). Default apps by file type and the
+# `nvim.desktop` entry for text live in `home/config/mimeapps.nix`.
 {
   xdg.configFile."xfce4/helpers.rc".text = "TerminalEmulator=foot\n";
 }

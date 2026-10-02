@@ -1,8 +1,8 @@
 { ... }:
 
-# Bộ gõ tiếng Việt: Fcitx5 + Bamboo engine (fcitx5-bamboo).
-# Tên trong profile phải là "bamboo" chữ thường — fcitx5 tra phân biệt hoa/thường,
-# viết "Bamboo" hoa sẽ bị loại.
+# Vietnamese input: Fcitx5 + Bamboo engine (fcitx5-bamboo).
+# The name in the profile must be lowercase "bamboo" — fcitx5 looks it up
+# case-sensitively; "Bamboo" with a capital B will be rejected.
 {
   xdg.configFile = {
     "fcitx5/profile".text = ''
@@ -19,7 +19,7 @@
       [GroupOrder]
       0=Default
     '';
-    # Các option khớp với BambooConfig trong src/bambooconfig.h của fcitx5-bamboo.
+    # Matches BambooConfig in src/bambooconfig.h of fcitx5-bamboo.
     "fcitx5/conf/bamboo.conf".text = ''
       InputMethod=Telex
       OutputCharset=Unicode

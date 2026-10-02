@@ -1,18 +1,18 @@
 { userName, ... }:
 
 {
-  # Mỗi file mới = cửa sổ riêng (vẫn 1 process); cửa sổ mới hiện ở workspace
-  # đang focus nhờ rule for_window trong home/config/sway.nix.
+  # Each new file = a separate window (still 1 process); new windows appear on the
+  # focused workspace via the for_window rule in home/config/sway.nix.
   xdg.configFile."sioyek/prefs_user.config".text = ''
     should_launch_new_window 1
   '';
 
-  # Mọi đường mở PDF đi qua sioyek-open (tránh app không tự focus trên Wayland).
+  # All PDF open paths go through sioyek-open (apps cannot focus themselves on Wayland).
   xdg.desktopEntries.sioyek = {
     type = "Application";
     name = "Sioyek";
     comment = "PDF viewer for reading research papers and technical books";
-    # Đường dẫn tuyệt đối (session sway không có ~/.local/bin trong PATH).
+    # Absolute path (the sway session has no ~/.local/bin in PATH).
     exec = "/home/${userName}/.local/bin/sioyek-open %f";
     icon = "sioyek-icon-linux";
     categories = [
@@ -23,8 +23,8 @@
     startupNotify = true;
     settings = {
       StartupWMClass = "sioyek";
-      # Chỉ khai `settings`, KHÔNG dùng `mimeType` (bị module dịch qua
-      # `extraConfig` — option đã bị xoá ở HM 26.05 → entry không sinh file).
+      # Declare only `settings`, NOT `mimeType` (the module translates it into
+      # `extraConfig` — the option was removed in HM 26.05 -> no file is generated).
       MimeType = "application/pdf;";
     };
   };

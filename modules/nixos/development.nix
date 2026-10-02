@@ -1,6 +1,6 @@
 { ... }:
 
 {
-  # Podman cho project cần môi trường Fedora/Ubuntu (không tạo container sẵn).
+  # Podman for projects needing a Fedora/Ubuntu environment (no pre-created containers).
   virtualisation.podman.enable = true;
 }

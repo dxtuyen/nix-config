@@ -1,33 +1,33 @@
 #!/usr/bin/env bash
-# reset-generations.sh — dọn generation NixOS cũ + ĐÁNH SỐ LẠI profile về 1.
+# reset-generations.sh — clean old NixOS generations + RENUMBER the profile back to 1.
 #
-# VÌ SAO CẦN: mỗi lần `nixos-rebuild switch` thêm 1 generation
-# (/nix/var/nix/profiles/system-<N>-link). Nix đánh số mới = **số lớn nhất còn
-# lại + 1**, nên chỉ xoá bớt generation thì số KHÔNG nhỏ đi — muốn về 1 phải
-# đổi tên link còn lại.
+# WHY IT'S NEEDED: every `nixos-rebuild switch` adds one generation
+# (/nix/var/nix/profiles/system-<N>-link). Nix assigns the next number as
+# **largest remaining number + 1**, so deleting generations alone does NOT
+# lower the number — to get back to 1 the remaining link must be renamed.
 #
-# Script làm 4 việc:
-#   1. Xoá mọi generation trừ bản đang chạy (`nix-env --delete-generations old`).
-#   2. Đổi tên `system-<N>-link` còn lại thành `system-1-link`, sửa symlink
-#      `system` trỏ vào nó ⇒ lần rebuild sau tự là generation 2, rồi 3, 4...
-#   3. `nixos-rebuild switch` để tạo generation 2 và ghi lại boot entry. Builder
-#      systemd-boot XOÁ MỌI entry `nixos*` trong /boot/loader/entries rồi ghi
-#      lại theo danh sách generation hiện có ⇒ entry cũ tự được dọn, không cần
-#      xoá tay.
-#   4. `nix-collect-garbage -d` — thu hồi dung lượng store của generation cũ.
+# The script does 4 things:
+#   1. Delete every generation except the running one (`nix-env --delete-generations old`).
+#   2. Rename the remaining `system-<N>-link` to `system-1-link` and point the
+#      `system` symlink at it => the next rebuild becomes generation 2, then 3, 4...
+#   3. `nixos-rebuild switch` to create generation 2 and rewrite the boot entry. The
+#      systemd-boot builder DELETES ALL `nixos*` entries in /boot/loader/entries then
+#      rewrites them from the current generation list => old entries clean themselves
+#      up, no manual deletion needed.
+#   4. `nix-collect-garbage -d` — reclaim store space from old generations.
 #
-# ⚠️ SAU KHI CHẠY KHÔNG THỂ rollback về các bản cũ nữa (đã xoá vĩnh viễn).
-#    Lưới an toàn còn lại: generation 1 (bản đang chạy) + `configurationLimit`
-#    (menu boot giữ 10 entry) + GC tự động hàng tuần (`--delete-older-than 7d`).
+# ⚠️ AFTER RUNNING YOU CANNOT ROLL BACK to older versions (permanently deleted).
+#    Remaining safety net: generation 1 (the running one) + `configurationLimit`
+#    (boot menu keeps 10 entries) + weekly automatic GC (`--delete-older-than 7d`).
 #
-# 2 chốt an toàn bắt buộc, script tự kiểm:
-#   • /boot phải đang mount — không thì bước 3 chết ở "Failed to install
-#     bootloader" (đã từng xảy ra do /etc/fstab còn UUID máy khác).
-#   • Không bao giờ để 0 generation — builder systemd-boot từ chối chạy và
-#     thoát 1 khi danh sách generation rỗng.
+# 2 mandatory safety checks, enforced by the script:
+#   • /boot must be mounted — otherwise step 3 dies at "Failed to install
+#     bootloader" (this actually happened when /etc/fstab held another machine's UUID).
+#   • Never leave 0 generations — the systemd-boot builder refuses to run and
+#     exits 1 when the generation list is empty.
 #
-# Dùng:  sudo bash scripts/reset-generations.sh [flake-dir] [host]
-#        mặc định: flake-dir = thư mục cha của script, host = laptop
+# Usage:  sudo bash scripts/reset-generations.sh [flake-dir] [host]
+#         defaults: flake-dir = parent dir of the script, host = laptop
 
 set -euo pipefail
 
@@ -37,53 +37,53 @@ PROFILE=/nix/var/nix/profiles/system
 GEN_DIR=/nix/var/nix/profiles
 
 if [ "$(id -u)" -ne 0 ]; then
-  echo "Phải chạy bằng sudo (đụng /nix/var/nix/profiles và /boot)." >&2
+  echo "Must run with sudo (touches /nix/var/nix/profiles and /boot)." >&2
   exit 1
 fi
 if [ ! -f "$FLAKE/flake.nix" ]; then
-  echo "Không thấy $FLAKE/flake.nix — truyền đường dẫn flake: sudo bash $0 /đường/dẫn" >&2
+  echo "Cannot find $FLAKE/flake.nix — pass the flake path: sudo bash $0 /path/to/flake" >&2
   exit 1
 fi
 if ! mountpoint -q /boot; then
-  echo "LỖI: /boot chưa mount ⇒ rebuild sẽ chết ở 'Failed to install bootloader'." >&2
-  echo "     Kiểm tra: lsblk -o NAME,UUID   rồi  mount /dev/disk/by-uuid/<UUID-ESP> /boot" >&2
+  echo "ERROR: /boot not mounted => rebuild will die at 'Failed to install bootloader'." >&2
+  echo "     Check with: lsblk -o NAME,UUID   then  mount /dev/disk/by-uuid/<ESP-UUID> /boot" >&2
   exit 1
 fi
 
-echo "== 0. Hiện trạng =="
+echo "== 0. Current state =="
 nix-env -p "$PROFILE" --list-generations
-CUR_LINK="$(readlink "$PROFILE")"                      # vd: system-18-link
+CUR_LINK="$(readlink "$PROFILE")"                      # e.g. system-18-link
 CUR_NUM="${CUR_LINK#system-}"; CUR_NUM="${CUR_NUM%-link}"
 CUR_STORE="$(readlink -f "$PROFILE")"
-echo "   đang dùng: generation $CUR_NUM → $CUR_STORE"
-echo "   flake: $FLAKE#${HOST} · /boot: đã mount · dung lượng:"; df -h /nix | tail -1
+echo "   in use: generation $CUR_NUM → $CUR_STORE"
+echo "   flake: $FLAKE#${HOST} · /boot: mounted · disk usage:"; df -h /nix | tail -1
 
 echo
-echo "== 1. Xoá mọi generation cũ (giữ bản đang chạy) =="
+echo "== 1. Delete all old generations (keep the running one) =="
 nix-env -p "$PROFILE" --delete-generations old
 
 echo
-echo "== 2. Đánh số lại thành generation 1 =="
+echo "== 2. Renumber to generation 1 =="
 if [ "$CUR_NUM" = "1" ]; then
-  echo "   đã là generation 1, không cần đổi tên."
+  echo "   already generation 1, nothing to rename."
 else
-  [ -e "$GEN_DIR/system-1-link" ] && { echo "LỖI: system-1-link đã tồn tại." >&2; exit 1; }
+  [ -e "$GEN_DIR/system-1-link" ] && { echo "ERROR: system-1-link already exists." >&2; exit 1; }
   mv "$GEN_DIR/system-$CUR_NUM-link" "$GEN_DIR/system-1-link"
   ln -sfn system-1-link "$PROFILE"
-  echo "   system-$CUR_NUM-link → system-1-link (đích giữ nguyên: $CUR_STORE)"
+  echo "   system-$CUR_NUM-link → system-1-link (target unchanged: $CUR_STORE)"
 fi
 nix-env -p "$PROFILE" --list-generations
 
 echo
-echo "== 3. Rebuild (tạo generation 2 + ghi lại boot entry) =="
+echo "== 3. Rebuild (create generation 2 + rewrite boot entries) =="
 nixos-rebuild switch --flake "$FLAKE#$HOST"
 
 echo
-echo "== 4. Dọn store =="
+echo "== 4. Clean the store =="
 nix-collect-garbage -d
 
 echo
-echo "== Xong =="
+echo "== Done =="
 nix-env -p "$PROFILE" --list-generations
-echo "Entry trong /boot:"; ls -1 /boot/loader/entries/
+echo "Entries in /boot:"; ls -1 /boot/loader/entries/
 df -h /nix | tail -1

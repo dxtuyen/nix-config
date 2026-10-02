@@ -9,7 +9,7 @@
       icons = 1;
       max-icon-size = 33;
       icon-location = "left";
-      # Popup rộng 350px, cao tối đa 600px để nội dung dài không bị cắt.
+      # Popup 350px wide, max 600px tall so long content is not cut off.
       margin = "35,20,20,20";
       width = 350;
       height = 600;
@@ -18,18 +18,18 @@
       text-color = "#cdd6f4";
       border-color = "#89b4fa";
       border-radius = 8;
-      # timeout riêng từng app.
-      # Dịch tự tắt sau ~2 phút; bấm trái tắt sớm.
+      # Per-app timeouts.
+      # Translation auto-dismisses after ~2 min; left click dismisses early.
       "app-name=quick-lang".default-timeout = 120000;
       "app-name=quick-lang".border-color = "#cba6f7";
-      # Click trái tắt thông báo dịch.
+      # Left click dismisses the translation notification.
       "app-name=quick-lang".on-button-left = "dismiss";
       "app-name=volume".default-timeout = 2000;
       "app-name=brightness".default-timeout = 2000;
       "app-name=wlsunset".default-timeout = 2000;
       "app-name=power-profiles".default-timeout = 2000;
       "app-name=toggle-touchpad".default-timeout = 2000;
-      # Countdown: viền theo màu đồng hồ Waybar.
+      # Countdown: border matches the Waybar clock color.
       "app-name=countdown".border-color = "#89b4fa";
       "app-name=countdown".default-timeout = 5000;
       "app-name=screenshot".default-timeout = 2000;

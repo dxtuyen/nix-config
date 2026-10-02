@@ -6,8 +6,8 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Watcher pause khi ngủ / tiếp tục khi dậy (nghe logind PrepareForSleep).
-        # END_TIME wall-clock nên phải giữ REMAINING, không thì timer nhảy cóc.
+        # Watcher: pause on sleep / continue on wake (listens to logind PrepareForSleep).
+        # END_TIME is wall-clock so REMAINING must be preserved, or the timer jumps.
         set -u
         set -o pipefail
 
@@ -18,7 +18,7 @@
             >> "$STATE_DIR/countdown-sleep-watch.log"
         }
 
-        log "watcher khởi động (đang theo dõi PrepareForSleep trên system bus)"
+        log "watcher started (watching PrepareForSleep on the system bus)"
 
         pending=0
         dbus-monitor --system \
@@ -31,7 +31,7 @@
             *"boolean true"*)
               if [ "${"pending:-0"}" -eq 1 ]; then
                 pending=0
-                log "máy chuẩn bị ngủ → sleep-pause"
+                log "machine going to sleep -> sleep-pause"
                 "$HOME/.local/bin/countdown-engine" sleep-pause \
                   >> "$STATE_DIR/countdown-sleep-watch.log" 2>&1
               fi
@@ -39,7 +39,7 @@
             *"boolean false"*)
               if [ "${"pending:-0"}" -eq 1 ]; then
                 pending=0
-                log "máy vừa dậy → sleep-resume"
+                log "machine woke up -> sleep-resume"
                 "$HOME/.local/bin/countdown-engine" sleep-resume \
                   >> "$STATE_DIR/countdown-sleep-watch.log" 2>&1
               fi

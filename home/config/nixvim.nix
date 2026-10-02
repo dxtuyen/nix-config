@@ -48,7 +48,7 @@
         enable = true;
         highlight.enable = true;
         indent.enable = true;
-        # Chỉ cài parser cho ngôn ngữ đang dùng trong config và các tác vụ phổ biến.
+        # Only install parsers for languages used in this config and common tasks.
         grammarPackages = with config.programs.nixvim.plugins.treesitter.package.builtGrammars; [
           bash
           c

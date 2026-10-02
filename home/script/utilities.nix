@@ -2,7 +2,7 @@
 
 {
   home.file = {
-    ".local/bin/options" = {
+    ".local/bin/utilities" = {
       executable = true;
       text = ''
         #! /usr/bin/env bash
@@ -14,7 +14,7 @@
         🔵 Bluetooth
         ⚡ Power Profile"
 
-        choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -matching fuzzy -sort -sorting-method normal -p "Options" \
+        choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -matching fuzzy -sort -sorting-method normal -p "Utilities" \
           -mesg "Type to filter · Enter to select")
 
         case "$choice" in

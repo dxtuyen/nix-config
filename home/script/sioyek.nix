@@ -6,8 +6,8 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Wrapper để gõ `sioyek` cũng qua sioyek-open (không đệ quy vì sioyek-open
-        # gọi binary bằng đường dẫn absolute).
+        # Wrapper so typing `sioyek` also goes through sioyek-open (no recursion
+        # because sioyek-open invokes the binary by absolute path).
         exec "$HOME/.local/bin/sioyek-open" "$@"
       '';
     };

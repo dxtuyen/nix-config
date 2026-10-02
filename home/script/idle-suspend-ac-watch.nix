@@ -6,8 +6,8 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Watcher cho trường hợp idle 900s mà đang cắm sạc: poll pin mỗi 30s.
-        # Thoát khi có thao tác / phiên Focus bật / mất sway / rút sạc → suspend.
+        # Watcher for the idle-900s-while-charging case: poll the battery every 30s.
+        # Exits on user activity / Focus session on / sway lost / unplugged -> suspend.
         while true; do
           out="$(swaymsg -t get_outputs 2>/dev/null)" || exit 0
           [ -n "$out" ] || exit 0

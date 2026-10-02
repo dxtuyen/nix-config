@@ -1,32 +1,32 @@
 { pkgs, ... }:
 
-# Winmode: huy hiệu LOẠI cửa sổ đang focus trên Waybar — [S] = scratchpad,
-# [F] = popup floating, rỗng = tiled (module ẩn). Là pill NHỎ RIÊNG đứng NGAY
-# SAU tiêu đề (module `sway/window` gốc giữ nguyên, không viết lại title). Lý
-# do tồn tại: 2 loại floating trông giống hệt nhau nhưng phím thao tác KHÁC
-# nhau ($mod+minus chỉ toggle scratchpad).
+# Winmode: badge showing the TYPE of the focused window on Waybar — [S] = scratchpad,
+# [F] = floating popup, empty = tiled (module hidden). It is a SEPARATE small pill
+# sitting RIGHT AFTER the title (the stock `sway/window` module is kept; the title
+# is not rewritten). Why it exists: the 2 floating types look identical but use
+# DIFFERENT keys ($mod+minus only toggles the scratchpad).
 #
-# Tối ưu độ trễ để huy hiệu khớp tiêu đề gần như tức thì (bản cũ ~90ms):
-#   - `status` (Waybar spawn mỗi lần cập nhật): shell + jq (~7ms) thay vì
+# Latency tuned so the badge matches the title almost instantly (old ~90ms):
+#   - `status` (Waybar spawns it every update): shell + jq (~7ms) instead of
 #     python3 (~62ms).
-#   - `watch` (daemon): gửi signal bằng builtin `kill` thay vì `pkill` quét
-#     /proc (~23ms mỗi sự kiện).
+#   - `watch` (daemon): signal via the builtin `kill` instead of `pkill` scanning
+#     /proc (~23ms per event).
 {
   home.file.".local/bin/winmode" = {
     executable = true;
     text = ''
       #!/bin/sh
-      # winmode status|watch — huy hiệu loại cửa sổ focus cho Waybar (signal 9).
-      #   status: in JSON {"text": "[S]|[F]|<rỗng>", "class": ..., "tooltip": ...}
-      #   watch : nghe sự kiện window của Sway → gửi SIGRTMIN+9 cho Waybar.
-      # Dùng đường dẫn store tuyệt đối (swaymsg/jq) → không phụ thuộc PATH.
+      # winmode status|watch — focused window type badge for Waybar (signal 9).
+      #   status: print JSON {"text": "[S]|[F]|<empty>", "class": ..., "tooltip": ...}
+      #   watch : listen for Sway window events -> send SIGRTMIN+9 to Waybar.
+      # Uses absolute store paths (swaymsg/jq) -> no PATH dependency.
       SWAYMSG=${pkgs.sway}/bin/swaymsg
       JQ=${pkgs.jq}/bin/jq
 
       status() {
         tree=$("$SWAYMSG" -t get_tree 2>/dev/null) || tree=""
         if [ -z "$tree" ]; then
-          # Không có Sway / IPC lỗi → text rỗng, module tự ẩn (hide-empty-text).
+          # No Sway / IPC error -> empty text, module hides itself (hide-empty-text).
           printf '%s\n' '{"text":"","class":"tiled","tooltip":""}'
           return 0
         fi
@@ -39,26 +39,26 @@
           | if $w == null then {text:"",class:"tiled",tooltip:""}
             elif $w.scratchpad != "none" then
               {text:"[S]", class:"s",
-               tooltip:("scratchpad — $mod+minus ẩn/hiện"
+               tooltip:("scratchpad — $mod+minus hide/show"
                         + (if $w.title != "" then " · " + $w.title else "" end))}
             elif $w.floating then
               {text:"[F]", class:"f",
-               tooltip:("popup floating — $mod+Shift+minus cất"
+               tooltip:("popup floating — $mod+Shift+minus stash"
                         + (if $w.title != "" then " · " + $w.title else "" end))}
             else {text:"",class:"tiled",tooltip:""}
             end'
       }
 
       watch() {
-        # PID Waybar: dò một lần; dò lại khi kill thất bại (Waybar restart).
-        # KHÔNG dùng `pgrep -x`: comm thật của Waybar là `.waybar-wrapped` (do
-        # wrapper home-manager đặt) nên -x không khớp → không gửi được signal.
+        # Waybar PID: probe once; probe again when kill fails (Waybar restarted).
+        # Do NOT use `pgrep -x`: Waybar's real comm is `.waybar-wrapped` (set by
+        # the home-manager wrapper) so -x never matches -> no signal delivered.
         pid=$(pgrep waybar 2>/dev/null | head -n1)
-        # swaymsg thoát (Sway chết) → vòng lặp dừng → systemd Restart=always
-        # hồi sinh; sway-session.target dừng thì service dừng theo (PartOf).
+        # swaymsg exits (Sway died) -> loop stops -> systemd Restart=always
+        # revives it; when sway-session.target stops the service stops too (PartOf).
         "$SWAYMSG" -m -t subscribe '["window"]' | while read -r _line; do
-          # Mọi sự kiện window (focus/move/close) đều có thể đổi trạng thái;
-          # gửi signal rẻ hơn nhiều so với tự phân tích JSON từng dòng.
+          # Any window event (focus/move/close) can change the state; sending a
+          # signal is far cheaper than parsing JSON on every line.
           if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
             pid=$(pgrep waybar 2>/dev/null | head -n1)
           fi
@@ -74,8 +74,9 @@
     '';
   };
 
-  # Daemon nghe Sway IPC — chạy qua systemd như watcher khác của repo
-  # (tự hồi sinh, log journald, dừng theo phiên Sway qua sway-session.target).
+  # Daemon listening on the Sway IPC — run via systemd like the repo's other
+  # watchers (auto-restart, journald logging, stops with the Sway session via
+  # sway-session.target).
   systemd.user.services.winmode-watch = {
     Unit = {
       Description = "Winmode: notify Waybar on Sway window focus changes ([S]/[F] indicator)";
@@ -85,7 +86,7 @@
     };
     Service = {
       Type = "simple";
-      # PATH chỉ cần cho `pgrep` (swaymsg/jq dùng đường dẫn store tuyệt đối).
+      # PATH is only needed for `pgrep` (swaymsg/jq use absolute store paths).
       Environment = [
         "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
       ];

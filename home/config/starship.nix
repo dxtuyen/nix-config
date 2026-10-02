@@ -1,18 +1,18 @@
 { pkgs, ... }:
 
-# Starship: chỉ đường dẫn + git + lệnh chạy lâu + ký tự ❯.
+# Starship: just path + git + long-running commands + the ❯ character.
 
 {
   programs.starship = {
     enable = true;
-    # Tích hợp bash (đã bật ở default.nix).
+    # Bash integration (already enabled in default.nix).
     enableBashIntegration = true;
 
     settings = {
-      # Dòng trống giữa các prompt (mặc định Starship).
+      # Blank line between prompts (Starship default).
       add_newline = true;
 
-      # Dòng 1: đường dẫn + git + thời gian lệnh; dòng 2: ❯.
+      # Line 1: path + git + command time; line 2: ❯.
       format = "$directory$git_branch$git_status$cmd_duration\n$character";
 
       directory = {
@@ -41,7 +41,7 @@
         renamed = "[»](#cba6f7)";
         conflicted = "[=](#f38ba8)";
 
-        # Ẩn trạng thái ít dùng cho gọn prompt.
+        # Hide rarely used statuses to keep the prompt short.
         stashed = "";
         ahead = "";
         behind = "";
@@ -50,7 +50,7 @@
       };
 
       cmd_duration = {
-        min_time = 2000; # chỉ hiện khi lệnh chạy ≥ 2s
+        min_time = 2000; # only show when a command runs >= 2s
         style = "#fab387";
         format = "[ $duration]($style) ";
       };

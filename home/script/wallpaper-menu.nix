@@ -93,10 +93,11 @@
             fi ;;
         esac
 
-        # Phím điều hướng: rofi mặc định gán Left/Right cho con trỏ trong ô
-        # filter, nên không sang được cột 2, 3 của lưới. Đổi con trỏ sang
-        # Alt+Left/Right, nhả Left/Right cho di chuyển cột. Alt+h/j/k/l và
-        # Alt+u/i/o/p khớp keyd nav layer.
+        # Navigation keys: rofi by default binds Left/Right to the cursor inside
+        # the filter box, so you cannot reach column 2/3 of the grid. Move the
+        # cursor to Alt+Left/Right and free Left/Right for column movement.
+        # Alt+h/j/k/l and Alt+u/i/o/p are mnemonic (hjkl + edges), matching the
+        # old keyd nav layer (keyd no longer remaps Tab).
         kb=(
           -kb-move-char-back 'Alt+Left,Control+b'
           -kb-move-char-forward 'Alt+Right,Control+f'

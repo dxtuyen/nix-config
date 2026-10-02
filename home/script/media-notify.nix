@@ -8,7 +8,7 @@
         #! /usr/bin/env bash
         set -eu
 
-        # flock để bấm phím liên tục không đè thông báo nhau.
+        # flock so mashing keys does not let notifications overwrite each other.
         if [ "''${MEDIA_NOTIFY_LOCKED:-}" != 1 ]; then
           exec env MEDIA_NOTIFY_LOCKED=1 ${pkgs.util-linux}/bin/flock \
             "''${XDG_RUNTIME_DIR:?}/media-notify.lock" "$0" "$@"

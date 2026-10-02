@@ -1,15 +1,15 @@
 { pkgs, ... }:
 
 {
-  # Tạo thư mục dữ liệu ảnh ngoài repo khi Home Manager kích hoạt.
+  # Create the wallpaper data directories outside the repo when Home Manager activates.
   home.activation.wallpaperDirs = ''
     mkdir -p "$HOME/Pictures/wallpapers" "$HOME/Pictures/Screenshots"
   '';
 
-  # Daemon awww đi cùng phiên Sway; wallpaper-set chờ daemon sẵn sàng.
+  # The awww daemon rides along with the Sway session; wallpaper-set waits for it to be ready.
   systemd.user.services.awww-daemon = {
     Unit = {
-      Description = "awww wallpaper daemon (fork của swww)";
+      Description = "awww wallpaper daemon (swww fork)";
       After = [ "sway-session.target" ];
       PartOf = [ "sway-session.target" ];
       StartLimitIntervalSec = 60;

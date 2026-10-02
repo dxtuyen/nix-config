@@ -1,17 +1,17 @@
 { config, pkgs, ... }:
 
 let
-  ws = import ./workspaces.nix; # tên workspace dùng chung với Waybar
+  ws = import ./workspaces.nix; # workspace names shared with Waybar
 in
 {
   wayland.windowManager.sway = {
     enable = true;
-    package = null; # dùng sway từ NixOS module
-    config = null; # cấu hình hoàn toàn bằng extraConfig
+    package = null; # use Sway from the NixOS module
+    config = null; # configure everything via extraConfig
     systemd.enable = true;
 
     extraConfig = ''
-      # Đồng bộ biến Sway vào systemd/DBus trước khi start session.
+      # Export Sway variables into systemd/DBus before starting the session.
       exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway SWAYSOCK XMODIFIERS QT_IM_MODULE
       exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP SWAYSOCK XMODIFIERS QT_IM_MODULE
 
@@ -25,10 +25,10 @@ in
       set $term foot
       set $menu rofi -show drun
 
-      # Wallpaper: mỗi lần bật máy vào Sway → đổi ảnh nền random (khác
-      # ảnh đang hiển thị). KHÔNG dùng --if-empty nữa (cờ đó = giữ ảnh phiên
-      # trước). Script tự start + chờ awww-daemon sẵn sàng, nên gọi thẳng
-      # ở đây là an toàn.
+      # Wallpaper: each time Sway starts -> set a random wallpaper (different
+      # from the current one). Do NOT pass --if-empty anymore (that flag keeps
+      # the previous session's image). The script starts itself and waits for
+      # the awww daemon, so calling it directly here is safe.
       exec ~/.local/bin/wallpaper-set
 
       # Applets & daemons
@@ -53,11 +53,12 @@ in
       gaps top 0
       default_border pixel 2
       default_floating_border pixel 2
-      # $mod + chuột trái/phải = move/resize cửa sổ float.
+      # $mod + left/right mouse button = move/resize floating windows.
       floating_modifier $mod normal
       focus_follows_mouse yes
-      # focus_on_window_activation: giữ mặc định của Sway (`urgent`) — app xin
-      # focus chỉ viền cam báo, không nhảy thẳng tới (đã xóa dòng `focus` thêm sáng nay).
+      # focus_on_window_activation: keep Sway's default (`urgent`) — apps
+      # requesting focus only get the orange border, no focus jump (the extra
+      # `focus` line added this morning was removed).
       smart_borders off
 
       client.focused           #89b4fa #313244 #cdd6f4 #cba6f7 #89b4fa
@@ -68,46 +69,47 @@ in
       client.background        #1e1e2e
 
       # Floating rules
-      # pavucontrol: GTK dùng reverse-DNS làm app_id (org.pulseaudio.pavucontrol),
-      # nhưng bản đóng gói khác có thể chỉ "pavucontrol" → khớp cả hai.
+      # pavucontrol: GTK uses reverse-DNS as app_id (org.pulseaudio.pavucontrol),
+      # but other packaged builds may use just "pavucontrol" -> match both.
       for_window [app_id="(?i)^(org[.]pulseaudio[.])?pavucontrol$"] floating enable, resize set width 30 ppt height 40 ppt
       for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
-      # RemNote: mở mặc định dạng popup float giữa màn hình (không scratchpad).
-      # AppImage chạy native Wayland -> chỉ app_id là đủ.
+      # RemNote: opens as a centered floating popup by default (not a scratchpad).
+      # AppImage runs native Wayland -> matching app_id alone is enough.
       for_window [app_id="(?i).*remnote.*"] floating enable, resize set width 1000 px height 700 px, move position center
 
-      # Obsidian: mở mặc định dạng popup float giữa màn hình, giống RemNote/TickTick.
-      # app_id của Electron ĐỔI THEO CÁCH CÀI (đã kiểm tra trong /nix/store):
-      #   md.obsidian.Obsidian — bản Nix sinh .desktop
-      #   md.Obsidian         — bản .desktop gốc của Obsidian
-      #   obsidian            — AppImage/Flatpak
-      # → khớp theo tên cho chắc, thay vì hard-code app_id của riêng máy này.
-      # Không khai `class` ở đây: Electron chạy native Wayland nên class luôn None.
+      # Obsidian: opens as a centered floating popup by default, like RemNote/TickTick.
+      # Electron's app_id CHANGES WITH THE INSTALL METHOD (checked in /nix/store):
+      #   md.obsidian.Obsidian — Nix-generated .desktop
+      #   md.Obsidian          — Obsidian's original .desktop
+      #   obsidian             — AppImage/Flatpak
+      # -> match by name to be safe instead of hard-coding this machine's app_id.
+      # No `class` here: Electron runs native Wayland so class is always None.
       for_window [app_id="(?i)^(md([.]obsidian)?[.]obsidian|obsidian)$"] floating enable, resize set width 1000 px height 700 px, move position center
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
-      # GoldenDict float như popup (mod+g bật/tắt; đóng = ẩn về tray).
+      # GoldenDict floats as a popup (mod+g toggles; closing = hide to tray).
       for_window [app_id="io.github.xiaoyifang.goldendict_ng"] floating enable, resize set width 50 ppt height 65 ppt
-      # Sioyek: cửa sổ mới hiện ở workspace đang focus.
+      # Sioyek: new windows open on the focused workspace.
       for_window [app_id="(?i)^sioyek$"] move container to workspace current
 
       # Foliate: app_id theo .desktop.
       for_window [app_id="(?i)^com\.github\.johnfactotum\.foliate$"] move container to workspace current
 
-      # Thunar float kiểu popup (mod+Shift+space để tiled lại). GTK3 chạy native
-      # Wayland nên chỉ app_id; desktop entry không khai StartupWMClass.
+      # Thunar floats as a popup (mod+Shift+space to tile it again). GTK3 runs
+      # native Wayland so match app_id only; the desktop entry has no StartupWMClass.
       for_window [app_id="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
 
-      # Yazi chạy trong foot (app_id vẫn là "foot") → phải match theo TITLE mà
-      # script đặt ra. Chỉ cửa sổ này float, terminal thường không ảnh hưởng.
+      # Yazi runs inside foot (app_id is still "foot") -> must match the TITLE that
+      # the script sets. Only this window floats; regular terminals are unaffected.
       for_window [title="(?i)^yazi-popup"] floating enable, resize set 1000 px 700 px
 
-      # Foot terminal scratchpad: một cửa sổ riêng, giữ phiên shell khi ẩn; luôn
-      # nằm trong scratchpad để $mod+minus ẩn/hiện và $mod+o gọi lên/ẩn đi.
-      # KHÔNG resize: "move scratchpad" tự float + size mặc định của Sway.
+      # Foot terminal scratchpad: a separate window that keeps its shell session
+      # while hidden; always in the scratchpad so $mod+minus hides/shows it and
+      # $mod+o raises/hides it. Do NOT resize: "move scratchpad" already floats
+      # it at Sway's default size.
       for_window [app_id="scratchpad-terminal"] move scratchpad, scratchpad show
 
-      # Wi-Fi popup: wifitui (hỗ trợ toggle radio, fuzzy search, rescan)
+      # Wi-Fi popup: wifitui (supports radio toggle, fuzzy search, rescan)
       for_window [app_id="wifitui"] floating enable, resize set 750 px 500 px
 
       # Dialog/popup rules
@@ -123,56 +125,60 @@ in
       # Chrome Picture-in-Picture
       for_window [title="Picture in picture"] floating enable, sticky enable, resize set width 350 px height 197 px, move position 1530 px 800 px
 
-      # TickTick (PWA) → mở mặc định dạng popup float giữa màn hình. App_id của PWA
-      # là hash sinh từ SHA256(start_url) + tên profile (app_id_helpers.cc) nên KHÔNG
-      # cố định: đổi profile/URL/version Chrome hay cài lại trên máy khác là đổi id.
-      # Tìm app_id trên máy khác: ls ~/.local/share/applications/chrome-*-Default.desktop
-      # hoặc mở PWA rồi: swaymsg -t get_tree | jq -r '..|objects|select(.app_id?)|.app_id'
-      # KHÔNG hard-code hash: hash đổi theo URL + tên profile + version Chrome, cài
-      # lại trên máy khác là popup biến mất. Regex này khớp mọi PWA profile
-      # "Default" (Chrome thường không có hậu tố -Default nên không bị bắt nhầm).
-      # Nếu bạn dùng profile tên khác (vd "Profile 1") thì thêm hậu tố tương ứng.
+      # TickTick (PWA) -> opens as a centered floating popup by default. A PWA's
+      # app_id is a hash of SHA256(start_url) + profile name (app_id_helpers.cc),
+      # so it is NOT stable: changing Chrome profile/URL/version or reinstalling
+      # on another machine changes the id.
+      # Find the app_id on another machine: ls ~/.local/share/applications/chrome-*-Default.desktop
+      # or open the PWA then: swaymsg -t get_tree | jq -r '..|objects|select(.app_id?)|.app_id'
+      # Do NOT hard-code the hash: it changes with URL + profile name + Chrome
+      # version, and reinstalling elsewhere makes the popup disappear. This regex
+      # matches every "Default"-profile PWA (regular Chrome windows have no
+      # -Default suffix so they are not caught by mistake).
+      # If you use a differently named profile (e.g. "Profile 1"), add the matching suffix.
       for_window [app_id="(?i)^chrome-[a-z0-9]+-Default$"] floating enable, resize set width 1000 px height 700 px, move position center
 
-      # VS Code luôn mở vào workspace 3.code.
+      # VS Code always opens on workspace 3.code.
 
       # Inhibit idle
       for_window [app_id="(?i)^google-chrome$"] inhibit_idle fullscreen
 
       # Keybindings - App & Session
       bindsym $mod+Return exec $term
-      # $mod+o: focus terminal scratchpad (bấm lại khi đang focus → cất về scratchpad).
-      # Terminal scratchpad là terminal duy nhất giữ lại (đã xóa obsidian-focus).
+      # $mod+o: focus the scratchpad terminal (press again while focused -> stash
+      # it back into the scratchpad). It is the only scratchpad terminal kept
+      # (obsidian-focus was removed).
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
-      # Mod+r: về cửa sổ urgent (nếu có) hoặc cửa sổ dùng gần nhất (swayr LRU).
-      # Mod+m: menu MỌI cửa sổ (dùng hằng ngày → phím không cần Shift).
-      # Trước đây là `rofi -show window`, nhưng đó là mode DỰNG SẴN của rofi →
-      # không chèn được tiền tố vào nhãn, nên không phân biệt được cửa sổ
-      # scratchpad [S] với popup floating [F]. Nay gọi script window-menu: tự
-      # dựng danh sách nên gắn được tiền tố, đồng bộ với huy hiệu trên Waybar;
-      # bonus là thấy được cả cửa sổ đang CẤT trong scratchpad (rofi cũ không
-      # thấy vì cửa sổ ẩn không có surface). Enter chỉ focus, không kéo cửa
-      # sổ đi chỗ — giữ đúng cảm giác "nhảy tới" như trước.
-      # Mod+Shift+m: bản LỌC của cùng menu đó, chỉ [S] + [F] (ngắn, tiện khi
-      # đang nhiều cửa sổ tiled). Cần lọc nhanh mà không bấm Shift thì gõ
-      # "[S]" / "[F]" — tìm kiếm dmenu khớp chuỗi con.
-      # $mod+p để TRỐNG; $mod+c là Countdown (xem phần Custom Utilities).
-      bindsym $mod+r exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
-      bindsym $mod+m exec ~/.local/bin/window-menu
+      # Alt+Tab: jump to the urgent window (if any) or the most recently used one
+      # (swayr LRU — MRU-style cycling like a classic Alt+Tab).
+      # Mod+Tab: menu of ALL windows (used daily -> plain key, no Shift).
+      # This used to be `rofi -show window`, but that is a built-in rofi mode ->
+      # labels cannot get a prefix, so scratchpad windows [S] could not be told
+      # apart from floating popups [F]. It now calls the window-menu script, which
+      # builds the list itself so it can add prefixes synced with the Waybar
+      # badge; bonus: stashed scratchpad windows are visible too (old rofi could
+      # not see them because hidden windows have no surface). Enter only focuses,
+      # never moves a window — keeping the same "jump to" feel as before.
+      # Mod+Shift+Tab: FILTERED version of the same menu, [S] + [F] only (short,
+      # handy when many tiled windows are open). To filter quickly without Shift,
+      # type "[S]" / "[F]" — dmenu-style substring search.
+      # $mod+p is LEFT EMPTY; $mod+c is Countdown (see Custom Utilities).
+      bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
+      bindsym $mod+Tab exec ~/.local/bin/window-menu
       bindsym $mod+Shift+q kill
 
-      # Menu ảnh: Mod+Alt+w · menu cửa sổ: Mod+m (mọi cửa sổ) và
-      # Mod+Shift+m (chỉ [S]/[F]) · đổi ảnh: Mod+Shift+w.
-      # ~/Pictures/wallpapers (lưới thumbnail, phím ←→↑↓ duyệt ảnh).
+      # Wallpaper menu: Mod+Alt+w · window menu: Mod+Tab (all windows) and
+      # Mod+Shift+Tab (only [S]/[F]) · next wallpaper: Mod+Shift+w.
+      # ~/Pictures/wallpapers (thumbnail grid, arrow keys to browse).
       bindsym $mod+Mod1+w exec ~/.local/bin/wallpaper-menu
-      bindsym $mod+Shift+m exec ~/.local/bin/window-menu --scratchpad
+      bindsym $mod+Shift+Tab exec ~/.local/bin/window-menu --scratchpad
       bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-set
-      # $mod+y: yazi dạng POPUP nhỏ; gõ `yazi` trong terminal thì cửa sổ thường.
+      # $mod+y: yazi as a small POPUP; typing `yazi` in a terminal opens a normal window.
       bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
-      # $mod+Shift+b: ẩn/hiện Waybar (SIGUSR1 — toggle, không restart).
-      # $mod+b vẫn giữ là `splith`; phím này là bản Shift của nó.
+      # $mod+Shift+b: hide/show Waybar (SIGUSR1 — toggle, no restart).
+      # $mod+b stays `splith`; this key is its Shift version.
       bindsym $mod+Shift+b exec ~/.local/bin/bar-toggle
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       # Focus movement
@@ -195,8 +201,8 @@ in
       bindsym $mod+Shift+Up move up
       bindsym $mod+Shift+Right move right
 
-      # Tên tập trung ở home/config/workspaces.nix: vị trí thứ N tự sinh $mod+N /
-      # $mod+Shift+N (tên đầu → $mod+1…). Số còn lại đến 10 sinh tương ứng (0 = 10).
+      # Names live in home/config/workspaces.nix: position N auto-generates $mod+N /
+      # $mod+Shift+N (first name -> $mod+1…). Remaining numbers up to 10 are generated too (0 = 10).
       ${builtins.concatStringsSep "\n" (
         pkgs.lib.imap1 (
           i: name:
@@ -221,7 +227,7 @@ in
             bindsym $mod+Shift+${key} move container to workspace number ${n}''
         ) (pkgs.lib.range (builtins.length ws + 1) 10)
       )}
-      # Chuyển ws liền trước/liền sau: $mod+[ / $mod+].
+      # Switch to the previous/next workspace: $mod+[ / $mod+].
       bindsym $mod+bracketleft workspace prev
       bindsym $mod+bracketright workspace next
 
@@ -240,21 +246,21 @@ in
       bindsym $mod+minus scratchpad show
 
       # Custom Utilities & Screenshot
-      # $mod+Shift+o menu tiện ích.
-      bindsym $mod+Shift+o exec ~/.local/bin/options
-      # $mod+c Countdown · $mod+p để TRỐNG · $mod+Shift+p menu nguồn.
-      # Chrome không còn phím riêng — mở qua $mod+d (rofi) hoặc click link.
+      # $mod+p: utilities menu.
+      bindsym $mod+p exec ~/.local/bin/utilities
+      # $mod+c Countdown · $mod+Shift+p power menu.
+      # Chrome has no dedicated key — open via $mod+d (rofi) or click a link.
       bindsym $mod+c exec ~/.local/bin/countdown
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
-      # $mod+i đã xóa (cùng ticktick-focus). $mod+r là swayr urgent/LRU
-      # (xem phần App & Session); $mod+p, $mod+u, $mod+x, $mod+q để TRỐNG. Kill cửa sổ:
-      # $mod+m rồi Shift+Delete, hoặc $mod+Shift+q cho cửa sổ đang focus.
-      # quick-lang: t = English sạch · Shift+t = tiếng Việt · Ctrl+t = ép
-      # sửa English. Tag [phi]/[sci]/[lit]/[cas] đầu văn bản bôi chọn ngữ cảnh.
+      # $mod+i removed (along with ticktick-focus). Alt+Tab is swayr urgent/LRU
+      # (see App & Session); $mod+u, $mod+x, $mod+q are LEFT EMPTY. Kill a window:
+      # $mod+Tab then Shift+Delete, or $mod+Shift+q for the focused window.
+      # quick-lang: t = clean English · Shift+t = Vietnamese · Ctrl+t = force
+      # English fix. Prefix the selected text with [phi]/[sci]/[lit]/[cas] to set context.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
       bindsym $mod+Ctrl+t exec ~/.local/bin/quick-lang fix
-      # dict-toggle: bật/tắt GoldenDict float; đóng = ẩn về tray
+      # dict-toggle: toggle the GoldenDict float; closing = hide to tray
       bindsym $mod+g exec ~/.local/bin/dict-toggle
       bindsym $mod+Mod1+t exec ~/.local/bin/toggle-touchpad
       bindsym $mod+Print exec ~/.local/bin/screenshot-menu
@@ -271,19 +277,19 @@ in
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
-      # swayidle (systemd): khoá 300s → tắt màn 310s → ngủ 900s khi dùng pin.
-      # Phiên Countdown chạy → countdown-engine stop service này, xong tự start lại.
+      # swayidle (systemd): lock at 300s -> screen off at 310s -> suspend at 900s on battery.
+      # While a Countdown session runs -> countdown-engine stops this service, then starts it again.
     '';
   };
 
-  # Menu cửa sổ KHÔNG còn dùng swayr nữa ($mod+Shift+m đã chuyển sang
-  # `rofi -show window`) nên bỏ luôn file config của swayr + wrapper
-  # swayr-rofi-menu. Không khai báo `xdg.configFile."swayr/config.toml"` nữa:
-  # Home Manager tự dọn file nó từng quản lý khi switch. Lưu ý: KHÔNG dùng
-  # `source = null` — option này bắt buộc là absolute path, null sẽ lỗi eval.
-  # swayrd vẫn chạy cho $mod+r (nhảy tới cửa sổ urgent / LRU).
+  # The window menu no longer uses swayr's own menu ($mod+Shift+Tab now runs
+  # `window-menu --scratchpad`), so the swayr config file + the swayr-rofi-menu
+  # wrapper were dropped as well. Do not declare `xdg.configFile."swayr/config.toml"`
+  # either: Home Manager cleans up files it used to manage on switch. Note: do NOT use
+  # `source = null` — the option requires an absolute path; null fails eval.
+  # swayrd still runs for Alt+Tab (jump to urgent / LRU window).
 
-  # Ghi lịch sử focus trong suốt phiên Sway; target được start sau khi import SWAYSOCK.
+  # Record focus history for the whole Sway session; the target starts after SWAYSOCK is imported.
   systemd.user.services.swayrd = {
     Unit = {
       Description = "Swayr window history daemon";
@@ -298,7 +304,7 @@ in
     Install.WantedBy = [ "sway-session.target" ];
   };
 
-  # systemd cho log journald + tự hồi sinh khi crash + dừng theo phiên Sway.
+  # systemd for journald logging + auto-restart on crash + stops with the Sway session.
   systemd.user.services.swayidle = {
     Unit = {
       Description = "Idle manager for Wayland (lock → screen off → suspend)";
@@ -308,11 +314,11 @@ in
     };
     Service = {
       Type = "simple";
-      # Diệt instance cũ CỦA CHÍNH NÓ (dấu "-" = không có gì để diệt vẫn OK).
-      # Match cụ thể "swayidle -w timeout 300" để KHÔNG giết nhầm instance
-      # lock-on-sleep của Countdown (cmdline của nó bắt đầu bằng "-w before-sleep").
+      # Kill the OLD instance of ITSELF ("-" prefix = OK when there is nothing to kill).
+      # Match specifically "swayidle -w timeout 300" so we do NOT kill Countdown's
+      # lock-on-sleep instance (its cmdline starts with "-w before-sleep").
       ExecStartPre = "-${pkgs.procps}/bin/pkill -f 'swayidle -w timeout 300'";
-      # PATH cho lệnh con swayidle spawn (swaymsg, systemctl, lock-screen).
+      # PATH for commands swayidle spawns (swaymsg, systemctl, lock-screen).
       Environment = [
         "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
       ];

@@ -6,12 +6,12 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Wayland cấm app tự focus/nhảy workspace → sway kéo cửa sổ về.
-        # Đóng khi đang focus = ẩn về tray (tiến trình giữ nguyên, mở lại nhanh).
+        # Wayland forbids apps from focusing themselves/switching workspace -> sway pulls the window over.
+        # Closing while focused = hide to tray (process stays, reopening is fast).
         set -u
         APP_ID="io.github.xiaoyifang.goldendict_ng"
 
-        # Ưu tiên cửa sổ chính; fallback node bất kỳ (tránh bắt nhầm dialog About).
+        # Prefer the main window; fall back to any node (avoid catching the About dialog).
         node="$(swaymsg -t get_tree | jq -c --arg id "$APP_ID" '
           ([.. | objects | select(.app_id? == $id and .type? == "floating_con")][0]
            // [.. | objects | select(.app_id? == $id)][0]) // empty')"
@@ -26,7 +26,7 @@
         if [ "$focused" = "true" ]; then
           swaymsg "[con_id=$cid] kill"
         else
-          # Kéo về workspace hiện tại + focus.
+          # Pull to the current workspace + focus.
           swaymsg "[con_id=$cid] move container to workspace current"
           swaymsg "[con_id=$cid] focus"
         fi

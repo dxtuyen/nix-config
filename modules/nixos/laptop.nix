@@ -28,28 +28,29 @@ let
   };
 in
 {
-  # Swap nén trong RAM (zstd): nhanh hơn swap SSD, đỡ mòn ổ.
+  # Compressed swap in RAM (zstd): faster than SSD swap, less disk wear.
   zramSwap = {
     enable = true;
     algorithm = "zstd";
     memoryPercent = 50;
   };
 
-  # Hibernate: tự động nhận diện thiết bị resume theo nhãn của file hệ thống.
-  # Phân vùng swap được format với nhãn 'swap' (mkswap -L swap).
-  # Điều kiện: swap ≥ RAM. Sang máy mới chỉ cần gán nhãn swap là tự khớp,
-  # không cần sửa UUID thủ công. deep sleep tiết kiệm pin hơn s2idle.
+  # Hibernate: auto-detect the resume device from the filesystem label.
+  # The swap partition is formatted with the label 'swap' (mkswap -L swap).
+  # Requirement: swap >= RAM. On a new machine, just label the swap partition
+  # and it matches automatically — no manual UUID editing. deep sleep saves
+  # more battery than s2idle.
   boot.resumeDevice = lib.mkDefault "/dev/disk/by-label/swap";
   boot.kernelParams = [
     "mem_sleep_default=deep"
   ];
 
   services.fwupd.enable = true;
-  # Giữ cập nhật firmware nhưng không để daemon chặn greetd lúc đăng nhập.
+  # Keep firmware updates but stop the daemon from blocking greetd at login.
   systemd.services.fwupd.before = lib.mkForce [ "shutdown.target" ];
 
-  # Đóng nắp → suspend; gắn dock → giữ nguyên. Màn hình luôn khóa khi dậy
-  # nhờ before-sleep của swayidle.
+  # Close lid -> suspend; docked -> ignore. The screen always locks on wake
+  # thanks to swayidle's before-sleep.
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend";
     HandleLidSwitchExternalPower = "suspend";
@@ -63,17 +64,15 @@ in
       settings = {
         main = {
           capslock = "overload(control, esc)";
-          tab = "overload(nav, tab)";
         };
-        # Tab giữ = nav layer (Tab chạm vẫn là Tab). u/i/o/p cũ đã bỏ:
-        # [ = Home, ] = End (keyd key name: leftbrace/rightbrace).
-        nav = {
-          h = "left";
-          j = "down";
-          k = "up";
-          l = "right";
-          leftbrace = "home";
-          rightbrace = "end";
+        # Press both shift keys together -> toggle the real CapsLock.
+        # Holding a shift key activates keyd's implicit [shift] layer, so
+        # pressing the other shift in that state sends capslock instead of
+        # a second shift — the standard community remap, which restores a
+        # CapsLock toggle now that the caps key itself is Ctrl/Esc.
+        shift = {
+          leftshift = "capslock";
+          rightshift = "capslock";
         };
       };
     };
