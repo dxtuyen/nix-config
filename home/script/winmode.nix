@@ -56,9 +56,12 @@
         pid=$(pgrep waybar 2>/dev/null | head -n1)
         # swaymsg exits (Sway died) -> loop stops -> systemd Restart=always
         # revives it; when sway-session.target stops the service stops too (PartOf).
-        "$SWAYMSG" -m -t subscribe '["window"]' | while read -r _line; do
-          # Any window event (focus/move/close) can change the state; sending a
-          # signal is far cheaper than parsing JSON on every line.
+        # `workspace` events are REQUIRED: switching to an EMPTY workspace makes no
+        # window gain focus -> sway emits only `workspace` (no `window` event), so
+        # with `window` alone the stale [S]/[F] badge stayed next to the cleared title.
+        "$SWAYMSG" -m -t subscribe '["window","workspace"]' | while read -r _line; do
+          # Any window/workspace event (focus/move/close, ws switch) can change the
+          # state; sending a signal is far cheaper than parsing JSON on every line.
           if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
             pid=$(pgrep waybar 2>/dev/null | head -n1)
           fi
@@ -79,7 +82,7 @@
   # sway-session.target).
   systemd.user.services.winmode-watch = {
     Unit = {
-      Description = "Winmode: notify Waybar on Sway window focus changes ([S]/[F] indicator)";
+      Description = "Winmode: notify Waybar on Sway window/workspace changes ([S]/[F] indicator)";
       After = [ "sway-session.target" ];
       PartOf = [ "sway-session.target" ];
       StartLimitIntervalSec = 60;
