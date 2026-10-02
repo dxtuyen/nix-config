@@ -29,6 +29,8 @@
     mpv # xem video/nhạc
     ripgrep # tìm nội dung nhanh (thay grep)
     fd # tìm file nhanh (thay find)
+    dust # xem dung lượng dạng thanh bar (bản nixpkgs tên là du-dust)
+    ncdu # TUI xem + di chuyển/xóa file theo dung lượng
     sioyek
     obsidian
     jq
