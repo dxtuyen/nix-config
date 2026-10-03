@@ -39,7 +39,7 @@
           | if $w == null then {text:"",class:"tiled",tooltip:""}
             elif $w.scratchpad != "none" then
               {text:"[S]", class:"s",
-               tooltip:("scratchpad — $mod+minus hide/show"
+               tooltip:("scratchpad — $mod+equal show one, $mod+Shift+equal show all"
                         + (if $w.title != "" then " · " + $w.title else "" end))}
             elif $w.floating then
               {text:"[F]", class:"f",

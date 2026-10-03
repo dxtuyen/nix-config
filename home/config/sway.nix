@@ -102,13 +102,12 @@ in
       for_window [app_id="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
 
       # Yazi popup (app_id yazi-popup, set by yazi-open). Toggle with $mod+y;
-      # $mod+Ctrl+minus stashes it, $mod+equal / $mod+Tab brings it back.
+      # $mod+Shift+minus stashes it, $mod+equal / $mod+Shift+equal / $mod+Tab brings it back.
       for_window [app_id="(?i)^yazi-popup$"] floating enable, resize set 1000 px 700 px
 
       # Foot terminal scratchpad: a separate window that keeps its shell session
-      # while hidden; always in the scratchpad so $mod+minus hides/shows it and
-      # $mod+o raises/hides it. Do NOT resize: "move scratchpad" already floats
-      # it at Sway's default size.
+      # while hidden; $mod+grave toggles it, $mod+equal shows it too.
+      # Do NOT resize: "move scratchpad" already floats it at Sway's default size.
       for_window [app_id="scratchpad-terminal"] move scratchpad, scratchpad show
 
       # Wi-Fi popup: wifitui (supports radio toggle, fuzzy search, rescan)
@@ -233,12 +232,13 @@ in
       bindsym $mod+space focus mode_toggle
       bindsym $mod+a focus parent
       bindsym $mod+Shift+a focus child
-      bindsym $mod+Shift+minus move scratchpad
-      bindsym $mod+minus scratchpad show
-      # Bulk pair: Ctrl+minus hides all (GoldenDict -> tray, rest -> scratchpad);
-      # equal shows all hidden here. Plain = show, Shift/Ctrl = stash.
-      bindsym $mod+Ctrl+minus [workspace=__focused__ floating app_id="(?i).*goldendict.*"] kill; [workspace=__focused__ floating] move container to scratchpad
-      bindsym $mod+equal exec ~/.local/bin/popup-restore
+      bindsym $mod+minus move scratchpad
+      # $mod+Shift+minus: hide ALL floating popups here (GoldenDict -> tray, rest -> scratchpad).
+      # $mod+equal: show ONE hidden window here; $mod+Shift+equal: show ALL hidden here.
+      # Minus hides, equal shows; pick one via $mod+Tab.
+      bindsym $mod+Shift+minus [workspace=__focused__ floating app_id="(?i).*goldendict.*"] kill; [workspace=__focused__ floating] move container to scratchpad
+      bindsym $mod+equal scratchpad show
+      bindsym $mod+Shift+equal exec ~/.local/bin/popup-restore
 
       # Custom Utilities & Screenshot
       # $mod+p: utilities menu.

@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 # popup-restore — show every hidden scratchpad window on the current workspace.
-# Paired with the bulk-hide key ($mod+Ctrl+minus). One-way, stateless: no cache.
+# Bound to $mod+Shift+equal ($mod+equal shows one). One-way, stateless: no cache.
 # Named per the repo's kebab-case convention (bar-toggle, dict-toggle, …).
 {
   home.file.".local/bin/popup-restore" = {
