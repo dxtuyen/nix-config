@@ -101,9 +101,9 @@ in
       # native Wayland so match app_id only; the desktop entry has no StartupWMClass.
       for_window [app_id="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
 
-      # Yazi runs inside foot (app_id is still "foot") -> must match the TITLE that
-      # the script sets. Only this window floats; regular terminals are unaffected.
-      for_window [title="(?i)^yazi-popup"] floating enable, resize set 1000 px 700 px
+      # Yazi popup (app_id yazi-popup, set by yazi-open). Toggle with $mod+y;
+      # $mod+Ctrl+minus stashes it, $mod+equal / $mod+Tab brings it back.
+      for_window [app_id="(?i)^yazi-popup$"] floating enable, resize set 1000 px 700 px
 
       # Foot terminal scratchpad: a separate window that keeps its shell session
       # while hidden; always in the scratchpad so $mod+minus hides/shows it and
@@ -165,7 +165,7 @@ in
       bindsym $mod+Mod1+w exec ~/.local/bin/wallpaper-menu
       bindsym $mod+Shift+Tab exec ~/.local/bin/window-menu
       bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-set
-      # $mod+y: yazi as a small POPUP; typing `yazi` in a terminal opens a normal window.
+      # $mod+y: toggle yazi popup (same pattern as scratchpad-terminal).
       bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       # $mod+Shift+b: hide/show Waybar (SIGUSR1 — toggle, no restart).
