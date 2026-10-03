@@ -158,7 +158,7 @@ in
 
       # Keybindings - App & Session
       bindsym $mod+Return exec $term
-      # $mod+o: focus the scratchpad terminal (press again while focused -> stash
+      # $mod+grave: focus the scratchpad terminal (press again while focused -> stash
       # it back into the scratchpad). It is the only scratchpad terminal kept
       # (obsidian-focus was removed).
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
@@ -166,7 +166,7 @@ in
       # Alt+Tab: urgent or most-recent window (swayr LRU).
       # $mod+Tab: hidden windows only; Enter shows it here.
       # $mod+Shift+Tab: visible windows only.
-      # $mod+p is LEFT EMPTY; $mod+c is Countdown (see Custom Utilities).
+      # $mod+p: utilities menu; $mod+c: Countdown (see Custom Utilities).
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+Tab exec ~/.local/bin/window-menu --scratchpad
       bindsym $mod+Shift+q kill

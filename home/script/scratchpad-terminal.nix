@@ -32,7 +32,7 @@
           criteria = f"[con_id={terminal['id']}]"
 
           if terminal.get("focused"):
-              # Đang focus: bấm mod+o lần nữa → cất về scratchpad (toggle).
+              # Đang focus: bấm $mod+grave lần nữa → cất về scratchpad (toggle).
               # Thuộc scratchpad ("fresh"/"changed") → scratchpad show = ẩn;
               # đã bị gỡ khỏi scratchpad ("none") → move container to scratchpad.
               command = (
