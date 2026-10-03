@@ -36,6 +36,7 @@
     jq
     fastfetch
     libreoffice
+    gh
     # Dev: thư viện để per-project (venv / `nix develop`), không cài global.
     vscode
     python3
