@@ -61,8 +61,11 @@ in
       # `focus` line added this morning was removed).
       smart_borders off
 
+      # Focus border: bright blue (#89b4fa, ~7.8:1 vs base). Keep focused_inactive
+      # dimmer than focused (overlay0, not the old bright subtext1) so the window
+      # that actually holds focus always stands out in split/tabbed layouts.
       client.focused           #89b4fa #313244 #cdd6f4 #cba6f7 #89b4fa
-      client.focused_inactive  #bac2de #1e1e2e #cdd6f4 #bac2de #bac2de
+      client.focused_inactive  #6c7086 #1e1e2e #cdd6f4 #6c7086 #6c7086
       client.unfocused         #585b70 #1e1e2e #6c7086 #585b70 #585b70
       client.urgent            #fab387 #1e1e2e #fab387 #6c7086 #fab387
       client.placeholder       #1e1e2e #1e1e2e #cdd6f4 #6c7086 #6c7086
