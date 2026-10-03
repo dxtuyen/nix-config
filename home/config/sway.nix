@@ -235,10 +235,11 @@ in
       bindsym $mod+Shift+a focus child
       bindsym $mod+Shift+minus move scratchpad
       bindsym $mod+minus scratchpad show
-      # $mod+z: hide floating popups on this workspace (GoldenDict -> tray, rest -> scratchpad).
-      # $mod+Shift+z: show every hidden scratchpad window here.
-      bindsym $mod+z [workspace=__focused__ floating app_id="(?i).*goldendict.*"] kill; [workspace=__focused__ floating] move container to scratchpad
-      bindsym $mod+Shift+z exec ~/.local/bin/popup-restore
+      # $mod+z: show every hidden scratchpad window here.
+      # $mod+Shift+z: hide floating popups on this workspace (GoldenDict -> tray, rest -> scratchpad).
+      # Matches the minus pair above: plain = show, Shift = stash.
+      bindsym $mod+z exec ~/.local/bin/popup-restore
+      bindsym $mod+Shift+z [workspace=__focused__ floating app_id="(?i).*goldendict.*"] kill; [workspace=__focused__ floating] move container to scratchpad
 
       # Custom Utilities & Screenshot
       # $mod+p: utilities menu.
@@ -247,7 +248,7 @@ in
       # Chrome has no dedicated key — open via $mod+d (rofi) or click a link.
       bindsym $mod+c exec ~/.local/bin/countdown
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
-      # $mod+i removed. $mod+u/$mod+x/$mod+q LEFT EMPTY ($mod+z clears popups, see Layout & Window State). Kill:
+      # $mod+i removed. $mod+u/$mod+x/$mod+q LEFT EMPTY ($mod+Shift+z hides popups, see Layout & Window State). Kill:
       # $mod+Shift+Tab then Shift+Delete, or $mod+Shift+q for the focused window.
       # quick-lang: t = clean English · Shift+t = Vietnamese · Ctrl+t = force
       # English fix. Prefix the selected text with [phi]/[sci]/[lit]/[cas] to set context.
