@@ -33,11 +33,14 @@
     ncdu # TUI xem + di chuyển/xóa file theo dung lượng
     sioyek
     obsidian
-    zotero # quản lý tài liệu tham khảo — thư viện mặc định ở ~/Zotero
+    # Zotero: TẠM GỠ — bản 10.0.2 trong nixpkgs (rev c59305ba) build hỏng:
+    #   AboutTranslations: ... not found in modules/ActorManagerParent.sys.mjs -- aborting
+    # Bản 10.0.4 đã có trên nixpkgs master (chỉ khác version + src.hash) →
+    # bật lại dòng dưới sau khi `nix flake update nixpkgs`.
+    # zotero # quản lý tài liệu tham khảo — thư viện mặc định ở ~/Zotero
     jq
     fastfetch
     libreoffice
-    gh
     # Dev: thư viện để per-project (venv / `nix develop`), không cài global.
     vscode
     python3
