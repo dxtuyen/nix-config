@@ -1,14 +1,9 @@
 { config, pkgs, ... }:
 
-# window-menu — window menu for Sway, ONE engine shared by two keys:
-#   $mod+Tab       -> window-menu --scratchpad (only HIDDEN scratchpad [S])
-#   $mod+Shift+Tab -> window-menu              (only VISIBLE windows)
-# The [S]/[F] prefix is always shown in both menus, synced with the badge
-# on Waybar (winmode script) so you can tell the window type: stashed in
-# the scratchpad, floating popup, or regular tiled. Previously this menu called
-# `rofi -show window` directly — a built-in mode, so prefixes could not be injected.
-#
-# Named per the repo's kebab-case convention (wallpaper-menu, power-menu, …).
+# window-menu — one engine, two keys:
+#   $mod+Tab       -> window-menu --scratchpad (hidden scratchpad [S] only)
+#   $mod+Shift+Tab -> window-menu              (visible windows only)
+# [S]/[F] prefixes match the Waybar badge (winmode).
 let
   iconSizes = [
     "16x16"
@@ -54,14 +49,9 @@ in
           sys.exit("window-menu: swaymsg is not in PATH")
 
       # window-menu [--scratchpad]
-      #   (default) VISIBLE windows only: floating popup [F] + shown scratchpad
-      #     [S] + tiled. Hidden scratchpad is EXCLUDED — open the scratchpad
-      #     menu ($mod+Tab) to pull it back. -> $mod+Shift+Tab
-      #   --scratchpad  only HIDDEN scratchpad [S] (visible == false).
-      #     -> $mod+Tab (frequent key: short list, pull hidden back fast).
-      # Clean split, no overlap: a window appears in exactly ONE menu.
-      # One engine for both menus, so the [S]/[F] prefix is ALWAYS present in
-      # both, matching the Waybar badge (winmode module).
+      #   default: visible windows only ([F] + shown [S] + tiled). -> $mod+Shift+Tab
+      #   --scratchpad: hidden scratchpad [S] only. -> $mod+Tab
+      # No overlap: each window appears in exactly one menu.
       stashed_only = "--scratchpad" in sys.argv[1:]
 
       tree = json.loads(subprocess.run(
@@ -69,16 +59,10 @@ in
       ).stdout)
 
       def collect_windows(node, ws=None):
-          # [S] = scratchpad member; [F] = floating popup (not in the
-          # scratchpad); empty = tiled. Also record the ancestor workspace name —
-          # the only clue to where the window is: stashed windows live under
-          # workspace "__i3_scratch", popups under a real ws.
-          # Clean split, no overlap:
-          # --scratchpad ($mod+Tab): ONLY truly hidden scratchpad windows
-          # (scratchpad_state != "none" AND visible == false).
-          # default ($mod+Shift+Tab): ONLY visible windows — floating popup
-          # [F], shown scratchpad [S] (visible == true), and tiled. Hidden
-          # scratchpad never appears here; open $mod+Tab to pull it back.
+          # [S] = scratchpad member; [F] = floating popup; empty = tiled.
+          # Track the ancestor workspace (hidden windows live under __i3_scratch).
+          # --scratchpad: hidden only (scratchpad_state != "none", not visible).
+          # default: visible only (hidden scratchpad excluded).
           if node.get("type") == "workspace":
               ws = node.get("name") or ws
           node_type = node.get("type")
@@ -177,10 +161,7 @@ in
           else:
               label = app_name
 
-          # [S] = scratchpad member · [F] = floating popup · (empty) = tiled.
-          # Matches the [S]/[F] badge on Waybar (winmode module).
-          # Tiled windows get no prefix — the old `rofi -show window`
-          # had no prefixes either; keep the list uncluttered.
+          # Prefix matches the Waybar badge (winmode); tiled gets none.
           kind = kinds.get(window["id"], "S")
           if kind:
               label = f"[{kind}] {label}"
@@ -199,9 +180,7 @@ in
       for label in labels:
           counts[label] = counts.get(label, 0) + 1
 
-      # Number entries only when several windows SHARE a name (e.g. 2 tabs with
-      # the same title) so they can be told apart. The number goes at the END of
-      # the display string, never between icon and label.
+      # Number duplicate labels only (number at the end, after the icon).
       rows = []
       for index, (label, row) in enumerate(rendered, start=1):
           if counts[label] > 1:
@@ -209,30 +188,17 @@ in
               row = label_bytes + f" ({index})".encode("utf-8") + (separator + icon if separator else b"")
           rows.append(row)
 
-      # The menu is hand-written with swaymsg so it keeps con_id -> allows a
-      # key to close the window. This menu serves BOTH $mod+Shift+Tab (all
-      # windows) AND $mod+Tab (filtered --scratchpad), see sway.nix. The list
-      # must be built manually instead of using `rofi -show window` because that
-      # is a built-in rofi mode -> [S]/[F] prefixes cannot be injected.
-      # dmenu-style search: -matching normal = exact substring match
-      # (predictable; fuzzy matches scattered characters so typing feels chaotic),
-      # -no-sort keeps the original list order, -no-custom only allows picking
-      # real rows (free-form input is meaningless for a window picker).
+      # Hand-built list (keeps con_id for kill; `rofi -show window` can't inject prefixes).
+      # Serves both keys, see sway.nix. Exact substring match, list order kept.
       choice = subprocess.run(
           [
               "${pkgs.rofi}/bin/rofi", "-dmenu", "-i", "-matching", "normal",
               "-no-sort", "-no-custom", "-show-icons", "-format", "i",
               "-p", "Scratchpad" if stashed_only else "Windows",
-              # Matches `rofi -show window`: Shift+Delete = close window.
-              # Shift+Delete is already bound to kb-delete-entry (delete line) ->
-              # must unset ("") first, otherwise rofi refuses and prints the red
-              # line "Failed to set binding ...". Plain Delete too (it is bound
-              # to kb-remove-char-forward) so it is not used.
+              # Shift+Delete = close (must unset kb-delete-entry first or rofi errors).
               "-kb-delete-entry", "",
               "-kb-custom-1", "Shift+Delete",
-              # Shift+Enter = pull to current ws: kb-accept-alt defaults to
-              # Shift+Return -> must unset ("") first before rebinding it to a
-              # custom key, same pattern as Shift+Delete above (rofi exits 11).
+              # Shift+Enter = pull here (must unset kb-accept-alt first; rofi exits 11).
               "-kb-accept-alt", "",
               "-kb-custom-2", "Shift+Return",
               "-mesg",
@@ -258,8 +224,7 @@ in
                          check=False)
           sys.exit(0)
 
-      # Workspace of the focused view — Enter needs to know whether the window
-      # currently lives on "another ws".
+      # Current workspace (to detect windows on other workspaces).
       try:
           workspaces = json.loads(subprocess.run(
               [swaymsg, "-t", "get_workspaces"], check=True,
@@ -272,15 +237,8 @@ in
 
       def enter_command(con_id, ws_of, ws_current, pull=False):
           """Enter command for one menu row (pure -> unit-testable):
-          - hidden in scratchpad -> reveal it (already lands on current ws);
-          - pull (Shift+Enter in the FULL menu, i.e. $mod+Shift+Tab): window
-            on another ws -> move it to the current ws then focus. Applies to
-            ANY window type: Shift+Enter always means "bring it here";
-          - plain Enter in the full menu -> focus only, NEVER moves the
-            window, same "jump to" feel as the old `rofi -show window`.
-          --scratchpad ($mod+Tab) only lists hidden scratchpad windows, so
-          Enter there is always "scratchpad show".
-          Returns a list of swaymsg commands (execution order)."""
+          hidden -> scratchpad show; Shift+Enter on another ws -> move here + focus;
+          plain Enter -> focus only, never moves."""
           criteria = f"[con_id={con_id}]"
           if ws_of == SCRATCH_WS:
               return [f"{criteria} scratchpad show"]

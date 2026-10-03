@@ -152,21 +152,15 @@ in
       # (obsidian-focus was removed).
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
-      # Alt+Tab: jump to the urgent window (if any) or the most recently used one
-      # (swayr LRU — MRU-style cycling like a classic Alt+Tab).
-      # Mod+Tab: HIDDEN scratchpad only (used daily -> plain key, no Shift).
-      # Short list of truly hidden windows (scratchpad_state != none AND
-      # visible == false) so Enter always means "show it here". Visible
-      # floating popups [F] live in the FULL menu ($mod+Shift+Tab).
-      # Mod+Shift+Tab: VISIBLE-only menu (floating [F] + shown [S] + tiled).
-      # Hidden scratchpad never appears here (open $mod+Tab to pull it back).
+      # Alt+Tab: urgent or most-recent window (swayr LRU).
+      # $mod+Tab: hidden scratchpad only ([S]); Enter shows it here.
+      # $mod+Shift+Tab: visible windows only ([F] + shown [S] + tiled).
       # $mod+p is LEFT EMPTY; $mod+c is Countdown (see Custom Utilities).
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+Tab exec ~/.local/bin/window-menu --scratchpad
       bindsym $mod+Shift+q kill
 
-      # Wallpaper menu: Mod+Alt+w · window menu: Mod+Tab (hidden scratchpad)
-      # and Mod+Shift+Tab (all windows) · next wallpaper: Mod+Shift+w.
+      # Wallpaper menu: Mod+Alt+w · windows: Mod+Tab (hidden) / Mod+Shift+Tab (visible) · next: Mod+Shift+w.
       # ~/Pictures/wallpapers (thumbnail grid, arrow keys to browse).
       bindsym $mod+Mod1+w exec ~/.local/bin/wallpaper-menu
       bindsym $mod+Shift+Tab exec ~/.local/bin/window-menu
@@ -241,11 +235,10 @@ in
       bindsym $mod+Shift+a focus child
       bindsym $mod+Shift+minus move scratchpad
       bindsym $mod+minus scratchpad show
-      # $mod+z: 1 phím dọn sạch popup trên workspace hiện tại (Zen).
-      # GoldenDict -> kill = về tray (đúng vòng đời dict-toggle, match regex
-      # .*goldendict.* cho bền sang máy mới); popup khác -> vào scratchpad.
-      # Hiện lại: $mod+minus từng cái / $mod+Shift+Tab chọn.
+      # $mod+z: hide floating popups on this workspace (GoldenDict -> tray, rest -> scratchpad).
+      # $mod+Shift+z: show every hidden scratchpad window here.
       bindsym $mod+z [workspace=__focused__ floating app_id="(?i).*goldendict.*"] kill; [workspace=__focused__ floating] move container to scratchpad
+      bindsym $mod+Shift+z exec ~/.local/bin/popup-restore
 
       # Custom Utilities & Screenshot
       # $mod+p: utilities menu.
@@ -254,10 +247,8 @@ in
       # Chrome has no dedicated key — open via $mod+d (rofi) or click a link.
       bindsym $mod+c exec ~/.local/bin/countdown
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
-      # $mod+i removed (along with ticktick-focus). Alt+Tab is swayr urgent/LRU
-      # (see App & Session); $mod+u, $mod+x, $mod+q are LEFT EMPTY ($mod+z is Zen
-      # = clear popups, see Layout & Window State). Kill a window:
-      # $mod+Tab then Shift+Delete, or $mod+Shift+q for the focused window.
+      # $mod+i removed. $mod+u/$mod+x/$mod+q LEFT EMPTY ($mod+z clears popups, see Layout & Window State). Kill:
+      # $mod+Shift+Tab then Shift+Delete, or $mod+Shift+q for the focused window.
       # quick-lang: t = clean English · Shift+t = Vietnamese · Ctrl+t = force
       # English fix. Prefix the selected text with [phi]/[sci]/[lit]/[cas] to set context.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
