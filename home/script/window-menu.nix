@@ -1,8 +1,8 @@
 { config, pkgs, ... }:
 
 # window-menu — window menu for Sway, ONE engine shared by two keys:
-#   $mod+Tab       -> window-menu              (all windows)
-#   $mod+Shift+Tab -> window-menu --scratchpad (only [S] + [F])
+#   $mod+Tab       -> window-menu --scratchpad (only HIDDEN scratchpad [S])
+#   $mod+Shift+Tab -> window-menu              (only VISIBLE windows)
 # The [S]/[F] prefix is always shown in both menus, synced with the badge
 # on Waybar (winmode script) so you can tell the window type: stashed in
 # the scratchpad, floating popup, or regular tiled. Previously this menu called
@@ -54,9 +54,12 @@ in
           sys.exit("window-menu: swaymsg is not in PATH")
 
       # window-menu [--scratchpad]
-      #   (default) ALL windows: scratchpad [S] + floating popup [F] + tiled.
-      #       -> $mod+Tab
-      #   --scratchpad  only [S] + [F]. -> $mod+Shift+Tab
+      #   (default) VISIBLE windows only: floating popup [F] + shown scratchpad
+      #     [S] + tiled. Hidden scratchpad is EXCLUDED — open the scratchpad
+      #     menu ($mod+Tab) to pull it back. -> $mod+Shift+Tab
+      #   --scratchpad  only HIDDEN scratchpad [S] (visible == false).
+      #     -> $mod+Tab (frequent key: short list, pull hidden back fast).
+      # Clean split, no overlap: a window appears in exactly ONE menu.
       # One engine for both menus, so the [S]/[F] prefix is ALWAYS present in
       # both, matching the Waybar badge (winmode module).
       stashed_only = "--scratchpad" in sys.argv[1:]
@@ -70,15 +73,25 @@ in
           # scratchpad); empty = tiled. Also record the ancestor workspace name —
           # the only clue to where the window is: stashed windows live under
           # workspace "__i3_scratch", popups under a real ws.
-          # Tiled windows are only collected when NOT filtering (full menu $mod+Tab).
+          # Clean split, no overlap:
+          # --scratchpad ($mod+Tab): ONLY truly hidden scratchpad windows
+          # (scratchpad_state != "none" AND visible == false).
+          # default ($mod+Shift+Tab): ONLY visible windows — floating popup
+          # [F], shown scratchpad [S] (visible == true), and tiled. Hidden
+          # scratchpad never appears here; open $mod+Tab to pull it back.
           if node.get("type") == "workspace":
               ws = node.get("name") or ws
           node_type = node.get("type")
           if node.get("scratchpad_state") not in (None, "none"):
               if node_type in ("con", "floating_con"):
-                  yield (node, "S", ws)
+                  if stashed_only:
+                      if not node.get("visible"):
+                          yield (node, "S", ws)
+                  elif node.get("visible"):
+                      yield (node, "S", ws)
           elif node_type == "floating_con":
-              yield (node, "F", ws)
+              if not stashed_only:
+                  yield (node, "F", ws)
           elif not stashed_only and node_type == "con":
               yield (node, "", ws)
           for key in ("nodes", "floating_nodes"):
@@ -93,7 +106,7 @@ in
           subprocess.run([
               shutil.which("notify-send") or "notify-send",
               "Scratchpad",
-              ("No stashed or popup window" if stashed_only
+              ("No hidden scratchpad window" if stashed_only
                else "No open window"),
           ], check=False)
           sys.exit(0)
@@ -197,8 +210,8 @@ in
           rows.append(row)
 
       # The menu is hand-written with swaymsg so it keeps con_id -> allows a
-      # key to close the window. This menu serves BOTH $mod+Tab (all windows)
-      # AND $mod+Shift+Tab (filtered --scratchpad), see sway.nix. The list
+      # key to close the window. This menu serves BOTH $mod+Shift+Tab (all
+      # windows) AND $mod+Tab (filtered --scratchpad), see sway.nix. The list
       # must be built manually instead of using `rofi -show window` because that
       # is a built-in rofi mode -> [S]/[F] prefixes cannot be injected.
       # dmenu-style search: -matching normal = exact substring match
@@ -223,7 +236,7 @@ in
               "-kb-accept-alt", "",
               "-kb-custom-2", "Shift+Return",
               "-mesg",
-              ("Enter: open / focus / pull to current ws · Shift+Delete: close this window"
+              ("Enter: show on this workspace · Shift+Delete: close this window"
                if stashed_only else
                "Enter: jump to window · Shift+Enter: pull here · Shift+Delete: close"),
           ],
@@ -260,12 +273,13 @@ in
       def enter_command(con_id, ws_of, ws_current, pull=False):
           """Enter command for one menu row (pure -> unit-testable):
           - hidden in scratchpad -> reveal it (already lands on current ws);
-          - pull (Shift+Enter in full menu, or Enter while filtering with
-            --scratchpad, i.e. $mod+Shift+Tab): window on another ws -> move
-            it to the current ws then focus. Applies to ANY window type:
-            Shift+Enter always means "bring it here";
+          - pull (Shift+Enter in the FULL menu, i.e. $mod+Shift+Tab): window
+            on another ws -> move it to the current ws then focus. Applies to
+            ANY window type: Shift+Enter always means "bring it here";
           - plain Enter in the full menu -> focus only, NEVER moves the
             window, same "jump to" feel as the old `rofi -show window`.
+          --scratchpad ($mod+Tab) only lists hidden scratchpad windows, so
+          Enter there is always "scratchpad show".
           Returns a list of swaymsg commands (execution order)."""
           criteria = f"[con_id={con_id}]"
           if ws_of == SCRATCH_WS:

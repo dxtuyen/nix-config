@@ -154,27 +154,22 @@ in
       bindsym $mod+d exec $menu
       # Alt+Tab: jump to the urgent window (if any) or the most recently used one
       # (swayr LRU — MRU-style cycling like a classic Alt+Tab).
-      # Mod+Tab: menu of ALL windows (used daily -> plain key, no Shift).
-      # This used to be `rofi -show window`, but that is a built-in rofi mode ->
-      # labels cannot get a prefix, so scratchpad windows [S] could not be told
-      # apart from floating popups [F]. It now calls the window-menu script, which
-      # builds the list itself so it can add prefixes synced with the Waybar
-      # badge; bonus: stashed scratchpad windows are visible too (old rofi could
-      # not see them because hidden windows have no surface). Enter only focuses,
-      # never moves a window — keeping the same "jump to" feel as before.
-      # Mod+Shift+Tab: FILTERED version of the same menu, [S] + [F] only (short,
-      # handy when many tiled windows are open). To filter quickly without Shift,
-      # type "[S]" / "[F]" — dmenu-style substring search.
+      # Mod+Tab: HIDDEN scratchpad only (used daily -> plain key, no Shift).
+      # Short list of truly hidden windows (scratchpad_state != none AND
+      # visible == false) so Enter always means "show it here". Visible
+      # floating popups [F] live in the FULL menu ($mod+Shift+Tab).
+      # Mod+Shift+Tab: VISIBLE-only menu (floating [F] + shown [S] + tiled).
+      # Hidden scratchpad never appears here (open $mod+Tab to pull it back).
       # $mod+p is LEFT EMPTY; $mod+c is Countdown (see Custom Utilities).
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
-      bindsym $mod+Tab exec ~/.local/bin/window-menu
+      bindsym $mod+Tab exec ~/.local/bin/window-menu --scratchpad
       bindsym $mod+Shift+q kill
 
-      # Wallpaper menu: Mod+Alt+w · window menu: Mod+Tab (all windows) and
-      # Mod+Shift+Tab (only [S]/[F]) · next wallpaper: Mod+Shift+w.
+      # Wallpaper menu: Mod+Alt+w · window menu: Mod+Tab (hidden scratchpad)
+      # and Mod+Shift+Tab (all windows) · next wallpaper: Mod+Shift+w.
       # ~/Pictures/wallpapers (thumbnail grid, arrow keys to browse).
       bindsym $mod+Mod1+w exec ~/.local/bin/wallpaper-menu
-      bindsym $mod+Shift+Tab exec ~/.local/bin/window-menu --scratchpad
+      bindsym $mod+Shift+Tab exec ~/.local/bin/window-menu
       bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-set
       # $mod+y: yazi as a small POPUP; typing `yazi` in a terminal opens a normal window.
       bindsym $mod+y exec ~/.local/bin/yazi-open
