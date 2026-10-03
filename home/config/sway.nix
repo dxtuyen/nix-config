@@ -246,6 +246,11 @@ in
       bindsym $mod+Shift+a focus child
       bindsym $mod+Shift+minus move scratchpad
       bindsym $mod+minus scratchpad show
+      # $mod+z: 1 phím dọn sạch popup trên workspace hiện tại (Zen).
+      # GoldenDict -> kill = về tray (đúng vòng đời dict-toggle, match regex
+      # .*goldendict.* cho bền sang máy mới); popup khác -> vào scratchpad.
+      # Hiện lại: $mod+minus từng cái / $mod+Shift+Tab chọn.
+      bindsym $mod+z [workspace=__focused__ floating app_id="(?i).*goldendict.*"] kill; [workspace=__focused__ floating] move container to scratchpad
 
       # Custom Utilities & Screenshot
       # $mod+p: utilities menu.
@@ -255,7 +260,8 @@ in
       bindsym $mod+c exec ~/.local/bin/countdown
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
       # $mod+i removed (along with ticktick-focus). Alt+Tab is swayr urgent/LRU
-      # (see App & Session); $mod+u, $mod+x, $mod+q are LEFT EMPTY. Kill a window:
+      # (see App & Session); $mod+u, $mod+x, $mod+q are LEFT EMPTY ($mod+z is Zen
+      # = clear popups, see Layout & Window State). Kill a window:
       # $mod+Tab then Shift+Delete, or $mod+Shift+q for the focused window.
       # quick-lang: t = clean English · Shift+t = Vietnamese · Ctrl+t = force
       # English fix. Prefix the selected text with [phi]/[sci]/[lit]/[cas] to set context.
