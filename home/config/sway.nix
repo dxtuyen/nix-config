@@ -152,8 +152,8 @@ in
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
       # Alt+Tab: urgent or most-recent window (swayr LRU).
-      # $mod+Tab: hidden scratchpad only ([S]); Enter shows it here.
-      # $mod+Shift+Tab: visible windows only ([F] + shown [S] + tiled).
+      # $mod+Tab: hidden windows only; Enter shows it here.
+      # $mod+Shift+Tab: visible windows only.
       # $mod+p is LEFT EMPTY; $mod+c is Countdown (see Custom Utilities).
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+Tab exec ~/.local/bin/window-menu --scratchpad

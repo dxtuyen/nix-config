@@ -21,9 +21,8 @@ in
       spacing = 4;
       "modules-left" = [
         "sway/workspaces"
-        # Tiêu đề gốc trước; huy hiệu [S]/[F] là pill NHỎ RIÊNG, đứng SAU tiêu đề.
+        # Tiêu đề cửa sổ đang focus.
         "sway/window"
-        "custom/winmode"
         "sway/mode"
         "sway/scratchpad"
       ];
@@ -190,21 +189,6 @@ in
           ""
         ];
       };
-      # Huy hiệu loại cửa sổ focus (script: home/script/winmode.nix): pill nhỏ
-      # [S] = scratchpad · [F] = popup floating · rỗng = tiled (hide-empty-text
-      # ẩn module). Đứng ngay SAU `sway/window` gốc. Signal 9, không poll.
-      "custom/winmode" = {
-        exec = "~/.local/bin/winmode status";
-        signal = 9;
-        return-type = "json";
-        format = "{text}";
-        "max-length" = 4;
-        tooltip = true;
-        # Waybar không hỗ trợ pseudo-class :empty — dùng option chính thức để
-        # ẩn module khi cửa sổ tiled / không có cửa sổ focus.
-        "hide-empty-text" = true;
-        "on-click" = "~/.local/bin/window-menu";
-      };
       # Đồng hồ Countdown (engine: home/script/countdown-engine.nix, menu: countdown).
       # Giữ id module `custom/study` để không phải sửa `modules-center` ở trên.
       "custom/study" = {
@@ -262,13 +246,6 @@ in
       #workspaces button.urgent { color: #f38ba8; border-bottom-color: #f38ba8; }
       #workspaces button.persistent.empty { color: @muted; }
       #window { background: @pill-hover; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: @txt-strong; font-weight: bold; }
-      /* Huy hiệu [S]/[F] — pill nhỏ RIÊNG, đứng ngay SAU tiêu đề (#window). */
-      #custom-winmode.s, #custom-winmode.f {
-        background: @pill; border: 1px solid @edge; border-radius: 10px;
-        padding: 0 8px; margin: 4px 2px; font-weight: bold;
-      }
-      #custom-winmode.s { color: #f9e2af; }
-      #custom-winmode.f { color: #89b4fa; }
       #custom-inhibit, #tray, #mode, #scratchpad,
       box#devices, box#hardware, box#power {
         background: @pill;

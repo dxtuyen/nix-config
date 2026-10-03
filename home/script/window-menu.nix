@@ -1,9 +1,8 @@
 { config, pkgs, ... }:
 
 # window-menu — one engine, two keys:
-#   $mod+Tab       -> window-menu --scratchpad (hidden scratchpad [S] only)
+#   $mod+Tab       -> window-menu --scratchpad (hidden windows only)
 #   $mod+Shift+Tab -> window-menu              (visible windows only)
-# [S]/[F] prefixes match the Waybar badge (winmode).
 let
   iconSizes = [
     "16x16"
@@ -49,8 +48,8 @@ in
           sys.exit("window-menu: swaymsg is not in PATH")
 
       # window-menu [--scratchpad]
-      #   default: visible windows only ([F] + shown [S] + tiled). -> $mod+Shift+Tab
-      #   --scratchpad: hidden scratchpad [S] only. -> $mod+Tab
+      #   default: visible windows only. -> $mod+Shift+Tab
+      #   --scratchpad: hidden windows only. -> $mod+Tab
       # No overlap: each window appears in exactly one menu.
       stashed_only = "--scratchpad" in sys.argv[1:]
 
@@ -59,33 +58,29 @@ in
       ).stdout)
 
       def collect_windows(node, ws=None):
-          # [S] = scratchpad member; [F] = floating popup; empty = tiled.
           # Track the ancestor workspace (hidden windows live under __i3_scratch).
           # --scratchpad: hidden only (scratchpad_state != "none", not visible).
           # default: visible only (hidden scratchpad excluded).
           if node.get("type") == "workspace":
               ws = node.get("name") or ws
           node_type = node.get("type")
-          if node.get("scratchpad_state") not in (None, "none"):
-              if node_type in ("con", "floating_con"):
-                  if stashed_only:
-                      if not node.get("visible"):
-                          yield (node, "S", ws)
-                  elif node.get("visible"):
-                      yield (node, "S", ws)
-          elif node_type == "floating_con":
-              if not stashed_only:
-                  yield (node, "F", ws)
-          elif not stashed_only and node_type == "con":
-              yield (node, "", ws)
+          if node_type in ("con", "floating_con"):
+              in_scratch = node.get("scratchpad_state") not in (None, "none")
+              visible = bool(node.get("visible"))
+              if in_scratch:
+                  if stashed_only and not visible:
+                      yield (node, ws)
+                  elif not stashed_only and visible:
+                      yield (node, ws)
+              elif not stashed_only:
+                  yield (node, ws)
           for key in ("nodes", "floating_nodes"):
               for child in node.get(key, []):
                   yield from collect_windows(child, ws)
 
       found = list(collect_windows(tree))
-      windows = [window for window, _, _ in found]
-      kinds = {window["id"]: kind for window, kind, _ in found}
-      window_ws = {window["id"]: ws for window, _, ws in found}
+      windows = [window for window, _ in found]
+      window_ws = {window["id"]: ws for window, ws in found}
       if not windows:
           subprocess.run([
               shutil.which("notify-send") or "notify-send",
@@ -160,11 +155,6 @@ in
               label = f"{app_name} — {title}"
           else:
               label = app_name
-
-          # Prefix matches the Waybar badge (winmode); tiled gets none.
-          kind = kinds.get(window["id"], "S")
-          if kind:
-              label = f"[{kind}] {label}"
 
           icon_path = entry.get("icon")
           if not icon_path:

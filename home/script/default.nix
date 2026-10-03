@@ -33,7 +33,6 @@
     ./window-menu.nix
     ./scratchpad-terminal.nix
     ./popup-restore.nix
-    ./winmode.nix
     ./app-id-check.nix
   ];
 
