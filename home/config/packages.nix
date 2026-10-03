@@ -37,7 +37,7 @@
     #   AboutTranslations: ... not found in modules/ActorManagerParent.sys.mjs -- aborting
     # Bản 10.0.4 đã có trên nixpkgs master (chỉ khác version + src.hash) →
     # bật lại dòng dưới sau khi `nix flake update nixpkgs`.
-    # zotero # quản lý tài liệu tham khảo — thư viện mặc định ở ~/Zotero
+    zotero # quản lý tài liệu tham khảo — thư viện mặc định ở ~/Zotero
     jq
     fastfetch
     libreoffice
