@@ -123,6 +123,9 @@ in
         ];
         tooltip = true;
         "tooltip-format" = "{app}: {title}";
+        # Bấm icon → mở menu scratchpad (giống hệt $mod+Tab).
+        # Chỉ chạy khi bấm; idle = 0 vì module đọc Sway IPC có sẵn, không exec.
+        "on-click" = "~/.local/bin/window-menu --scratchpad";
       };
       pulseaudio = {
         format = "{volume}% ${faSpan "{icon}"}";
