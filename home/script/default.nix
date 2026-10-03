@@ -19,6 +19,7 @@
     ./toggle-touchpad.nix
     ./bar-toggle.nix
     ./utilities.nix
+    ./wlsunset-apply.nix
     ./wlsunset-menu.nix
     ./power-profile-menu.nix
     ./media-notify.nix

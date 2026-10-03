@@ -8,6 +8,7 @@
 | 🪟 Desktop | Sway + Waybar + Mako (notifications) |
 | 💻 Terminal | Foot + Starship |
 | 🖼️ Viewing photos / video | imv (images) • mpv (video) • foliate (e-books) • sioyek (PDF) |
+| 📚 References | Zotero (papers & citations) |
 | ⌨️ Input method | Fcitx5 + Bamboo |
 | 💾 Hibernate | 10G swap — saves state on power-off |
 

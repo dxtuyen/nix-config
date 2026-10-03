@@ -60,9 +60,9 @@
           -mesg "Current mode: $label · Type to filter")
 
         case "$choice" in
-          *"Warm 4000K") next_mode="warm"; args="-t 3900 -T 4000"; label="Warm"; icon="weather-clear-night" ;;
-          *"Cool 6500K") next_mode="white"; args="-t 6400 -T 6500"; label="Cool"; icon="weather-clear" ;;
-          *"Natural (automatic)") next_mode="natural"; args="-t 4000 -T 6500"; label="Natural"; icon="preferences-system-time" ;;
+          *"Warm 4000K") next_mode="warm"; label="Warm"; icon="weather-clear-night" ;;
+          *"Cool 6500K") next_mode="white"; label="Cool"; icon="weather-clear" ;;
+          *"Natural (automatic)") next_mode="natural"; label="Natural"; icon="preferences-system-time" ;;
           *) exit 0 ;;
         esac
 
@@ -70,13 +70,9 @@
           exit 0
         fi
 
-        pkill -x wlsunset 2>/dev/null || true
-        for _ in {1..20}; do
-          pgrep -x wlsunset >/dev/null || break
-          sleep 0.05
-        done
-        # shellcheck disable=SC2086
-        wlsunset $args -l 21.0 -L 105.8 >/dev/null 2>&1 &
+        # Đổi mode + LƯU lại (~/.local/state/wlsunset-mode) để còn nguyên sau khi
+        # tắt/mở máy — wlsunset-apply giữ args (nguồn duy nhất) + khởi động lại.
+        "$HOME/.local/bin/wlsunset-apply" "$next_mode"
         notify-send -a wlsunset -i "$icon" -t 2000 "Display" "$label"
       '';
     };

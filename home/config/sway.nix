@@ -33,7 +33,9 @@ in
 
       # Applets & daemons
       exec ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1
-      exec wlsunset -t 4000 -T 6500 -l 21.0 -L 105.8
+      # Night light (wlsunset): khôi phục mode đã chọn trong menu Display
+      # (~/.local/state/wlsunset-mode) thay vì hardcode Natural.
+      exec ~/.local/bin/wlsunset-apply
 
       input type:touchpad {
         pointer_accel 0.6

@@ -33,6 +33,7 @@
     ncdu # TUI xem + di chuyển/xóa file theo dung lượng
     sioyek
     obsidian
+    zotero # quản lý tài liệu tham khảo — thư viện mặc định ở ~/Zotero
     jq
     fastfetch
     libreoffice
