@@ -276,8 +276,8 @@ in
     '';
   };
 
-  # The window menu no longer uses swayr's own menu ($mod+Shift+Tab now runs
-  # `window-menu --scratchpad`), so the swayr config file + the swayr-rofi-menu
+  # The window menu no longer uses swayr's own menu ($mod+Tab / $mod+Shift+Tab
+  # now run `window-menu`), so the swayr config file + the swayr-rofi-menu
   # wrapper were dropped as well. Do not declare `xdg.configFile."swayr/config.toml"`
   # either: Home Manager cleans up files it used to manage on switch. Note: do NOT use
   # `source = null` — the option requires an absolute path; null fails eval.

@@ -110,7 +110,7 @@ in
         format = "{title}";
         "max-length" = 60;
         tooltip = true;
-        # Clicking the title also opens the full window menu ($mod+Tab), same as the badge on the left.
+        # Click the title to open the window menu (same as $mod+Shift+Tab).
         "on-click" = "~/.local/bin/window-menu";
       };
 
