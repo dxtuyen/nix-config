@@ -123,6 +123,13 @@ in
       for_window [window_role="About"] floating enable
       for_window [title="Save File"] floating enable
 
+      # File chooser served by xdg-desktop-portal-gtk: a SEPARATE, SHARED process,
+      # so it cannot set a parent toplevel (journal: "Failed to associate portal
+      # window with parent window") → Sway does NOT auto-float it. Matching this
+      # app_id covers EVERY app that routes dialogs through the portal (Obsidian,
+      # Electron, GTK apps with GTK_USE_PORTAL=1…), so no per-app rule is needed.
+      for_window [app_id="(?i)^xdg-desktop-portal-gtk$"] floating enable, move position center
+
       # Chrome Picture-in-Picture
       for_window [title="Picture in picture"] floating enable, sticky enable, resize set width 350 px height 197 px, move position 1530 px 800 px
 

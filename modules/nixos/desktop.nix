@@ -84,6 +84,11 @@ in
     XMODIFIERS = "@im=fcitx";
     # Bắt buộc các app Electron / Chromium chạy native Wayland
     NIXOS_OZONE_WL = "1";
+    # Ép MỌI app GTK dùng hộp chọn file của xdg-desktop-portal → mọi dialog
+    # Open/Save đều là cùng một cửa sổ "xdg-desktop-portal-gtk", nên chỉ cần 1
+    # rule for_window trong home/config/sway.nix là float được hết, không phải
+    # thêm rule riêng cho từng app. GTK4/libadwaita vốn mặc định đã dùng portal.
+    GTK_USE_PORTAL = "1";
   };
 
   fonts = {
