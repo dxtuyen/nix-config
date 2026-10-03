@@ -46,6 +46,7 @@
     gdb
     jdk
     distrobox
+    gh # GitHub CLI — tạo/xem PR, issue, release từ terminal
     # Máy ảo — luyện cài máy mới (docs/06).
     qemu_kvm
     qemu-utils
