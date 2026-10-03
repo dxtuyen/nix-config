@@ -169,7 +169,7 @@ in
       # $mod+p: utilities menu; $mod+c: Countdown (see Custom Utilities).
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+Tab exec ~/.local/bin/window-menu --scratchpad
-      bindsym $mod+Shift+q kill
+      bindsym $mod+q kill
 
       # Wallpaper menu: Mod+Alt+w · windows: Mod+Tab (hidden) / Mod+Shift+Tab (visible) · next: Mod+Shift+w.
       # ~/Pictures/wallpapers (thumbnail grid, arrow keys to browse).
@@ -259,8 +259,8 @@ in
       # Chrome has no dedicated key — open via $mod+d (rofi) or click a link.
       bindsym $mod+c exec ~/.local/bin/countdown
       bindsym $mod+Shift+p exec ~/.local/bin/power-menu
-      # $mod+i removed. $mod+z/$mod+u/$mod+x/$mod+q LEFT EMPTY. Kill:
-      # $mod+Shift+Tab then Shift+Delete, or $mod+Shift+q for the focused window.
+      # $mod+i removed. $mod+z/$mod+u/$mod+x LEFT EMPTY. Kill:
+      # $mod+Shift+Tab then Shift+Delete, or $mod+q for the focused window.
       # quick-lang: t = clean English · Shift+t = Vietnamese · Ctrl+t = force
       # English fix. Prefix the selected text with [phi]/[sci]/[lit]/[cas] to set context.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en

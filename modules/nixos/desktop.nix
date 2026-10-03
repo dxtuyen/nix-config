@@ -31,11 +31,6 @@ in
     ];
   };
 
-  # Chỉ giữ backend nhẹ: `7z` xử lý zip/7z/rar… đủ dùng, không kéo GNOME.
-  environment.systemPackages = with pkgs; [
-    p7zip
-  ];
-
   hardware.graphics.enable = true;
 
   security = {

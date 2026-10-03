@@ -1,6 +1,6 @@
 # Cấu hình Yazi — CỐ Ý TỐI GIẢN. Yazi tự merge với config mặc định nên chỉ
-# khai cái thật sự cần. Đã đối chiếu với yazi 26.5.6 (`yazi --debug` xem file
-# nào được nạp). Sai khoá → yazi báo lỗi rồi RƠI VỀ TOÀN BỘ preset.
+# khai cái thật sự cần. Đã đối chiếu với preset yazi 26.9.1 (tag `v26.9.1` trên GitHub;
+# bản đang cài xem bằng `yazi -V`). Sai khoá → yazi báo lỗi rồi RƠI VỀ TOÀN BỘ preset.
 #
 # Phím tắt nằm ở `keymap.toml` (cùng thư mục) — tách riêng vì Home-Manager chỉ
 # sinh `keymap.toml` khi option có nội dung, còn `yazi.toml` luôn được tạo.
@@ -41,12 +41,9 @@ prepend_rules = [
 ]
 
 [mgr]
-# ⚠️ CHỈ NHẬN ĐÚNG 3 PHẦN TỬ (`MgrRatio` deserialize từ `[u16; 3]`). Yazi CẮT
-# BỎ phần tử thừa mà KHÔNG báo lỗi — `ratio = [1,2,3,4,...,9]` chạy bình thường
-# nhưng thực tế chỉ dùng `[1,2,3]`. Không có tính năng xoay vòng nhiều tỉ lệ.
-ratio = [1, 4, 3]
-
-# show_hidden / sort_by / wrap đều đã đúng bằng preset → không khai lại.
+# ratio / show_hidden / sort_by / wrap đều đã đúng bằng preset → không khai lại
+# (preset là `[1, 4, 3]`). Lưu ý `MgrRatio` chỉ nhận ĐÚNG 3 phần tử (`[u16; 3]`):
+# yazi CẮT bỏ phần thừa mà KHÔNG báo lỗi, không có tính năng xoay vòng tỉ lệ.
 #
 # ⭐ Preview ảnh nhờ foot hỗ trợ SIXEL (foot đặt TERM=foot, yazi tự nhận diện).
 #
@@ -54,4 +51,5 @@ ratio = [1, 4, 3]
 # Gói yazi của nixpkgs đã đóng gói sẵn chúng (gói `yazi` tham chiếu tới):
 # poppler-utils, ffmpeg, resvg, imagemagick, chafa, fzf, zoxide, fd, ripgrep,
 # 7zz, jq, file — và wrapper tự thêm tất cả vào PATH lúc chạy yazi.
-# Nên PDF/video/SVG đều preview được. Kiểm tra: `yazi --debug` (xem PATH).
+# Nên PDF/video/SVG đều preview được. Wrapper là file shell trong /nix/store — xem
+# PATH nó thêm: grep bin "$(readlink -f "$(command -v yazi)")".
