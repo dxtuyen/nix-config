@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 # popup-restore — show every hidden scratchpad window on the current workspace.
-# Pair of $mod+z (hide all popups). One-way, stateless: no cache, no guessing.
+# Paired with the bulk-hide key ($mod+Ctrl+minus). One-way, stateless: no cache.
 # Named per the repo's kebab-case convention (bar-toggle, dict-toggle, …).
 {
   home.file.".local/bin/popup-restore" = {
@@ -29,7 +29,16 @@
               for child in node.get(key, []):
                   yield from find_hidden(child)
 
-      for window in find_hidden(tree):
+      hidden = list(find_hidden(tree))
+      if not hidden:
+          subprocess.run([
+              shutil.which("notify-send") or "notify-send",
+              "Scratchpad",
+              "No hidden window",
+          ], check=False)
+          sys.exit(0)
+
+      for window in hidden:
           subprocess.run([swaymsg, f"[con_id={window['id']}] scratchpad show"], check=False)
     '';
   };
