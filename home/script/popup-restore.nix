@@ -1,8 +1,9 @@
 { pkgs, ... }:
 
-# popup-restore — show every hidden scratchpad window on the current workspace.
-# Bound to $mod+Shift+equal ($mod+equal shows one). One-way, stateless: no cache.
-# Named per the repo's kebab-case convention (bar-toggle, dict-toggle, …).
+# popup-restore [--one] — show hidden scratchpad window(s) on this workspace.
+# $mod+equal uses --one (show ONE, show-only: never hides back);
+# $mod+Shift+equal shows ALL. Empty in both modes -> notify, no-op.
+# One-way, stateless: no cache. Kebab-case per repo convention.
 {
   home.file.".local/bin/popup-restore" = {
     executable = true;
@@ -38,7 +39,8 @@
           ], check=False)
           sys.exit(0)
 
-      for window in hidden:
+      targets = hidden[:1] if "--one" in sys.argv[1:] else hidden
+      for window in targets:
           subprocess.run([swaymsg, f"[con_id={window['id']}] scratchpad show"], check=False)
     '';
   };

@@ -234,10 +234,10 @@ in
       bindsym $mod+Shift+a focus child
       bindsym $mod+minus move scratchpad
       # $mod+Shift+minus: hide ALL floating popups here (GoldenDict -> tray, rest -> scratchpad).
-      # $mod+equal: show ONE hidden window here; $mod+Shift+equal: show ALL hidden here.
+      # $mod+equal: show ONE hidden window (show-only, never hides back); $mod+Shift+equal: show ALL hidden.
       # Minus hides, equal shows; pick one via $mod+Tab.
       bindsym $mod+Shift+minus [workspace=__focused__ floating app_id="(?i).*goldendict.*"] kill; [workspace=__focused__ floating] move container to scratchpad
-      bindsym $mod+equal scratchpad show
+      bindsym $mod+equal exec ~/.local/bin/popup-restore --one
       bindsym $mod+Shift+equal exec ~/.local/bin/popup-restore
 
       # Custom Utilities & Screenshot
