@@ -3,7 +3,7 @@
 # window-menu — one engine, three lists:
 #   $mod+Tab       -> window-menu --away       (away: hidden scratchpad + popups on other workspaces)
 #   $mod+Shift+Tab -> window-menu              (every window that still exists)
-#   waybar click   -> window-menu --scratchpad (hidden scratchpad only)
+#   waybar click   -> window-menu              (sway/window title, same list)
 let
   iconSizes = [
     "16x16"
@@ -52,7 +52,10 @@ in
       #   default:      every window that still exists (hidden scratchpad excluded).
       #   --away:       what is NOT in front of you -> hidden scratchpad + popups
       #                 sitting on another workspace. -> $mod+Tab
-      #   --scratchpad: hidden scratchpad only. -> waybar click
+      #   --scratchpad: hidden scratchpad only. Unused by the keybindings on
+      #                 purpose: Waybar counts scratchpad windows that
+      #                 `scratchpad show` cannot usefully bring back, so the
+      #                 icon is read-only. Kept for ad-hoc/script use.
       # No window shows up twice because of its hidden state. A popup living on
       # another workspace is deliberately in both --away and default: there it
       # means two different things (summon it vs. jump to it).

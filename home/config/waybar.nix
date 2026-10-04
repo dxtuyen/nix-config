@@ -114,6 +114,9 @@ in
         "on-click" = "~/.local/bin/window-menu";
       };
 
+      # Read-only counter: no on-click. Waybar counts scratchpad windows
+      # that `scratchpad show` cannot usefully bring back, so the icon is a
+      # status hint, not a launcher. $mod+Tab remains the way in.
       "sway/scratchpad" = {
         format = "${faSpan "{icon}"} {count}";
         "show-empty" = false;
@@ -123,9 +126,6 @@ in
         ];
         tooltip = true;
         "tooltip-format" = "{app}: {title}";
-        # Bấm icon → mở menu scratchpad (giống hệt $mod+Tab).
-        # Chỉ chạy khi bấm; idle = 0 vì module đọc Sway IPC có sẵn, không exec.
-        "on-click" = "~/.local/bin/window-menu --scratchpad";
       };
       pulseaudio = {
         format = "{volume}% ${faSpan "{icon}"}";
