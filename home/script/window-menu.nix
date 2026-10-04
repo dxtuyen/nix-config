@@ -74,21 +74,26 @@ in
 
       def collect_windows(node, ws=None):
           # Track the ancestor workspace (hidden windows live under __i3_scratch).
-          # hidden       = stashed in the scratchpad and not shown anywhere.
+          # hidden       = scratchpad_state is exactly "hidden" (stored away).
           # default      = !hidden (tiled windows on other workspaces included).
           # --away       = hidden, or a popup sitting on another workspace.
           #                Popups already visible here stay out: they are on screen.
           # --scratchpad = hidden only.
+          #
+          # `hidden` MUST NOT be derived from `visible`: that flag means "lives on
+          # the focused workspace", not "is on screen right now". A scratchpad
+          # popup shown on another workspace reads as visible=false and would be
+          # wrongly treated as stashed. scratchpad_state is the only authority.
           if node.get("type") == "workspace":
               ws = node.get("name") or ws
           node_type = node.get("type")
           if node_type in ("con", "floating_con"):
-              in_scratch = node.get("scratchpad_state") not in (None, "none")
-              visible = bool(node.get("visible"))
+              state = node.get("scratchpad_state")
+              in_scratch = state not in (None, "none")
               floating = node_type == "floating_con"
-              hidden = in_scratch and not visible
+              hidden = state == "hidden"
               elsewhere = (
-                  floating and visible and ws is not None
+                  floating and ws is not None
                   and current_ws is not None and ws != current_ws
               )
               if stashed_only:
@@ -248,12 +253,12 @@ in
 
       def enter_command(con_id, ws_of, ws_current, stashed=False, pull=False):
           """Enter command for one menu row (pure -> unit-testable):
-          stashed -> scratchpad show; --away (summon list) on another ws -> move
-          here + focus; Shift+Enter on another ws -> move here + focus; plain Enter
-          on a normal row -> focus only, never moves."""
+          stashed ("hidden") -> scratchpad show; --away (summon list) on another
+          ws -> move here + focus; Shift+Enter on another ws -> move here + focus;
+          plain Enter on a normal row -> focus only, never moves."""
           criteria = f"[con_id={con_id}]"
-          # stashed (scratchpad_state) is authoritative; the __i3_scratch
-          # ancestor is only a fallback for safety.
+          # Only a truly stashed window takes the scratchpad path: `scratchpad show`
+          # TOGGLES, so sending it to a window already on screen would HIDE it.
           if stashed or ws_of == SCRATCH_WS:
               return [f"{criteria} scratchpad show"]
           want_pull = pull or stashed_only or away_only
@@ -266,7 +271,9 @@ in
           return [f"{criteria} focus"]
 
       pull_here = choice.returncode == 11
-      stashed = window.get("scratchpad_state") not in (None, "none")
+      # scratchpad_state is authoritative: "hidden" = stored away,
+      # "fresh"/"changed" = on screen right now.
+      stashed = window.get("scratchpad_state") == "hidden"
       for command in enter_command(
               window["id"], window_ws.get(window["id"]), current_ws,
               stashed=stashed, pull=pull_here):
