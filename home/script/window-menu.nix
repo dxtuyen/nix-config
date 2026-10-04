@@ -191,7 +191,7 @@ in
 
       def away_mark(window):
           """Row prefix for --away, the one list that mixes two kinds of window.
-          Right-arrow = stashed in the scratchpad, left-arrow = popup sitting on
+          Down-arrow = stashed in the scratchpad, right-arrow = popup sitting on
           another workspace. Only that list needs it: --normal is all tiled
           windows and --scratchpad is all stashed ones, so a mark there would be
           noise. A window that is both (a scratchpad popup shown elsewhere) gets
@@ -199,9 +199,9 @@ in
           `scratchpad show` rather than moving it."""
           state = window.get("scratchpad_state")
           if state not in (None, "none") and not window.get("visible"):
-              return "→ "
+              return "⤓ "
           if window.get("type") == "floating_con":
-              return "← "
+              return "→ "
           return ""
 
       def window_row(window):
@@ -261,7 +261,7 @@ in
               # --away: everything listed is away, so Enter only ever summons.
               ("Enter: show on this workspace · Shift+Delete: close this window"
                if stashed_only else
-               "→ = trong scratchpad · ← = ố workspace khác · "
+               "⤓ = trong scratchpad · → = ố workspace khác · "
                "Enter: bring here · Shift+Delete: close"
                if away_only else
                "Enter: jump to window · Shift+Enter: pull here · Shift+Delete: close"),
