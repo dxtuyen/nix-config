@@ -4,6 +4,9 @@
 #   $mod+Tab       -> window-menu --away       (away: hidden scratchpad + popups on other workspaces)
 #   $mod+Shift+Tab -> window-menu              (every window that still exists)
 #   waybar click   -> window-menu              (sway/window title, same list)
+# In --away and --scratchpad the just-stashed window comes FIRST (MRU block
+# below), matching $mod+equal, which also brings back the newest one, not the
+# oldest.
 let
   iconSizes = [
     "16x16"
@@ -78,6 +81,13 @@ in
       except (subprocess.CalledProcessError, ValueError, StopIteration, KeyError):
           current_ws = None
 
+      def stashed(window):
+          """True = in the scratchpad AND not on screen here: exactly what
+          $mod+equal (popup-restore) can bring back. Used both to build the list
+          and, at the end, to decide whether Enter runs `scratchpad show`."""
+          return (window.get("scratchpad_state") not in (None, "none")
+                  and not window.get("visible"))
+
       def collect_windows(node, ws=None):
           # Track the ancestor workspace (hidden windows live under __i3_scratch).
           # hidden       = in the scratchpad AND not on screen here.
@@ -99,10 +109,9 @@ in
           if node_type in ("con", "floating_con"):
               state = node.get("scratchpad_state")
               in_scratch = state not in (None, "none")
-              visible = bool(node.get("visible"))
               floating = node_type == "floating_con"
               # Same predicate as popup-restore: what $mod+equal can bring back.
-              hidden = in_scratch and not visible
+              hidden = stashed(node)
               elsewhere = (
                   floating and ws is not None
                   and current_ws is not None and ws != current_ws
@@ -126,6 +135,21 @@ in
                   yield from collect_windows(child, ws)
 
       found = list(collect_windows(tree))
+
+      # MRU-first for the two lists that actually contain stashed rows.
+      # Sway's get_tree lists __i3_scratch floating_nodes oldest-stashed first
+      # (root->scratchpad is maintained with list_move_to_end on every hide), so
+      # collect_windows() yields them bottom-to-top in time. Reverse that group
+      # to put the window you JUST stashed at the top of the menu; popups on
+      # other workspaces keep their original order below it.
+      # default/--normal exclude stashed rows entirely, so they are untouched.
+      if away_only or stashed_only:
+          found = sorted(
+              enumerate(found),
+              key=lambda item: (0, -item[0]) if stashed(item[1][0]) else (1, item[0]),
+          )
+          found = [pair for _, pair in found]
+
       windows = [window for window, _ in found]
       window_ws = {window["id"]: ws for window, ws in found}
       if not windows:
@@ -197,8 +221,7 @@ in
           noise. A window that is both (a scratchpad popup shown elsewhere) gets
           the scratchpad mark, because that is the list where Enter runs
           `scratchpad show` rather than moving it."""
-          state = window.get("scratchpad_state")
-          if state not in (None, "none") and not window.get("visible"):
+          if stashed(window):
               return "⤓ "
           if window.get("type") == "floating_con":
               return "→ "
@@ -309,13 +332,10 @@ in
       pull_here = choice.returncode == 11
       # Must mirror the `hidden` test used to build the list, otherwise a row can
       # be offered as stashed and then focused instead of summoned.
-      stashed = (
-          window.get("scratchpad_state") not in (None, "none")
-          and not window.get("visible")
-      )
+      is_stashed = stashed(window)
       for command in enter_command(
               window["id"], window_ws.get(window["id"]), current_ws,
-              stashed=stashed, pull=pull_here):
+              stashed=is_stashed, pull=pull_here):
           subprocess.run([swaymsg, command], check=True)
     '';
   };
