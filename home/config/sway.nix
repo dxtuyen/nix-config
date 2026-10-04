@@ -166,7 +166,8 @@ in
       # Alt+Tab: urgent or most-recent window (swayr LRU).
       # $mod+Tab: windows AWAY (hidden scratchpad + popups on other workspaces);
       #   Enter brings one back to the current workspace.
-      # $mod+Shift+Tab: every open window; Enter jumps to it, Shift+Enter pulls it here.
+      # $mod+Shift+Tab: REGULAR windows only (no scratchpad, no popups — those have
+      #   their own keys); Enter jumps to it, Shift+Enter pulls it here.
       # $mod+p: system menu; $mod+c: Countdown (see Custom Utilities).
       # $mod+Shift+q: kill the focused window (was $mod+q; moved so a stray
       #   plain-Q cannot destroy a window).
@@ -174,10 +175,10 @@ in
       bindsym $mod+Tab exec ~/.local/bin/window-menu --away
       bindsym $mod+Shift+q kill
 
-      # Wallpaper menu: Mod+Alt+w · windows: Mod+Tab (away) / Mod+Shift+Tab (all) · next: Mod+Shift+w.
+      # Wallpaper menu: Mod+Alt+w · windows: Mod+Tab (away) / Mod+Shift+Tab (regular) · next: Mod+Shift+w.
       # ~/Pictures/wallpapers (thumbnail grid, arrow keys to browse).
       bindsym $mod+Mod1+w exec ~/.local/bin/wallpaper-menu
-      bindsym $mod+Shift+Tab exec ~/.local/bin/window-menu
+      bindsym $mod+Shift+Tab exec ~/.local/bin/window-menu --normal
       bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-set
       # $mod+y: toggle yazi popup (same pattern as scratchpad-terminal).
       bindsym $mod+y exec ~/.local/bin/yazi-open

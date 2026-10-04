@@ -48,10 +48,12 @@ in
       if not swaymsg:
           sys.exit("window-menu: swaymsg is not in PATH")
 
-      # window-menu [--away | --scratchpad]
+      # window-menu [--away | --scratchpad | --normal]
       #   default:      every window that still exists (hidden scratchpad excluded).
       #   --away:       what is NOT in front of you -> hidden scratchpad + popups
       #                 sitting on another workspace. -> $mod+Tab
+      #   --normal:     regular tiled windows only (no scratchpad, no popup).
+      #                 -> $mod+Shift+Tab
       #   --scratchpad: hidden scratchpad only. Unused by the keybindings on
       #                 purpose: Waybar counts scratchpad windows that
       #                 `scratchpad show` cannot usefully bring back, so the
@@ -61,6 +63,7 @@ in
       # means two different things (summon it vs. jump to it).
       stashed_only = "--scratchpad" in sys.argv[1:]
       away_only = "--away" in sys.argv[1:]
+      normal_only = "--normal" in sys.argv[1:]
 
       tree = json.loads(subprocess.run(
           [swaymsg, "-t", "get_tree"], check=True, capture_output=True, text=True
@@ -77,30 +80,41 @@ in
 
       def collect_windows(node, ws=None):
           # Track the ancestor workspace (hidden windows live under __i3_scratch).
-          # hidden       = scratchpad_state is exactly "hidden" (stored away).
+          # hidden       = in the scratchpad AND not on screen here.
           # default      = !hidden (tiled windows on other workspaces included).
           # --away       = hidden, or a popup sitting on another workspace.
           #                Popups already visible here stay out: they are on screen.
           # --scratchpad = hidden only.
           #
-          # `hidden` MUST NOT be derived from `visible`: that flag means "lives on
-          # the focused workspace", not "is on screen right now". A scratchpad
-          # popup shown on another workspace reads as visible=false and would be
-          # wrongly treated as stashed. scratchpad_state is the only authority.
+          # Stashed must match popup-restore exactly (`in scratchpad and not
+          # visible`), or the two disagree about what can be summoned. Comparing
+          # scratchpad_state to "hidden" is too strict: Sway also parks windows in
+          # "fresh"/"changed" after showing them, and those ARE summonable via
+          # $mod+equal — a strict test made --away come up empty and the menu
+          # useless. `visible` alone is not enough either (it only reports the
+          # focused workspace), so pair it with the scratchpad membership test.
           if node.get("type") == "workspace":
               ws = node.get("name") or ws
           node_type = node.get("type")
           if node_type in ("con", "floating_con"):
               state = node.get("scratchpad_state")
               in_scratch = state not in (None, "none")
+              visible = bool(node.get("visible"))
               floating = node_type == "floating_con"
-              hidden = state == "hidden"
+              # Same predicate as popup-restore: what $mod+equal can bring back.
+              hidden = in_scratch and not visible
               elsewhere = (
                   floating and ws is not None
                   and current_ws is not None and ws != current_ws
               )
               if stashed_only:
                   if hidden:
+                      yield (node, ws)
+              elif normal_only:
+                  # Regular tiled windows only: no scratchpad members at all
+                  # (not even fresh/changed ones) and no popups. Those two have
+                  # their own keys, so this list stays a plain window list.
+                  if not in_scratch and not floating:
                       yield (node, ws)
               elif away_only:
                   if hidden or elsewhere:
@@ -274,9 +288,12 @@ in
           return [f"{criteria} focus"]
 
       pull_here = choice.returncode == 11
-      # scratchpad_state is authoritative: "hidden" = stored away,
-      # "fresh"/"changed" = on screen right now.
-      stashed = window.get("scratchpad_state") == "hidden"
+      # Must mirror the `hidden` test used to build the list, otherwise a row can
+      # be offered as stashed and then focused instead of summoned.
+      stashed = (
+          window.get("scratchpad_state") not in (None, "none")
+          and not window.get("visible")
+      )
       for command in enter_command(
               window["id"], window_ws.get(window["id"]), current_ws,
               stashed=stashed, pull=pull_here):
