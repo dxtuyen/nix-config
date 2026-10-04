@@ -189,6 +189,21 @@ in
 
       pwa_id = re.compile(r"^(?:chrome|chromium)-[a-z0-9_-]{16,}(?:-[a-z0-9 _-]+)?$", re.I)
 
+      def away_mark(window):
+          """Row prefix for --away, the one list that mixes two kinds of window.
+          Down-arrow = stashed in the scratchpad, left-arrow = popup sitting on
+          another workspace. Only that list needs it: --normal is all tiled
+          windows and --scratchpad is all stashed ones, so a mark there would be
+          noise. A window that is both (a scratchpad popup shown elsewhere) gets
+          the scratchpad mark, because that is the list where Enter runs
+          `scratchpad show` rather than moving it."""
+          state = window.get("scratchpad_state")
+          if state not in (None, "none") and not window.get("visible"):
+              return "⤓ "
+          if window.get("type") == "floating_con":
+              return "← "
+          return ""
+
       def window_row(window):
           props = window.get("window_properties") or {}
           app_id = window.get("app_id") or ""
@@ -207,7 +222,10 @@ in
           icon_path = entry.get("icon")
           if not icon_path:
               icon_path = icon_files.get(app_id.casefold()) or icon_files.get(wm_class.casefold())
-          row = label.encode("utf-8")
+          # Mark goes into the displayed row only, never into `label`: the
+          # duplicate counter below groups by label, so a mark must not split
+          # two same-named windows into separate groups.
+          row = ((away_mark(window) if away_only else "") + label).encode("utf-8")
           if icon_path and Path(icon_path).is_file():
               row += b"\0icon\x1f" + str(icon_path).encode("utf-8")
           return label, row
@@ -243,7 +261,8 @@ in
               # --away: everything listed is away, so Enter only ever summons.
               ("Enter: show on this workspace · Shift+Delete: close this window"
                if stashed_only else
-               "Enter: bring here · Shift+Delete: close this window"
+               "⤓ = trong scratchpad · ← = ố workspace khác · "
+               "Enter: bring here · Shift+Delete: close"
                if away_only else
                "Enter: jump to window · Shift+Enter: pull here · Shift+Delete: close"),
           ],
