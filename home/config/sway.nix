@@ -164,14 +164,15 @@ in
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
       # Alt+Tab: urgent or most-recent window (swayr LRU).
-      # $mod+Tab: hidden windows only; Enter shows it here.
-      # $mod+Shift+Tab: visible windows only.
-      # $mod+p: utilities menu; $mod+c: Countdown (see Custom Utilities).
+      # $mod+Tab: windows AWAY (hidden scratchpad + popups on other workspaces);
+      #   Enter brings one back to the current workspace.
+      # $mod+Shift+Tab: every open window; Enter jumps to it, Shift+Enter pulls it here.
+      # $mod+p: system menu; $mod+c: Countdown (see Custom Utilities).
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
-      bindsym $mod+Tab exec ~/.local/bin/window-menu --scratchpad
+      bindsym $mod+Tab exec ~/.local/bin/window-menu --away
       bindsym $mod+q kill
 
-      # Wallpaper menu: Mod+Alt+w · windows: Mod+Tab (hidden) / Mod+Shift+Tab (visible) · next: Mod+Shift+w.
+      # Wallpaper menu: Mod+Alt+w · windows: Mod+Tab (away) / Mod+Shift+Tab (all) · next: Mod+Shift+w.
       # ~/Pictures/wallpapers (thumbnail grid, arrow keys to browse).
       bindsym $mod+Mod1+w exec ~/.local/bin/wallpaper-menu
       bindsym $mod+Shift+Tab exec ~/.local/bin/window-menu
@@ -253,13 +254,14 @@ in
       bindsym $mod+Shift+equal exec ~/.local/bin/popup-restore
 
       # Custom Utilities & Screenshot
-      # $mod+p: utilities menu.
+      # $mod+p: daily utilities (Idle, Display, Wi-Fi, Bluetooth, Power Profile).
       bindsym $mod+p exec ~/.local/bin/utilities
-      # $mod+c Countdown · $mod+Shift+p power menu.
+      # $mod+c Countdown · $mod+Shift+p system actions (Lock, Suspend, Hibernate,
+      # Reload/Exit Sway, Reboot, Poweroff) — same script, ordered safe -> destructive.
       # Chrome has no dedicated key — open via $mod+d (rofi) or click a link.
       bindsym $mod+c exec ~/.local/bin/countdown
-      bindsym $mod+Shift+p exec ~/.local/bin/power-menu
-      # $mod+i removed. $mod+z/$mod+u/$mod+x LEFT EMPTY. Kill:
+      bindsym $mod+Shift+p exec ~/.local/bin/utilities --power
+      # $mod+i removed. $mod+z/$mod+u/$mod/x LEFT EMPTY. Kill:
       # $mod+Shift+Tab then Shift+Delete, or $mod+q for the focused window.
       # quick-lang: t = clean English · Shift+t = Vietnamese · Ctrl+t = force
       # English fix. Prefix the selected text with [phi]/[sci]/[lit]/[cas] to set context.

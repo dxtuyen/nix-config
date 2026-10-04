@@ -23,7 +23,6 @@
     ./wlsunset-menu.nix
     ./power-profile-menu.nix
     ./media-notify.nix
-    ./power-menu.nix
     ./screenshot.nix
     ./screenshot-menu.nix
     ./quick-lang.nix

@@ -1,5 +1,11 @@
 { ... }:
 
+# utilities — one engine, two keys, split by how destructive an entry is:
+#   $mod+p       -> utilities            (the five daily tools, most-used first)
+#   $mod+Shift+p -> utilities --power    (session + power, safe -> destructive)
+# Nothing needs a divider or a usage ranking: each list is pure by meaning, and
+# both orders are stable so muscle memory sticks (Enter without typing lands on
+# Idle in the first menu and Lock in the second — never on a destructive item).
 {
   home.file = {
     ".local/bin/utilities" = {
@@ -8,21 +14,40 @@
         #! /usr/bin/env bash
         set -u
 
-        MENU="👁 Idle
+        if [ "''${1:-}" = "--power" ]; then
+          MENU="🔒 Lock
+        ⏾ Suspend
+        ⏾ Hibernate
+        ↻ Reload Sway
+        ⏻ Exit Sway
+        ↻ Reboot
+        ⏻ Poweroff"
+          PROMPT="System"
+        else
+          MENU="👁 Idle
         ☀ Display
         📶 Wi-Fi
         🔵 Bluetooth
         ⚡ Power Profile"
+          PROMPT="Utilities"
+        fi
 
-        choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -matching fuzzy -sort -sorting-method normal -p "Utilities" \
+        choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -matching fuzzy -sort -sorting-method normal -p "$PROMPT" \
           -mesg "Type to filter · Enter to select")
 
         case "$choice" in
-          "👁 Idle") exec ~/.local/bin/countdown-engine inhibit-toggle ;;
+          "👁 Idle"*) exec ~/.local/bin/countdown-engine inhibit-toggle ;;
           "☀ Display"*) exec ~/.local/bin/wlsunset-menu ;;
           "📶 Wi-Fi"*) exec foot --app-id=wifitui -T "Wi-Fi" wifitui ;;
           "🔵 Bluetooth"*) exec foot --app-id=bluetui -T "Bluetooth" bluetui ;;
           "⚡ Power Profile"*) exec ~/.local/bin/power-profile-menu ;;
+          "🔒 Lock"*) exec ~/.local/bin/lock-screen ;;
+          "⏾ Suspend"*) notify-send -a power -i "system-suspend" -t 2000 "Power" "Suspending..."; exec systemctl suspend ;;
+          "⏾ Hibernate"*) notify-send -a power -i "system-suspend" -t 2000 "Power" "Hibernating..." ; exec systemctl hibernate ;;
+          "↻ Reload Sway"*) exec swaymsg reload ;;
+          "⏻ Exit Sway"*) exec swaymsg exit ;;
+          "↻ Reboot"*) notify-send -a power -i "system-reboot" -t 2000 "Power" "Rebooting..."; exec systemctl reboot ;;
+          "⏻ Poweroff"*) notify-send -a power -i "system-shutdown" -t 2000 "Power" "Powering off..."; exec systemctl poweroff ;;
         esac
       '';
     };

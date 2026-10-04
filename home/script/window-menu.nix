@@ -1,8 +1,9 @@
 { config, pkgs, ... }:
 
-# window-menu — one engine, two keys:
-#   $mod+Tab       -> window-menu --scratchpad (hidden windows only)
-#   $mod+Shift+Tab -> window-menu              (visible windows only)
+# window-menu — one engine, three lists:
+#   $mod+Tab       -> window-menu --away       (away: hidden scratchpad + popups on other workspaces)
+#   $mod+Shift+Tab -> window-menu              (every window that still exists)
+#   waybar click   -> window-menu --scratchpad (hidden scratchpad only)
 let
   iconSizes = [
     "16x16"
@@ -47,32 +48,56 @@ in
       if not swaymsg:
           sys.exit("window-menu: swaymsg is not in PATH")
 
-      # window-menu [--scratchpad]
-      #   default: visible windows only. -> $mod+Shift+Tab
-      #   --scratchpad: hidden windows only. -> $mod+Tab
-      # No overlap: each window appears in exactly one menu.
+      # window-menu [--away | --scratchpad]
+      #   default:      every window that still exists (hidden scratchpad excluded).
+      #   --away:       what is NOT in front of you -> hidden scratchpad + popups
+      #                 sitting on another workspace. -> $mod+Tab
+      #   --scratchpad: hidden scratchpad only. -> waybar click
+      # No window shows up twice because of its hidden state. A popup living on
+      # another workspace is deliberately in both --away and default: there it
+      # means two different things (summon it vs. jump to it).
       stashed_only = "--scratchpad" in sys.argv[1:]
+      away_only = "--away" in sys.argv[1:]
 
       tree = json.loads(subprocess.run(
           [swaymsg, "-t", "get_tree"], check=True, capture_output=True, text=True
       ).stdout)
 
+      # The focused workspace is needed by --away BEFORE the list gets built.
+      try:
+          workspaces = json.loads(subprocess.run(
+              [swaymsg, "-t", "get_workspaces"], check=True,
+              capture_output=True, text=True).stdout)
+          current_ws = next(w["name"] for w in workspaces if w.get("focused"))
+      except (subprocess.CalledProcessError, ValueError, StopIteration, KeyError):
+          current_ws = None
+
       def collect_windows(node, ws=None):
           # Track the ancestor workspace (hidden windows live under __i3_scratch).
-          # --scratchpad: hidden only (scratchpad_state != "none", not visible).
-          # default: visible only (hidden scratchpad excluded).
+          # hidden       = stashed in the scratchpad and not shown anywhere.
+          # default      = !hidden (tiled windows on other workspaces included).
+          # --away       = hidden, or a popup sitting on another workspace.
+          #                Popups already visible here stay out: they are on screen.
+          # --scratchpad = hidden only.
           if node.get("type") == "workspace":
               ws = node.get("name") or ws
           node_type = node.get("type")
           if node_type in ("con", "floating_con"):
               in_scratch = node.get("scratchpad_state") not in (None, "none")
               visible = bool(node.get("visible"))
-              if in_scratch:
-                  if stashed_only and not visible:
+              floating = node_type == "floating_con"
+              hidden = in_scratch and not visible
+              elsewhere = (
+                  floating and visible and ws is not None
+                  and current_ws is not None and ws != current_ws
+              )
+              if stashed_only:
+                  if hidden:
                       yield (node, ws)
-                  elif not stashed_only and visible:
+              elif away_only:
+                  if hidden or elsewhere:
                       yield (node, ws)
-              elif not stashed_only:
+              elif not hidden:
                   yield (node, ws)
           for key in ("nodes", "floating_nodes"):
               for child in node.get(key, []):
@@ -84,8 +109,9 @@ in
       if not windows:
           subprocess.run([
               shutil.which("notify-send") or "notify-send",
-              "Scratchpad",
+              ("Scratchpad" if stashed_only else "Away"),
               ("No hidden scratchpad window" if stashed_only
+               else "Nothing away from this workspace" if away_only
                else "No open window"),
           ], check=False)
           sys.exit(0)
@@ -179,12 +205,12 @@ in
           rows.append(row)
 
       # Hand-built list (keeps con_id for kill; `rofi -show window` can't inject prefixes).
-      # Serves both keys, see sway.nix. Exact substring match, list order kept.
+      # Serves three keys, see sway.nix. Exact substring match, list order kept.
       choice = subprocess.run(
           [
               "${pkgs.rofi}/bin/rofi", "-dmenu", "-i", "-matching", "normal",
               "-no-sort", "-no-custom", "-show-icons", "-format", "i",
-              "-p", "Scratchpad" if stashed_only else "Windows",
+              "-p", ("Scratchpad" if stashed_only else "Away" if away_only else "Windows"),
               # Shift+Delete = close (must unset kb-delete-entry first or rofi errors).
               "-kb-delete-entry", "",
               "-kb-custom-1", "Shift+Delete",
@@ -192,8 +218,11 @@ in
               "-kb-accept-alt", "",
               "-kb-custom-2", "Shift+Return",
               "-mesg",
+              # --away: everything listed is away, so Enter only ever summons.
               ("Enter: show on this workspace · Shift+Delete: close this window"
                if stashed_only else
+               "Enter: bring here · Shift+Delete: close this window"
+               if away_only else
                "Enter: jump to window · Shift+Enter: pull here · Shift+Delete: close"),
           ],
           input=b"\n".join(rows) + (b"\n" if rows else b""),
@@ -214,25 +243,20 @@ in
                          check=False)
           sys.exit(0)
 
-      # Current workspace (to detect windows on other workspaces).
-      try:
-          workspaces = json.loads(subprocess.run(
-              [swaymsg, "-t", "get_workspaces"], check=True,
-              capture_output=True, text=True).stdout)
-          current_ws = next(w["name"] for w in workspaces if w.get("focused"))
-      except (subprocess.CalledProcessError, ValueError, StopIteration, KeyError):
-          current_ws = None
-
+      # current_ws was resolved before the list was built (--away needs it).
       SCRATCH_WS = "__i3_scratch"
 
-      def enter_command(con_id, ws_of, ws_current, pull=False):
+      def enter_command(con_id, ws_of, ws_current, stashed=False, pull=False):
           """Enter command for one menu row (pure -> unit-testable):
-          hidden -> scratchpad show; Shift+Enter on another ws -> move here + focus;
-          plain Enter -> focus only, never moves."""
+          stashed -> scratchpad show; --away (summon list) on another ws -> move
+          here + focus; Shift+Enter on another ws -> move here + focus; plain Enter
+          on a normal row -> focus only, never moves."""
           criteria = f"[con_id={con_id}]"
-          if ws_of == SCRATCH_WS:
+          # stashed (scratchpad_state) is authoritative; the __i3_scratch
+          # ancestor is only a fallback for safety.
+          if stashed or ws_of == SCRATCH_WS:
               return [f"{criteria} scratchpad show"]
-          want_pull = pull or stashed_only
+          want_pull = pull or stashed_only or away_only
           if want_pull:
               if ws_of is not None and ws_current is not None and ws_of != ws_current:
                   return [
@@ -242,9 +266,10 @@ in
           return [f"{criteria} focus"]
 
       pull_here = choice.returncode == 11
+      stashed = window.get("scratchpad_state") not in (None, "none")
       for command in enter_command(
               window["id"], window_ws.get(window["id"]), current_ws,
-              pull=pull_here):
+              stashed=stashed, pull=pull_here):
           subprocess.run([swaymsg, command], check=True)
     '';
   };

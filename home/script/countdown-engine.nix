@@ -581,7 +581,7 @@
             ;;
 
           lock-pause)
-            # Screen locked (manually via power-menu, 300s timeout, or before-sleep)
+            # Screen locked (manually via $mod+Shift+p, 300s timeout, or before-sleep)
             # -> pause the session, keep REMAINING. Unlocking does NOT auto-resume — press ▶.
             state_lock
             read_state
