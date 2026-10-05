@@ -23,6 +23,7 @@
       bg-soft:            #181825;
       surface:            #313244;
       surface-hover:      #45475a;
+      selected:           #585b70;
       fg:                 #cdd6f4;
       muted:              #a6adc8;
       blue:               #89b4fa;
@@ -112,17 +113,17 @@
     }
 
     element selected.normal {
-      background-color:   @surface-hover;
+      background-color:   @selected;
       text-color:         @fg;
     }
 
     element selected.active {
-      background-color:   @surface-hover;
+      background-color:   @selected;
       text-color:         @lavender;
     }
 
     element selected.urgent {
-      background-color:   @surface-hover;
+      background-color:   @selected;
       text-color:         @red;
     }
 
