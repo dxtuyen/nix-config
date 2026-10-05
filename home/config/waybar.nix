@@ -242,7 +242,11 @@ in
         border-radius: 6px;
       }
       #workspaces button.urgent { color: #f38ba8; border-bottom-color: #f38ba8; }
-      #workspaces button.persistent.empty { color: @muted; }
+      /* workspace rỗng: overlay0, không phải @muted (#7f849c — đó cũng là "tắt").
+         overlay0 = 3.59:1 so @pill (vs @txt 9.90:1) -> số rỗng lùi hẳn, số có cửa sổ nối lên. */
+      #workspaces button.persistent.empty { color: #6c7086; }
+      /* Ô rỗng mà đang focus: giữ nền highlight để biết mình đang đứng ở đâu, chữ chữ vẫn mờ. */
+      #workspaces button.persistent.empty.focused { background-color: rgba(137, 180, 250, 0.16); }
       #window { background: @pill-hover; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: @txt-strong; font-weight: bold; }
       #custom-inhibit, #tray, #mode, #scratchpad,
       box#devices, box#hardware, box#power {
