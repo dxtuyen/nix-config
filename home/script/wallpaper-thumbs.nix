@@ -6,9 +6,7 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # wallpaper-thumbs [--status] — dựng thumbnail 320px cho rofi vào
-        # ~/.cache/wallpaper-thumbs/<tên>.thumb. `--status` chỉ in số thumbnail
-        # còn thiếu. Xoá thư mục cache → tự dựng lại. 8 luồng ImageMagick.
+        # Build 320px Rofi thumbnails; --status prints the number missing.
         set -u
         WALL_DIR="$HOME/Pictures/wallpapers"
         THUMB_DIR="$HOME/.cache/wallpaper-thumbs"
@@ -28,7 +26,7 @@
 
         missing=()
         while IFS= read -r -d $'\0' f; do
-          t="$THUMB_DIR/''${f##*/}.thumb"  # builtin — không fork basename
+          t="$THUMB_DIR/''${f##*/}.thumb" # Use Bash parameter expansion.
           [ -f "$t" ] && [ "$t" -nt "$f" ] && continue
           missing+=("$f")
         done < <(find "$WALL_DIR" -maxdepth 1 -type f \
@@ -42,8 +40,7 @@
 
         mkdir -p "$THUMB_DIR"
         make_thumb() {
-          # -auto-orient: ảnh điện thoại xoay theo EXIF; -thumbnail 320x320:
-          # vừa khung 10em của rofi. Ảnh hỏng → bỏ qua (menu tự hiện tên chữ).
+          # Respect EXIF orientation and skip invalid images.
           ${pkgs.imagemagick}/bin/magick "$1" -auto-orient -thumbnail 320x320 \
             -quality 80 "$THUMB_DIR/''${1##*/}.thumb" 2>/dev/null || true
         }

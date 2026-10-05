@@ -32,9 +32,7 @@
           criteria = f"[con_id={terminal['id']}]"
 
           if terminal.get("focused"):
-              # Đang focus: bấm $mod+grave lần nữa → cất về scratchpad (toggle).
-              # Thuộc scratchpad ("fresh"/"changed") → scratchpad show = ẩn;
-              # đã bị gỡ khỏi scratchpad ("none") → move container to scratchpad.
+              # Toggle the focused terminal back into the scratchpad.
               command = (
                   "scratchpad show"
                   if terminal.get("scratchpad_state") not in (None, "none")
@@ -42,17 +40,13 @@
               )
               subprocess.run([swaymsg, f"{criteria} {command}"], check=True)
           elif terminal.get("visible"):
-              # Đang hiện trên workspace hiện tại (kể cả tiled chiếm trọn màn
-              # hình hay fullscreen): chỉ focus, không đổi kích thước/trạng thái.
+              # Focus a visible terminal without changing its layout.
               subprocess.run([swaymsg, f"{criteria} focus"], check=True)
           elif terminal.get("scratchpad_state") not in (None, "none"):
-              # Đang ẩn trong scratchpad: kéo về workspace hiện tại + focus.
+              # Restore the hidden terminal on the current workspace.
               subprocess.run([swaymsg, f"{criteria} scratchpad show"], check=True)
           else:
-              # Ở workspace khác (hoặc đã bị gỡ khỏi scratchpad): thành popup
-              # scratchpad ở workspace HIỆN TẠI, size mặc định của Sway.
-              # Phải "move ... workspace current" TRƯỚC, vì "move scratchpad"
-              # trên cửa sổ ở ws khác sẽ kéo focus về workspace cũ của nó.
+              # Move terminals from other workspaces here before stashing them.
               subprocess.run(
                   [swaymsg, f"{criteria} move container to workspace current, "
                             "move scratchpad, scratchpad show"],

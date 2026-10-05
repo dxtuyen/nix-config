@@ -24,17 +24,14 @@
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
-  # ⚠️ UUID lấy từ /etc/nixos của CHÍNH máy này. Sai → /boot không mount →
-  # rebuild chết ở "Failed to install bootloader". Sang máy mới: copy lại file
-  # từ /etc/nixos của máy mới (docs/03 Bước 7.2).
+  # This UUID is specific to this machine. Copy this file from the new system
+  # when installing on another machine (see docs/03).
   fileSystems."/" = {
     device = "/dev/disk/by-uuid/06d0b498-0000-4d08-a97a-56702a562ed2";
     fsType = "ext4";
   };
 
-  # ESP = nvme0n1p1. `fmask/dmask=0077` (chặt hơn 0022 của installer) → file
-  # ghi vào ESP chỉ owner đọc/ghi, tránh cảnh báo "random-seed file is world
-  # accessible" của bootctl.
+  # ESP is nvme0n1p1. Restrict access to owner-only to avoid bootctl warnings.
   fileSystems."/boot" = {
     device = "/dev/disk/by-uuid/80B5-4F15";
     fsType = "vfat";
@@ -44,8 +41,7 @@
     ];
   };
 
-  # Swap = nvme0n1p2, theo NHÃN `/dev/disk/by-label/swap` (mkswap -L swap) thay
-  # vì UUID → khớp `boot.resumeDevice` trong `modules/nixos/laptop.nix`.
+  # Refer to swap by label so it matches boot.resumeDevice in laptop.nix.
   swapDevices = [
     {
       device = "/dev/disk/by-label/swap";

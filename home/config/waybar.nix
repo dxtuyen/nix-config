@@ -1,10 +1,7 @@
 { config, ... }:
 
 let
-  # Bọc MỌI glyph icon (codepoint PUA trong `format-icons`) vào "Font Awesome 7
-  # Free": advance = ink nên icon vừa vừa ngang chữ, vừa căn giữa, đáy trùng
-  # baseline, line-height không tăng. Nerd Font thì hoặc tràn ô, hoặc icon bé.
-  # FA7 Free phủ đủ 19/19 codepoint đang dùng (`fc-list ':charset=<cp>' family`).
+  # Use Font Awesome for consistent icon sizing and alignment.
   faSpan = s: "<span font_family='Font Awesome 7 Free'>${s}</span>";
 in
 
@@ -18,7 +15,7 @@ in
       spacing = 4;
       "modules-left" = [
         "sway/workspaces"
-        # Tiêu đề cửa sổ đang focus.
+        # Focused window title.
         "sway/window"
         "sway/mode"
         "sway/scratchpad"
@@ -71,13 +68,8 @@ in
         tooltip-format-disabled = "Wi-Fi disabled";
       };
       bluetooth = {
-        # Chu viet HOA dau, cach icon bang dau cach thuan - khong boc
-        # <span>: Pango markup CHI cho phep attribute hop le, Waybar se tu
-        # choi ca text (mat luon ca icon). Day la style da tung dung de hanh,
-        # khop voi network/battery dung ben canh.
-        # Rieng format-connected CHI de icon + mau xanh (#bluetooth.connected):
-        # ban cu {device_alias}/{num_connections} qua nhieu thong so, de chi tiet
-        # o tooltip (hover) thay vi kem ten trong thanh.
+        # Keep the status label after the icon as plain text.
+        # Show connected-device details in the tooltip.
         format = faSpan "";
         "format-disabled" = "${faSpan ""} Disabled";
         "format-off" = "${faSpan ""} Off";
@@ -90,7 +82,7 @@ in
         "tooltip-format-enumerate-connected" = "{device_alias}";
         "on-click" = "foot --app-id=bluetui -T Bluetooth bluetui";
       };
-      # 5 workspace ghim sẵn; rỗng thì mờ đi (button.persistent.empty trong CSS).
+      # Keep all five workspaces visible.
       "sway/workspaces" = {
         "disable-scroll" = true;
         "persistent-workspaces" = {
@@ -109,9 +101,7 @@ in
         "on-click" = "~/.local/bin/window-menu";
       };
 
-      # Read-only counter: no on-click. Waybar counts scratchpad windows
-      # that `scratchpad show` cannot usefully bring back, so the icon is a
-      # status hint, not a launcher. $mod+Tab remains the way in.
+      # Read-only scratchpad count; use Mod+Tab to restore windows.
       "sway/scratchpad" = {
         format = "${faSpan "{icon}"} {count}";
         "show-empty" = false;
@@ -133,7 +123,7 @@ in
         "on-click" = "pavucontrol";
       };
       "power-profiles-daemon" = {
-        # CHỈ icon (bỏ chữ profile) cho gọn — rê chuột vẫn thấy tên qua tooltip.
+        # Show the profile name in the tooltip.
         format = faSpan "{icon}";
         tooltip = true;
         "tooltip-format" = "{profile}";
@@ -187,18 +177,17 @@ in
           ""
         ];
       };
-      # Đồng hồ Countdown (engine: home/script/countdown-engine.nix, menu: countdown).
-      # Giữ id module `custom/study` để không phải sửa `modules-center` ở trên.
+      # Countdown status and controls.
       "custom/study" = {
         exec = "~/.local/bin/countdown-engine status";
         signal = 8;
         return-type = "json";
         "on-click" = "~/.local/bin/countdown";
       };
-      # Icon mắt: xanh = phiên chạy, vàng = bật tay, mờ = không chống idle.
+      # Idle-inhibition status.
       "custom/inhibit" = {
         exec = "~/.local/bin/countdown-engine inhibit";
-        # Script in glyph mắt; `escape = true` chỉ escape &<> trong tooltip.
+        # Escape markup in the tooltip.
         format = faSpan "{text}";
         escape = true;
         signal = 7;
@@ -217,17 +206,16 @@ in
       };
     };
     style = ''
-      /* Icon đã bọc span "Font Awesome 7 Free" (xem `faSpan`); font ở đây lo chữ. */
+      /* Use JetBrains Mono for text; icons specify their own font. */
       * { font-family: "JetBrains Mono", "JetBrains Mono Nerd Font Mono", monospace; font-size: 13px; border: none; border-radius: 0; }
 
-      /* Màu phân tầng theo vai trò: pill · stat (@txt) · title window bold ·
-         accent #89b4fa. GTK CSS không có var() nên dùng @define-color. */
-      @define-color pill rgba(30, 30, 46, 0.80);   /* Catppuccin base, 80% opacity */
-      @define-color pill-hover rgba(49, 50, 68, 1);  /* surface0 đục hẳn — nền title không trong suốt */
-      @define-color edge rgba(69, 71, 90, 0.45);     /* surface1, viền mờ */
-      @define-color txt #bac2de;                     /* subtext1 */
-      @define-color txt-strong #cdd6f4;              /* text */
-      @define-color muted #7f849c;                   /* overlay1 */
+      /* Catppuccin colors for pills, text, and accents. */
+      @define-color pill rgba(30, 30, 46, 0.80);   /* Catppuccin base */
+      @define-color pill-hover rgba(49, 50, 68, 1); /* Catppuccin surface0 */
+      @define-color edge rgba(69, 71, 90, 0.45);    /* Catppuccin surface1 */
+      @define-color txt #bac2de;                    /* Catppuccin subtext1 */
+      @define-color txt-strong #cdd6f4;             /* Catppuccin text */
+      @define-color muted #7f849c;                   /* Catppuccin overlay1 */
 
       @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
       window#waybar { background: rgba(0, 0, 0, 0); color: @txt; }
@@ -242,10 +230,9 @@ in
         border-radius: 6px;
       }
       #workspaces button.urgent { color: #f38ba8; border-bottom-color: #f38ba8; }
-      /* workspace rỗng: overlay0, không phải @muted (#7f849c — đó cũng là "tắt").
-         overlay0 = 3.59:1 so @pill (vs @txt 9.90:1) -> số rỗng lùi hẳn, số có cửa sổ nối lên. */
+      /* Dim empty workspaces. */
       #workspaces button.persistent.empty { color: #6c7086; }
-      /* Ô rỗng mà đang focus: giữ nền highlight để biết mình đang đứng ở đâu, chữ chữ vẫn mờ. */
+      /* Keep the focused empty workspace highlighted. */
       #workspaces button.persistent.empty.focused { background-color: rgba(137, 180, 250, 0.16); }
       #window { background: @pill-hover; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: @txt-strong; font-weight: bold; }
       #custom-inhibit, #tray, #mode, #scratchpad,
@@ -273,7 +260,7 @@ in
       #custom-study.paused { color: #fab387; }
       #custom-study.idle { color: @muted; }
       #custom-inhibit.running { color: #89b4fa; }
-      /* Pill chỉ có glyph (14px) thấp hơn pill chữ (18px) → thêm padding dọc. */
+      /* Add vertical padding to the icon-only pill. */
       #custom-inhibit { padding: 2px 10px; margin: 4px 4px 4px 2px; }
       #power-profiles-daemon { padding: 0 4px; }
       #bluetooth.off, #bluetooth.disabled, #bluetooth.no-controller { color: @muted; }

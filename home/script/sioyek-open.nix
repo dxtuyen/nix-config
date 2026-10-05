@@ -6,15 +6,14 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Mở PDF qua sioyek; file đã mở ở workspace khác → kéo về (Wayland cấm
-        # app tự focus, phải để sway kéo — cùng cơ chế dict-toggle).
+        # Reuse an existing Sioyek window for the requested PDF.
         set -u
         JQ="${pkgs.jq}/bin/jq"
         SWAYMSG="${pkgs.sway}/bin/swaymsg"
 
         if [ $# -ge 1 ]; then
           base="$(basename -- "$1")"
-          # jq/swaymsg absolute vì desktop entry chạy với PATH tối thiểu.
+          # Use absolute paths because desktop entries have a limited PATH.
           # Only reuse a window when the filename identifies exactly one.
           # Two PDFs in different directories can share a basename; focusing
           # the first match would silently open the wrong document.

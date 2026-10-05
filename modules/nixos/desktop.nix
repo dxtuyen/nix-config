@@ -17,13 +17,11 @@ in
   programs.sway.enable = true;
   programs.dconf.enable = true;
 
-  # GVFS hỗ trợ tài nguyên từ xa và filesystem ảo cho GIO/Thunar.
+  # Enable remote and virtual filesystems for GIO and Thunar.
   services.gvfs.enable = true;
 
-  # Thunar cho việc đồ hoạ. Không khai trong home.packages để tránh bản
-  # user-level thiếu plugin đè lên package của NixOS module.
-  # `tumbler` = dịch vụ ảnh thu nhỏ. KHÔNG thêm thunar-archive-plugin (kéo cả
-  # GNOME stack) và thunar-volman (mount USB thủ công) — xem docs/02.
+  # Manage Thunar at the system level so its plugins stay available.
+  # Use Tumbler for thumbnails; avoid plugins that pull in extra GNOME services.
   programs.thunar = {
     enable = true;
     plugins = with pkgs; [
@@ -41,7 +39,7 @@ in
   services.greetd = {
     enable = true;
     settings.default_session = {
-      # Điền sẵn username (vẫn hỏi mật khẩu, không auto-login).
+      # Pre-fill the username but still require a password.
       command = "${pkgs.tuigreet}/bin/tuigreet --time --user ${userName} --cmd sway";
       user = "greeter";
     };
@@ -77,12 +75,9 @@ in
   environment.sessionVariables = {
     QT_IM_MODULE = "fcitx";
     XMODIFIERS = "@im=fcitx";
-    # Bắt buộc các app Electron / Chromium chạy native Wayland
+    # Run Electron and Chromium apps natively on Wayland.
     NIXOS_OZONE_WL = "1";
-    # Ép MỌI app GTK dùng hộp chọn file của xdg-desktop-portal → mọi dialog
-    # Open/Save đều là cùng một cửa sổ "xdg-desktop-portal-gtk", nên chỉ cần 1
-    # rule for_window trong home/config/sway.nix là float được hết, không phải
-    # thêm rule riêng cho từng app. GTK4/libadwaita vốn mặc định đã dùng portal.
+    # Route GTK file dialogs through xdg-desktop-portal for consistent Sway rules.
     GTK_USE_PORTAL = "1";
   };
 
@@ -101,49 +96,40 @@ in
     };
   };
 
-  # Hyphenation cho WebKitGTK (foliate justify không lỗ hổng). Chỉ cài
-  # `hyphenDicts` KHÔNG đủ: WebKitGTK hardcode /usr/share/hyphen và
-  # /usr/local/share/hyphen (không tồn tại trên NixOS) → phải trỏ symlink.
-  # Chỉ en_US: thư viện chủ yếu sách tiếng Anh, hyphenDicts không có sẵn tiếng Việt.
+  # WebKitGTK expects dictionaries under /usr/share/hyphen; provide the en_US link.
   systemd.tmpfiles.rules = [
     "L+/usr/share/hyphen - - - - ${pkgs.hyphenDicts.en_US}/share/hyphen"
   ];
 
-  # Dọn thùng rác (script xoá cả file lẫn .trashinfo, giữ 30 ngày gần nhất).
-  # ⚠️ USER timer, KHÔNG phải system timer: `gio trash` cần XDG_RUNTIME_DIR +
-  # DBUS_SESSION_BUS_ADDRESS, system timer thiếu 2 biến này → hỏng im lặng.
+  # Run trash cleanup as a user service so GIO has the desktop environment.
   systemd.user.services.trash-clean = {
-    description = "Dọn thùng rác (giữ 30 ngày gần nhất)";
+    description = "Clean trash older than 30 days";
     serviceConfig.ExecStart = "%h/.local/bin/trash-clean 30";
   };
 
   systemd.user.timers.trash-clean = {
-    description = "Dọn thùng rác lúc 03:00 hằng ngày (xoá mục > 30 ngày)";
-    # `systemd.user.timers` dùng tên option CỦA SYSTEMD GỐC (timerConfig.*),
-    # không phải kiểu rút gọn như `systemd.timers` cấp hệ thống.
+    description = "Clean old trash daily at 03:00";
     unitConfig.After = [ "graphical-session.target" ];
     timerConfig = {
       OnCalendar = "*-*-* 03:00:00";
-      # Máy tắt lúc 3h (hay dùng hibernate) sẽ bỏ qua timer; Persistent = chạy
-      # BÙ lần sau. Timer chạy sau graphical-session.target để có môi trường desktop.
+      # Run missed cleanups after login; GIO needs the graphical session.
       Persistent = true;
     };
     wantedBy = [ "timers.target" ];
   };
 
-  # Tự đổi ảnh nền mỗi 30 phút — ĐÃ TẮT. Bỏ `#` mọi dòng dưới đây + rebuild
-  # + `systemctl --user start wallpaper-rotate.timer`.
+  # Optional wallpaper rotation timer; enable these units to use it.
   # systemd.user.services.wallpaper-rotate = {
-  #   description = "Đổi ảnh nền ngẫu nhiên (auto-rotate)";
+  #   description = "Rotate wallpaper";
   #   serviceConfig = {
   #     Type = "oneshot";
   #     ExecStart = "%h/.local/bin/wallpaper-set";
   #   };
   # };
   # systemd.user.timers.wallpaper-rotate = {
-  #   description = "Đổi ảnh nền 30 phút kể từ lần đổi trước";
+  #   description = "Rotate wallpaper every 30 minutes";
   #   timerConfig = { OnActiveSec = "30min"; AccuracySec = "1min"; };
-  #   # KHÔNG wantedBy → không tự bật khi đăng nhập, phải start tay 1 lần.
+  #   # No wantedBy: start the timer manually.
   # };
 
   systemd.user.services.fcitx5-daemon = {

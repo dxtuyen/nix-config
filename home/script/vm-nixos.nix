@@ -6,10 +6,7 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # vm-nixos — chạy VM luyện tập cài NixOS (docs/06-Luyen-Tap-VM.md)
-        #   vm-nixos         boot từ đĩa đã cài (mặc định)
-        #   vm-nixos iso     boot từ ISO để cài mới
-        #   VM_DIR=~/VMs     đổi thư mục chứa iso/ nếu muốn
+        # Boot the NixOS training VM from disk (default) or an ISO.
         set -euo pipefail
 
         DIR="''${VM_DIR:-$HOME/VMs}"
@@ -20,21 +17,20 @@
         case "$MODE" in
           iso|install) MODE=iso ;;
           disk|boot)   MODE=disk ;;
-          *) echo "Dùng: vm-nixos [iso|disk]" >&2; exit 1 ;;
+          *) echo "Usage: vm-nixos [iso|disk]" >&2; exit 1 ;;
         esac
 
         [ -f "$DISK" ] || {
-          echo "Không thấy đĩa $DISK" >&2
-          echo "Tạo bằng: qemu-img create -f qcow2 \"$DISK\" 30G" >&2
+          echo "Disk not found: $DISK" >&2
+          echo "Create it with: qemu-img create -f qcow2 \"$DISK\" 30G" >&2
           exit 1
         }
         if [ "$MODE" = iso ] && [ -z "$ISO" ]; then
-          echo "Không thấy ISO trong $DIR/iso — xem docs/06-Luyen-Tap-VM.md Bước 1" >&2
+          echo "No ISO found in $DIR/iso; see docs/06-Luyen-Tap-VM.md." >&2
           exit 1
         fi
 
-        # Firmware UEFI nội suy lúc BUILD từ pkgs.OVMF → offline, pin theo
-        # flake.lock.
+        # Resolve the pinned UEFI firmware at build time.
         OVMF_CODE="${pkgs.OVMF.firmware}"
 
         ARGS=(

@@ -1,6 +1,6 @@
 { pkgs, ... }:
 
-# Gói user: nixos-unstable (pinned trong flake.lock). TickTick dùng bản web/PWA (xem docs/02).
+# User packages from the nixos-unstable revision pinned in flake.lock.
 {
 
   home.packages = with pkgs; [
@@ -12,36 +12,34 @@
     wl-clipboard
     swaylock
     swayidle
-    awww # daemon wallpaper (fork của swww) — transition hoạt ảnh, đổi nền runtime
+    awww # Wallpaper daemon with animated transitions.
     libnotify
     pavucontrol
     brightnessctl
     translate-shell
     goldendict-ng
-    wifitui # TUI quản lý Wi-Fi hiện đại (hỗ trợ bật/tắt radio, fuzzy search, QR code)
+    wifitui # Wi-Fi management TUI.
 
     bluetui
     google-chrome
-    # Sách: foliate đọc epub/mobi/azw3/fb2/cbz/opds (typography tốt hơn calibre
-    # đã gỡ; thư viện ở ~/Books/{Textbooks,Reading}).
+    # E-book reader.
     foliate
-    imv # xem ảnh (nhẹ, có zoom/timeline)
-    mpv # xem video/nhạc
-    ripgrep # tìm nội dung nhanh (thay grep)
-    fd # tìm file nhanh (thay find)
-    dust # xem dung lượng dạng thanh bar (bản nixpkgs tên là du-dust)
-    ncdu # TUI xem + di chuyển/xóa file theo dung lượng
+    imv # Image viewer.
+    mpv # Media player.
+    ripgrep # Fast text search.
+    fd # Fast file search.
+    dust # Disk usage charts.
+    ncdu # Interactive disk usage browser.
     sioyek
     obsidian
-    # Zotero: TẠM GỠ — bản 10.0.2 trong nixpkgs (rev c59305ba) build hỏng:
+    # Zotero is temporarily disabled because the pinned package fails to build:
     #   AboutTranslations: ... not found in modules/ActorManagerParent.sys.mjs -- aborting
-    # Bản 10.0.4 đã có trên nixpkgs master (chỉ khác version + src.hash) →
-    # bật lại dòng dưới sau khi `nix flake update nixpkgs`.
-    #qzotero # quản lý tài liệu tham khảo — thư viện mặc định ở ~/Zotero
+    # Re-enable after updating nixpkgs to a working version.
+    #qzotero # Reference manager.
     jq
     fastfetch
     libreoffice
-    # Dev: thư viện để per-project (venv / `nix develop`), không cài global.
+    # Development tools.
     vscode
     python3
     python3Packages.virtualenv
@@ -51,8 +49,8 @@
     gdb
     jdk
     distrobox
-    gh # GitHub CLI — tạo/xem PR, issue, release từ terminal
-    # Máy ảo — luyện cài máy mới (docs/06).
+    gh # GitHub CLI.
+    # Virtual machine tools.
     qemu_kvm
     qemu-utils
     OVMF

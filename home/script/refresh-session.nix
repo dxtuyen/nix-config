@@ -6,7 +6,7 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Áp lại mode Display ĐÃ LƯU (warm/cool/natural) thay vì hardcode Natural.
+        # Restore the saved display mode.
         "$HOME/.local/bin/wlsunset-apply"
         # Wallpaper stays on reload (the awww daemon keeps showing it); sway
         # re-reads the wallust color include -> syncs the palette if missing.

@@ -1,12 +1,6 @@
 { config, pkgs, ... }:
 
-# window-menu — one engine, three lists:
-#   $mod+Tab       -> window-menu --away       (away: hidden scratchpad + popups on other workspaces)
-#   $mod+Shift+Tab -> window-menu              (every window that still exists)
-#   waybar click   -> window-menu              (sway/window title, same list)
-# In --away and --scratchpad the just-stashed window comes FIRST (MRU block
-# below), matching $mod+equal, which also brings back the newest one, not the
-# oldest.
+# Window lists for Mod+Tab, Mod+Shift+Tab, and the Waybar title.
 let
   iconSizes = [
     "16x16"
@@ -51,19 +45,7 @@ in
       if not swaymsg:
           sys.exit("window-menu: swaymsg is not in PATH")
 
-      # window-menu [--away | --scratchpad | --normal]
-      #   default:      every window that still exists (hidden scratchpad excluded).
-      #   --away:       what is NOT in front of you -> hidden scratchpad + popups
-      #                 sitting on another workspace. -> $mod+Tab
-      #   --normal:     regular tiled windows only (no scratchpad, no popup).
-      #                 -> $mod+Shift+Tab
-      #   --scratchpad: hidden scratchpad only. Unused by the keybindings on
-      #                 purpose: Waybar counts scratchpad windows that
-      #                 `scratchpad show` cannot usefully bring back, so the
-      #                 icon is read-only. Kept for ad-hoc/script use.
-      # No window shows up twice because of its hidden state. A popup living on
-      # another workspace is deliberately in both --away and default: there it
-      # means two different things (summon it vs. jump to it).
+      # Modes: --away, --normal, or --scratchpad. Default lists all visible windows.
       stashed_only = "--scratchpad" in sys.argv[1:]
       away_only = "--away" in sys.argv[1:]
       normal_only = "--normal" in sys.argv[1:]
@@ -73,7 +55,7 @@ in
           [swaymsg, "-t", "get_tree"], check=True, capture_output=True, text=True
       ).stdout)
 
-      # The focused workspace is needed by --away BEFORE the list gets built.
+      # The away list needs the focused workspace.
       try:
           workspaces = json.loads(subprocess.run(
               [swaymsg, "-t", "get_workspaces"], check=True,
@@ -83,19 +65,12 @@ in
           current_ws = None
 
       def stashed(window):
-          """True = in the scratchpad AND not on screen here: exactly what
-          $mod+equal (popup-restore) can bring back. Used both to build the list
-          and, at the end, to decide whether Enter runs `scratchpad show`."""
+          """Return whether the window is hidden in the scratchpad."""
           return (window.get("scratchpad_state") not in (None, "none")
                   and not window.get("visible"))
 
       def collect_windows(node, ws=None):
-          # Track the ancestor workspace (hidden windows live under __i3_scratch).
-          # hidden       = in the scratchpad AND not on screen here.
-          # default      = !hidden (tiled windows on other workspaces included).
-          # --away       = hidden, or a popup sitting on another workspace.
-          #                Popups already visible here stay out: they are on screen.
-          # --scratchpad = hidden only.
+          # Track workspace ancestry; hidden windows live under __i3_scratch.
           #
           # Stashed must match popup-restore exactly (`in scratchpad and not
           # visible`), or the two disagree about what can be summoned. Comparing
@@ -111,7 +86,6 @@ in
               state = node.get("scratchpad_state")
               in_scratch = state not in (None, "none")
               floating = node_type == "floating_con"
-              # Same predicate as popup-restore: what $mod+equal can bring back.
               hidden = stashed(node)
               elsewhere = (
                   floating and ws is not None
@@ -121,9 +95,7 @@ in
                   if hidden:
                       yield (node, ws)
               elif normal_only:
-                  # Regular tiled windows only: no scratchpad members at all
-                  # (not even fresh/changed ones) and no popups. Those two have
-                  # their own keys, so this list stays a plain window list.
+                  # Keep this list limited to regular tiled windows.
                   if not in_scratch and not floating:
                       yield (node, ws)
               elif away_only:
@@ -137,13 +109,7 @@ in
 
       found = list(collect_windows(tree))
 
-      # MRU-first for the two lists that actually contain stashed rows.
-      # Sway's get_tree lists __i3_scratch floating_nodes oldest-stashed first
-      # (root->scratchpad is maintained with list_move_to_end on every hide), so
-      # collect_windows() yields them bottom-to-top in time. Reverse that group
-      # to put the window you JUST stashed at the top of the menu; popups on
-      # other workspaces keep their original order below it.
-      # default/--normal exclude stashed rows entirely, so they are untouched.
+      # Show the most recently stashed window first.
       if away_only or stashed_only:
           found = sorted(
               enumerate(found),
@@ -173,10 +139,7 @@ in
                   icon_dirs.append(Path(data_dir) / "icons" / "hicolor" / size / "apps")
               icon_dirs.append(Path(data_dir) / "pixmaps")
 
-      # This index is shared by all window-menu invocations. Building it means
-      # enumerating every icon and parsing every desktop file, which is wasted
-      # work on each Mod+Tab. Directory mtimes cheaply invalidate it when apps
-      # or icons are installed/removed.
+      # Cache icon and desktop-entry lookups; directory metadata invalidates it.
       cache_file = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "window-menu" / "index.json"
       index_dirs = list(dict.fromkeys(icon_dirs + desktop_dirs))
       directory_state = []
@@ -257,13 +220,7 @@ in
       pwa_id = re.compile(r"^(?:chrome|chromium)-[a-z0-9_-]{16,}(?:-[a-z0-9 _-]+)?$", re.I)
 
       def away_mark(window):
-          """Row prefix for --away, the one list that mixes two kinds of window.
-          Down-arrow = stashed in the scratchpad, right-arrow = popup sitting on
-          another workspace. Only that list needs it: --normal is all tiled
-          windows and --scratchpad is all stashed ones, so a mark there would be
-          noise. A window that is both (a scratchpad popup shown elsewhere) gets
-          the scratchpad mark, because that is the list where Enter runs
-          `scratchpad show` rather than moving it."""
+          """Prefix away-list rows by their location."""
           if stashed(window):
               return "⤓ "
           if window.get("type") == "floating_con":
@@ -288,9 +245,7 @@ in
           icon_path = entry.get("icon")
           if not icon_path:
               icon_path = icon_files.get(app_id.casefold()) or icon_files.get(wm_class.casefold())
-          # Mark goes into the displayed row only, never into `label`: the
-          # duplicate counter below groups by label, so a mark must not split
-          # two same-named windows into separate groups.
+          # Keep location marks out of labels so duplicate windows still group.
           row = ((away_mark(window) if away_only else "") + label).encode("utf-8")
           if icon_path and Path(icon_path).is_file():
               row += b"\0icon\x1f" + str(icon_path).encode("utf-8")
@@ -302,7 +257,7 @@ in
       for label in labels:
           counts[label] = counts.get(label, 0) + 1
 
-      # Number duplicate labels only (number at the end, after the icon).
+      # Add an index to duplicate labels.
       rows = []
       for index, (label, row) in enumerate(rendered, start=1):
           if counts[label] > 1:
@@ -310,24 +265,23 @@ in
               row = label_bytes + f" ({index})".encode("utf-8") + (separator + icon if separator else b"")
           rows.append(row)
 
-      # Hand-built list (keeps con_id for kill; `rofi -show window` can't inject prefixes).
-      # Serves three keys, see sway.nix. Exact substring match, list order kept.
+      # Build the list directly to preserve container IDs and row prefixes.
       choice = subprocess.run(
           [
               "${pkgs.rofi}/bin/rofi", "-dmenu", "-i", "-matching", "normal",
               "-no-sort", "-no-custom", "-show-icons", "-format", "i",
               "-p", ("Scratchpad" if stashed_only else "Away" if away_only else "Windows"),
-              # Shift+Delete = close (must unset kb-delete-entry first or rofi errors).
+              # Shift+Delete closes the selected window.
               "-kb-delete-entry", "",
               "-kb-custom-1", "Shift+Delete",
-              # Shift+Enter = pull here (must unset kb-accept-alt first; rofi exits 11).
+              # Shift+Enter moves the selected window here.
               "-kb-accept-alt", "",
               "-kb-custom-2", "Shift+Return",
               "-mesg",
-              # --away: everything listed is away, so Enter only ever summons.
+              # Show key hints for the selected list mode.
               ("Enter: show on this workspace · Shift+Delete: close this window"
                if stashed_only else
-               "⤓ = trong scratchpad · → = ố workspace khác · "
+               "⤓ = scratchpad · → = other workspace · "
                "Enter: bring here · Shift+Delete: close"
                if away_only else
                "Enter: jump to window · Shift+Enter: pull here · Shift+Delete: close"),
@@ -336,35 +290,29 @@ in
           capture_output=True,
           check=False,
       )
-      # rofi: 0 = Enter, 10 = custom-1 (Shift+Delete = kill),
-      # 11 = custom-2 (Shift+Enter = pull here), 1 = cancel.
+      # Rofi exit codes: 0 = Enter, 10 = close, 11 = move here.
       if choice.returncode not in (0, 10, 11):
           sys.exit(0)
       try:
           window = windows[int(choice.stdout.strip())]
       except (ValueError, IndexError):
-          sys.exit(0)  # -no-custom: no row matched -> treat as cancel
+          sys.exit(0)  # Treat an unmatched query as cancel.
 
       if choice.returncode == 10:
           subprocess.run([swaymsg, f"[con_id={window['id']}] kill"],
                          check=False)
-          # Rebuild the same filtered list after the kill. If it is now empty,
-          # the silent after-kill path above exits and lets Rofi stay closed.
+          # Reopen the filtered list after closing a window.
           os.execv(sys.executable, [
               sys.executable, __file__, *sys.argv[1:], "--after-kill",
           ])
 
-      # current_ws was resolved before the list was built (--away needs it).
+      # Reuse the focused workspace captured above.
       SCRATCH_WS = "__i3_scratch"
 
       def enter_command(con_id, ws_of, ws_current, stashed=False, pull=False):
-          """Enter command for one menu row (pure -> unit-testable):
-          stashed ("hidden") -> scratchpad show; --away (summon list) on another
-          ws -> move here + focus; Shift+Enter on another ws -> move here + focus;
-          plain Enter on a normal row -> focus only, never moves."""
+          """Build the focus or move command for a selected row."""
           criteria = f"[con_id={con_id}]"
-          # Only a truly stashed window takes the scratchpad path: `scratchpad show`
-          # TOGGLES, so sending it to a window already on screen would HIDE it.
+          # `scratchpad show` toggles, so use it only for hidden windows.
           if stashed or ws_of == SCRATCH_WS:
               return [f"{criteria} scratchpad show"]
           want_pull = pull or stashed_only or away_only
@@ -377,8 +325,7 @@ in
           return [f"{criteria} focus"]
 
       pull_here = choice.returncode == 11
-      # Must mirror the `hidden` test used to build the list, otherwise a row can
-      # be offered as stashed and then focused instead of summoned.
+      # Use the same hidden-window test as the list builder.
       is_stashed = stashed(window)
       for command in enter_command(
               window["id"], window_ws.get(window["id"]), current_ws,

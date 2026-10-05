@@ -1,21 +1,21 @@
 { ... }:
 
 {
-  # Diệt tiến trình ngốn RAM trước khi desktop treo (ngưỡng còn 5% RAM).
+  # Kill memory-heavy processes before the desktop runs out of memory.
   services.earlyoom = {
     enable = true;
     freeMemThreshold = 5;
     enableNotifications = true;
   };
-  # Dùng earlyoom làm cơ chế OOM chính để tránh chạy đồng thời hai daemon.
+  # Use earlyoom as the sole out-of-memory manager.
   systemd.oomd.enable = false;
 
-  # TRIM hàng tuần cho SSD/NVMe.
+  # Run weekly TRIM on SSDs and NVMe drives.
   services.fstrim = {
     enable = true;
     interval = "weekly";
   };
 
-  # Chạy binary biên dịch sẵn (VS Code server, JetBrains...) không cần patch.
+  # Run prebuilt binaries such as VS Code Server and JetBrains tools.
   programs.nix-ld.enable = true;
 }

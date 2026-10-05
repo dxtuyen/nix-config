@@ -1,7 +1,6 @@
 { inputs, userName, ... }:
 
-# Điểm nhập chính của Home Manager cho user — mọi module trong home/ import ở đây.
-# Hệ thống chạy nixos-unstable nên các module lấy gói trực tiếp từ `pkgs`.
+# Main Home Manager entry point for this user.
 
 {
   home = {
@@ -10,15 +9,15 @@
     stateVersion = "26.05";
   };
 
-  # XDG base directories + user directories chuẩn.
+  # Standard XDG directories.
   xdg = {
     enable = true;
     userDirs = {
       enable = true;
-      createDirectories = true; # Tự động tạo thư mục khi switch / cài máy mới
-      # null = không quản lý (không tạo, không có trong user-dirs.dirs).
-      templates = null; # ~/Templates — không dùng
-      projects = null; # ~/Projects — không dùng
+      createDirectories = true;
+      # null disables management of the directory.
+      templates = null;
+      projects = null;
     };
   };
 
@@ -31,10 +30,10 @@
 
   programs.home-manager.enable = true;
 
-  # Tích hợp shell qua Home-Manager module (tự hook vào bash).
+  # Configure shell integrations through Home Manager.
   programs.direnv = {
     enable = true;
-    nix-direnv.enable = true; # Cache nix-shell/flake environment, vào thư mục dev tức thì
+    nix-direnv.enable = true; # Cache development environments.
   };
 
   programs.zoxide = {
@@ -42,20 +41,20 @@
     enableBashIntegration = true;
   };
 
-  # CLI fzf độc lập cho terminal; HM cũng bật Ctrl-R tìm lịch sử Bash.
+  # Enable fzf and Bash history search.
   programs.fzf = {
     enable = true;
     enableBashIntegration = true;
   };
 
-  # Nơi duy nhất thêm ~/.local/bin vào PATH + tạo ~/.bashrc.
+  # Add user scripts to PATH and configure Bash.
   programs.bash = {
     enable = true;
     shellAliases.nswitch = ''cd "$HOME/nix-config" && sudo nixos-rebuild switch --flake ".#$(hostname -s)"'';
     initExtra = ''
       export PATH="$HOME/.local/bin:$PATH"
 
-      # Foot dùng OSC 7 để mở terminal mới tại thư mục hiện tại; OSC 2 đặt title.
+      # OSC 7 sets the working directory; OSC 2 sets the terminal title.
       __foot_escape_uri_path() {
         local LC_ALL=C
         local path="$1" escaped="" char hex
@@ -71,7 +70,7 @@
       }
 
       __set_window_title() {
-        # Tách 2 bước để né tilde expansion (title hiện full path).
+        # Set the terminal title and working-directory metadata.
         local dir="''${PWD/#$HOME/}"
         printf '\033]2;~%s\007' "$dir"
         __foot_escape_uri_path "$PWD"
@@ -79,7 +78,7 @@
       }
       PROMPT_COMMAND="__set_window_title''${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
 
-      # nt: cùng project → tmux window mới; ngoài tmux → cửa sổ Foot mới.
+      # Open a new tmux window or Foot terminal in the current directory.
       nt() {
         if [ -n "''${TMUX:-}" ]; then
           tmux new-window -c "$PWD"
@@ -89,11 +88,8 @@
         fi
       }
 
-      # y: mở yazi, thoát ra (`q`) thì shell cd theo thư mục cuối cùng đứng trong
-      # yazi (yazi ghi nó vào --cwd-file). Bổ sung cho phím `b`/`B` trong yazi —
-      # chúng đi hướng NGƯỢC (yazi → shell), còn hàm này đi hướng shell → yazi →
-      # shell. Cố ý viết thủ công thay vì `programs.yazi.enableBashIntegration`:
-      # module đó kéo theo finalPackage override (xem home/apps/yazi.nix).
+      # Open Yazi and change to its last directory on exit.
+      # Kept custom to avoid Home Manager's Yazi package override.
       function y() {
         local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
         yazi "$@" --cwd-file="$tmp"

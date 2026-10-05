@@ -16,7 +16,6 @@
     ./sioyek-open.nix
     ./sioyek.nix
     ./toggle-touchpad.nix
-    ./bar-toggle.nix
     ./utilities.nix
     ./wlsunset-apply.nix
     ./wlsunset-menu.nix
@@ -32,7 +31,6 @@
     ./window-menu.nix
     ./scratchpad-terminal.nix
     ./popup-restore.nix
-    ./app-id-check.nix
   ];
 
 }

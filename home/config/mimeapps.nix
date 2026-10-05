@@ -1,12 +1,8 @@
-# Ứng dụng mặc định theo loại file — dùng khi double-click trong Thunar hoặc
-# khi `xdg-open` / yazi gọi tới.
-#
-# `enable = true` là BẮT BUỘC (mặc định `false`) — quên bật thì toàn bộ
-# `defaultApplications` bị bỏ qua im lặng.
+# Default applications for Thunar, xdg-open, and Yazi.
 { pkgs, lib, ... }:
 
 let
-  # MIME mà nvim nhận. Mỗi MIME một dòng để không lỡ tay thêm space.
+  # MIME types handled by Neovim.
   nvimMimeTypes = [
     "text/plain"
     "text/x-makefile"
@@ -24,8 +20,7 @@ let
     "text/x-c++"
   ];
 
-  # List phải là 1 dòng, phân tách bằng `;` TRẦN: spec không trim, nên "a; b"
-  # sinh MIME " b" (sai) và update-desktop-database bỏ chỉ mục.
+  # Do not add spaces after semicolons; MIME list parsing does not trim them.
   sepMime = lib.concatStringsSep ";";
 in
 
@@ -34,29 +29,27 @@ in
     enable = true;
 
     defaultApplications = {
-      # Tài liệu
+      # Documents
       "application/pdf" = "sioyek.desktop";
 
-      # Sách điện tử → foliate (WebKitGTK, typography tốt nhất).
-      # Thư viện: ~/Books/Textbooks (PDF) + ~/Books/Reading (epub/azw3).
+      # E-books
       "application/epub+zip" = "com.github.johnfactotum.Foliate.desktop";
       "application/x-mobipocket-ebook" = "com.github.johnfactotum.Foliate.desktop";
       "application/vnd.amazon.mobi8-ebook" = "com.github.johnfactotum.Foliate.desktop";
       "application/x-fictionbook+xml" = "com.github.johnfactotum.Foliate.desktop";
       "application/x-zip-compressed-fb2" = "com.github.johnfactotum.Foliate.desktop";
-      # Comic/manga
+      # Comics and manga
       "application/vnd.comicbook+zip" = "com.github.johnfactotum.Foliate.desktop";
-      # Đọc sách trực tiếp từ feed OPDS
+      # OPDS feeds
       "x-scheme-handler/opds" = "com.github.johnfactotum.Foliate.desktop";
-      # KHÔNG khai .lrf: foliate không hỗ trợ, calibre đã gỡ. Trỏ tới app không
-      # tồn tại thì double-click báo lỗi khó hiểu hơn là để trống.
+      # Foliate does not support .lrf; leave it unassigned.
 
-      # Văn phòng
+      # Office documents
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = "writer.desktop";
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" = "calc.desktop";
       "application/vnd.openxmlformats-officedocument.presentationml.presentation" = "impress.desktop";
 
-      # Web: ưu tiên Chrome cho mọi link + file html/xhtml
+      # Open web links and HTML files in Chrome.
       "text/html" = "google-chrome.desktop";
       "application/xhtml+xml" = "google-chrome.desktop";
       "x-scheme-handler/http" = "google-chrome.desktop";
@@ -64,12 +57,10 @@ in
       "x-scheme-handler/about" = "google-chrome.desktop";
       "x-scheme-handler/unknown" = "google-chrome.desktop";
 
-      # File text: mở thẳng bằng nvim trong terminal (entry `nvim.desktop`)
+      # Open text files in Neovim inside Foot.
       "text/plain" = "nvim.desktop";
 
-      # Ảnh → imv. Liệt kê TAY: imv có 2 entry cùng khai MimeType (`imv-dir`
-      # mở THƯ MỤC ảnh), mà merge `defaultApplicationPackages` luôn APPEND
-      # → imv-dir đứng đầu, double-click 1 ảnh ra cả thư mục.
+      # List image types explicitly so imv opens files instead of its directory view.
       "image/x-farbfeld" = "imv.desktop";
       "image/tiff" = "imv.desktop";
       "image/tiff-fx" = "imv.desktop";
@@ -89,15 +80,13 @@ in
       "image/qoi" = "imv.desktop";
     };
 
-    # Video + audio: mpv tự khai ~130 mime trong .desktop nên để quét giúp
-    # (đúng khi mpv đổi danh sách). Không dính vấn đề entry trùng như imv.
+    # Let mpv provide its video and audio MIME types.
     defaultApplicationPackages = with pkgs; [
       mpv
     ];
   };
 
-  # Entry Neovim mở trong Foot (không qua exo helper như Thunar).
-  # KHÔNG dùng `mimeType` (option đã bị xoá ở HM 26.05) — dùng `settings`.
+  # Desktop entry for Neovim inside Foot.
   xdg.desktopEntries.nvim = {
     name = "Neovim";
     comment = "Open in neovim inside foot";
@@ -105,8 +94,7 @@ in
     exec = "foot --title=nvim nvim %F";
     terminal = false;
     type = "Application";
-    # Chỉ 1 main category (Utility); `TextEditor` là additional nên đi kèm hợp lệ,
-    # `Development` thì không (cũng là main → app hiện 2 lần trong menu).
+    # Use one main category and one additional category to avoid duplicate entries.
     categories = [
       "Utility"
       "TextEditor"

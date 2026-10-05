@@ -6,8 +6,7 @@
 }:
 
 {
-  # gc hàng tuần: xóa generation cũ hơn 7 ngày. Xem lần chạy gần nhất:
-  # journalctl -u nix-gc.service. Xóa tay: sudo nix-collect-garbage -d.
+  # Run garbage collection weekly and keep the last seven days.
   nix = {
     settings.experimental-features = [
       "nix-command"
@@ -24,25 +23,25 @@
 
   boot.loader.systemd-boot = {
     enable = true;
-    # Giữ tối đa 10 entry trong menu boot.
+    # Keep at most 10 boot entries.
     configurationLimit = 10;
   };
   boot.loader.efi.canTouchEfiVariables = true;
   networking = {
     networkmanager = {
       enable = true;
-      # systemd-resolved có cache + fallback DNS khi DNS router lỗi.
+      # Use systemd-resolved for DNS caching and fallback.
       dns = "systemd-resolved";
     };
     firewall.enable = true;
   };
   services.resolved.enable = true;
-  # Laptop một người dùng: nscd không cần thiết và có thể gây cache NSS cũ.
+  # Disable nscd to avoid stale NSS cache entries.
   services.nscd.enable = false;
   system.nssModules = lib.mkForce [ ];
   programs.nh = {
     enable = true;
-    # `nh os switch` tự biết flake mặc định.
+    # nh uses this flake by default.
     flake = "/home/${userName}/nix-config";
   };
 
@@ -61,10 +60,10 @@
     ];
   };
 
-  # ssh-agent giữ passphrase SSH trong phiên đăng nhập (docs/03 Bước 10).
+  # Keep SSH keys unlocked for the login session (see docs/03).
   programs.ssh.startAgent = true;
 
-  # Gói dùng chung cho mọi máy import core.nix.
+  # Shared packages for systems importing core.nix.
   environment.systemPackages = with pkgs; [
     git
     curl
@@ -72,6 +71,6 @@
     unzip
     zip
     htop
-    file # xem nhanh định dạng file
+    file # Inspect file types.
   ];
 }

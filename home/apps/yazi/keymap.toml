@@ -1,49 +1,13 @@
-# Keymap Yazi — CỐ Ý CHỈ KHAI PHẦN CẦN THIẾT.
-#
-# ⚠️ Yazi tự merge file này với preset mặc định. `prepend_keymap` được chèn
-# TRƯỚC preset nên phím khai ở đây thắng phím mặc định cùng tên; nếu dùng
-# khoá `keymap` (không prepend/append) thì sẽ XOÁ SẠCH toàn bộ phím tắt
-# mặc định — tránh.
-#
-# Dùng kiểu MẢNG `[mgr] prepend_keymap = [...]` (không phải `[[mgr.prepend_keymap]]`):
-# plugin `recycle-bin` cảnh báo TOML không cho trộn 2 kiểu trong cùng 1 file, và
-# kiểu mảng gọn hơn khi có nhiều binding.
-#
-# Đã đối chiếu preset `keymap-default.toml` + `yazi-default.toml` của yazi
-# 26.9.1 (đọc trực tiếp từ GitHub, không đoán).
+# Minimal keybinding overrides. Yazi merges these with its defaults.
+# prepend_keymap keeps the default keybindings available.
 
 [mgr]
 prepend_keymap = [
-  # ⭐ SỬA LỖI: bấm <Enter> lên THƯ MỤC thì mở nvim, không vào thư mục.
-  #
-  # Nguyên nhân (2 mảnh ghép, đều là mặc định của yazi + config cũ của ta):
-  #   1. preset `[open] rules` dòng 72 khai thư mục là
-  #        { mime = "folder/*", use = [ "edit", "open", "reveal" ] }
-  #      → "edit" ĐỨNG ĐẦU, nên <Enter> (run = "open") sẽ mở thư mục bằng edit.
-  #   2. `yazi.toml` ghi đè `[opener] edit` thành `foot … nvim %s`.
-  # Ghép lại → Enter vào folder = mở nvim. Rất khó chịu khi chủ yếu DỆT file.
-  #
-  # Cách sửa: <Enter> dùng smart-enter, nó tự rẽ nhánh theo loại mục —
-  #   thư mục → `enter` (đi vào, KHÔNG đụng bảng `use`)
-  #   file     → `open`  (mở app theo mime, giữ nguyên hành vi cũ)
-  # nên giữ nguyên thói quen bấm <Enter> để mở file.
+  # Enter directories and open files with their default applications.
   { on = "<Enter>", run = "plugin smart-enter", desc = "Enter the child directory, or open the file" },
 
   { on = "B", run = 'shell --orphan "foot --title=term -D \"$PWD\""', desc = "Open a new terminal" },
   { on = "b", run = 'shell --block "$SHELL"', desc = "Open a shell here (in Yazi's window)" },
 ]
 
-# ⚠️ CỐ Ý KHÔNG gắn smart-enter vào phím `l`.
-# `l` mặc định của yazi = `enter` → chỉ đi vào thư mục con, đúng như trước.
-# Gắn plugin vào `l` sẽ làm `l` MỞ FILE, không mong muốn.
-# Còn `<Right>` cũng là `enter` — dùng khi cần.
-#
-# Phím thùng rác: `g t` là phím CỦA PRESET yazi 26.9.1 (đã đọc trực tiếp file
-# `keymap-default.toml` của bản này: `{ on = ["g","t"], run = "plugin trash",
-# desc = "Go to trash bin" }`), cùng nhóm với `g h`/`g c`/`g d`/`g f`.
-# KHÔNG khai lại ở đây — khai trùng chỉ là thừa.
-#
-# Xoá mềm / xoá hẳn DÙNG SẴN của yazi, không cần khai: `d` vào thùng rác,
-# `D` xoá vĩnh viễn. Bên trong thùng rác thì dùng `D` — nó xoá sạch cả file
-# lẫn `.trashinfo` (bản cũ 26.5.6 để lại .trashinfo mồ côi, 26.9.1 đã sửa).
-
+# Keep the default `l`, `Right`, trash, and delete keybindings unchanged.

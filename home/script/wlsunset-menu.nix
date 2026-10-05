@@ -70,8 +70,7 @@
           exit 0
         fi
 
-        # Đổi mode + LƯU lại (~/.local/state/wlsunset-mode) để còn nguyên sau khi
-        # tắt/mở máy — wlsunset-apply giữ args (nguồn duy nhất) + khởi động lại.
+        # Save the selected mode and restart wlsunset.
         "$HOME/.local/bin/wlsunset-apply" "$next_mode"
         notify-send -a wlsunset -i "$icon" -t 2000 "Display" "$label"
       '';

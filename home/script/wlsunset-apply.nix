@@ -6,13 +6,8 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # wlsunset-apply [warm|white|natural] — khởi động wlsunset với mode đã chọn.
-        #   có đối số  → dùng mode đó và GHI vào state (lựa chọn của user)
-        #   không có    → đọc state đã lưu; thiếu / sai giá trị → natural
-        # State: ~/.local/state/wlsunset-mode — sống qua tắt/mở máy, nên menu
-        # Display (☀ → warm/cool/natural) không bị reset về Natural mỗi lần
-        # đăng nhập. Args định nghĩa DUY NHẤT ở đây; sway.nix, refresh-session
-        # và wlsunset-menu chỉ gọi script này.
+        # Apply a display mode and save explicit user selections.
+        # Without an argument, restore the saved mode or use natural.
         set -u
 
         STATE="$HOME/.local/state/wlsunset-mode"
@@ -32,8 +27,7 @@
           *)       mode="natural"; args="-t 4000 -T 6500" ;;
         esac
 
-        # Chỉ ghi state khi user chọn tường minh — state = lựa chọn cuối cùng.
-        # Gọi không đối số (lúc login / refresh) chỉ đọc, không đè.
+        # Only save the mode when explicitly requested.
         if [ -n "$requested" ]; then
           mkdir -p "''${STATE%/*}"
           printf '%s\n' "$mode" > "$STATE"
@@ -44,7 +38,7 @@
           pgrep -x wlsunset >/dev/null || break
           sleep 0.05
         done
-        # shellcheck disable=SC2086
+        # shellcheck disable=SC2086: expand the selected argument string.
         ${pkgs.wlsunset}/bin/wlsunset $args -l 21.0 -L 105.8 >/dev/null 2>&1 &
       '';
     };

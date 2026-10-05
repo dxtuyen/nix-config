@@ -1,22 +1,12 @@
-# Cấu hình Yazi — CỐ Ý TỐI GIẢN. Yazi tự merge với config mặc định nên chỉ
-# khai cái thật sự cần. Đã đối chiếu với preset yazi 26.9.1 (tag `v26.9.1` trên GitHub;
-# bản đang cài xem bằng `yazi -V`). Sai khoá → yazi báo lỗi rồi RƠI VỀ TOÀN BỘ preset.
-#
-# Phím tắt nằm ở `keymap.toml` (cùng thư mục) — tách riêng vì Home-Manager chỉ
-# sinh `keymap.toml` khi option có nội dung, còn `yazi.toml` luôn được tạo.
+# Minimal Yazi configuration; unspecified options use the defaults.
 
 [opener]
-# `%s` = đường dẫn file, bắt buộc có.
-# ⚠️ `orphan = true` bắt buộc: yazi dùng `kill_on_drop(!orphan)` nên thiếu nó
-# thì đóng yazi (`q`) là SIGKILL luôn cửa sổ nvim vừa mở.
+# Keep the editor open after Yazi exits.
 edit = [
 { run = 'foot --title=nvim nvim %s', for = "unix", orphan = true, desc = "Edit" },
 ]
 
-# ⚠️ `orphan = true` bắt buộc cho `open` (và `reveal`): preset Linux của yazi
-# 26.9.1 KHÔNG đặt orphan cho 2 opener này (chỉ đặt cho `play` và bản Windows)
-# → app mở bằng xdg-open (Chrome/Calc/sioyek qua prepend_rules dưới) bị SIGKILL
-# khi bấm `q` thoát yazi. Giữ nguyên `%s1`/`%d1` như preset, chỉ thêm orphan.
+# Keep applications launched by `open` and `reveal` running after Yazi exits.
 open = [
 { run = "xdg-open %s1", desc = "Open", for = "linux", orphan = true },
 ]
@@ -25,31 +15,14 @@ reveal = [
 ]
 
 [open]
-# ⭐ Để Enter mở app thật thay vì nhảy vào nvim.
-# Yazi đoán mime bằng `file -bL --mime-type`, hàm này trả "text/plain" cho cả
-# .csv lẫn .md (không phải "text/csv" như GIO suy ra) → preset rule
-# `{ mime = "text/*" }` nuốt hết vào nvim. Đây là lý do html mở sai app.
-#
-# `prepend_rules` (không phải `rules`) để GIỮ luật mặc định, chỉ chèn trước.
-# Phần tử ĐẦU của `use` chạy khi bấm Enter; phần còn lại nằm trong menu
-# "Open with" (phím `O`) để vẫn sửa bằng nvim được.
-# ⚠️ 26.5.6 dùng khoá `url` cho glob tên file, KHÔNG phải `name`.
+# Prefer the default application for common file types while keeping Neovim available.
+# prepend_rules preserves Yazi's default rules.
 prepend_rules = [
 { url = "*.{html,htm,xhtml}", use = [ "open", "edit" ] }, # → Chrome
 { url = "*.csv", use = [ "open", "edit" ] },               # → Calc
-{ url = "*.pdf", use = [ "open", "edit" ] },               # → sioyek (không rơi vào nvim)
+{ url = "*.pdf", use = [ "open", "edit" ] },               # Open PDFs in Sioyek.
 ]
 
 [mgr]
-# ratio / show_hidden / sort_by / wrap đều đã đúng bằng preset → không khai lại
-# (preset là `[1, 4, 3]`). Lưu ý `MgrRatio` chỉ nhận ĐÚNG 3 phần tử (`[u16; 3]`):
-# yazi CẮT bỏ phần thừa mà KHÔNG báo lỗi, không có tính năng xoay vòng tỉ lệ.
-#
-# ⭐ Preview ảnh nhờ foot hỗ trợ SIXEL (foot đặt TERM=foot, yazi tự nhận diện).
-#
-# ⚠️ KHÔNG cần cài poppler-utils / ffmpeg / resvg để preview PDF, video, SVG.
-# Gói yazi của nixpkgs đã đóng gói sẵn chúng (gói `yazi` tham chiếu tới):
-# poppler-utils, ffmpeg, resvg, imagemagick, chafa, fzf, zoxide, fd, ripgrep,
-# 7zz, jq, file — và wrapper tự thêm tất cả vào PATH lúc chạy yazi.
-# Nên PDF/video/SVG đều preview được. Wrapper là file shell trong /nix/store — xem
-# PATH nó thêm: grep bin "$(readlink -f "$(command -v yazi)")".
+# Other manager options use Yazi's defaults. Foot's SIXEL support enables image previews.
+# The packaged Yazi wrapper includes tools for PDF, video, and SVG previews.

@@ -6,13 +6,11 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # Countdown menu: start, pause/resume, reset, hoặc thêm thời gian.
+        # Countdown menu: start, pause, reset, or add time.
         set -u
 
         ENGINE="$HOME/.local/bin/countdown-engine"
-        # Tương thích lúc switch: engine mới đọc countdown-state, menu này đọc
-        # được cả file cũ (pomodoro-state, study-state). Fallback binary cũ cho
-        # máy chưa switch xong (pomodoro-engine, study vẫn còn trong ~/.local/bin).
+        # Read legacy state and engines during migration.
         for candidate in "$HOME/.local/bin/pomodoro-engine" "$HOME/.local/bin/study"; do
           if [ ! -x "$ENGINE" ] && [ -x "$candidate" ]; then
             ENGINE="$candidate"
@@ -25,17 +23,14 @@
           printf "%02d:%02d" $((secs / 60)) $((secs % 60))
         }
 
-        # `status` tự finalize/hồi sinh trước khi dựng menu.
+        # Finalize or recover the timer before building the menu.
         "$ENGINE" status >/dev/null
 
         DURATION=""
         RUNNING="false"
         END_TIME=""
         REMAINING=""
-        # Ưu tiên state file mới; chỉ fallback sang tên cũ khi file mới chưa
-        # có. (Bẫy cũ: `[ -f "$MENU_STATE" ] || ... || continue` đúng là KHÔNG
-        # continue → vẫn ghi đè MENU_STATE bằng tên legacy → menu không thấy
-        # phiên đang chạy và luôn hiện màn hình khởi động.)
+        # Prefer the current state file, then check legacy paths.
         MENU_STATE="$STATE_DIR/countdown-state"
         if [ ! -f "$MENU_STATE" ]; then
           for legacy in "$STATE_DIR/pomodoro-state" "$STATE_DIR/study-state"; do
@@ -59,7 +54,7 @@
           r=0
         fi
 
-        # Rảnh → dòng khởi động; có phiên → toggle, reset hoặc cộng phút.
+        # Show start options when idle, or timer controls while running.
         if [ -n "$DURATION" ]; then
           if [ "$RUNNING" = "true" ]; then
             ITEMS=("⏸ $(format_time "$r")")
@@ -78,7 +73,7 @@
         choice=$(printf '%s\n' "''${ITEMS[@]}" | rofi -dmenu -i -p "Countdown" \
           -mesg "⌨ start 1–480 · ⏱ 30/60/120 min · ⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
 
-        # Hủy (rỗng) → thoát im lặng; sai định dạng → báo lỗi.
+        # Cancel silently; reject invalid durations.
         ask_minutes() {
           local prompt="''${1:-Countdown — minutes (1–480)}"
           local minutes

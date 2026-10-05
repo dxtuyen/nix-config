@@ -6,14 +6,8 @@
       executable = true;
       text = ''
         #! /usr/bin/env bash
-        # wallpaper-menu [auto|--grid|--list] — chọn ảnh nền trong
-        # ~/Pictures/wallpapers. Ảnh đang đặt được đánh dấu "● " ở đầu tên.
-        # Icon luôn là THUMBNAIL 320px, không dùng ảnh gốc (rofi decode ảnh gốc
-        # mỗi lần mở → vài giây, RAM nhảy).
-        #   auto (mặc định)  cache đủ thumbnail → lưới ảnh; còn thiếu → danh
-        #                     sách chữ (mở tức thì) + tự dựng cache nền
-        #   --grid           ép lưới ảnh (dựng cache trước nếu thiếu, có báo)
-        #   --list           ép danh sách chữ, không icon (nhanh nhất, gõ lọc)
+        # Choose a wallpaper from ~/Pictures/wallpapers.
+        # auto uses a grid when thumbnails are ready; --grid and --list force a layout.
         set -u
         WALL_DIR="$HOME/Pictures/wallpapers"
         CACHE="$HOME/.cache/wallpaper-current"
@@ -26,14 +20,11 @@
           --list) mode="list" ;;
         esac
 
-        # Ảnh hiện tại: đọc ~/.cache/wallpaper-current bằng `read` BUILTIN
-        # (0 spawn) — wallpaper-set ghi file này mỗi lần đổi nên luôn đúng.
-        # Chỉ hỏi awww khi cache trống (máy mới / chưa đổi lần nào).
+        # Read the cached current image; query awww only if the cache is empty.
         cur=""
         if [ -r "$CACHE" ]; then IFS= read -r cur < "$CACHE" || true; fi
         [ -z "$cur" ] && cur="$($AWWW query 2>/dev/null | sed -n 's/.*currently displaying: image: //p' | head -1)"
-        # Nền MÀU TRƠN (awww trả hexcode 0x…) không phải đường dẫn file →
-        # coi như chưa chọn ảnh nào.
+        # Ignore solid-color backgrounds when comparing image paths.
         case "$cur" in
           0x*) cur="" ;;
           *) cur="$(readlink -f -- "''${cur:-}" 2>/dev/null || true)" ;;
@@ -42,17 +33,13 @@
         mapfile -t imgs < <(find "$WALL_DIR" -maxdepth 1 -xtype f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) | sort)
         if [ "''${#imgs[@]}" -eq 0 ]; then
           notify-send -a wallpaper "wallpaper-menu" \
-            "Chưa có ảnh nào trong $WALL_DIR — thêm bằng yazi (\$mod+y). Hiện đang dùng màu nền dự phòng."
+            "No images in $WALL_DIR. Add some with Yazi (Mod+y). Using the fallback color."
           exit 0
         fi
 
         THUMBS="$HOME/.local/bin/wallpaper-thumbs"
 
-        # Một vòng duy nhất, toàn builtin (bản cũ fork ~1000 lần ≈ 2.2s mỗi
-        # lần mở). So sánh chuỗi trực tiếp: wallpaper symlink sẽ không gắn ●.
-        #   sel/names/thumbs — index, tên (có "● "), thumbnail; missing = số
-        #   thumb còn thiếu → chọn lưới/chữ ngay tại đây, không cần gọi
-        #   `wallpaper-thumbs --status` riêng.
+        # Build the menu data in one pass and count missing thumbnails.
         sel=0
         missing=0
         i=0
@@ -70,16 +57,13 @@
           i=$((i + 1))
         done
 
-        # Chọn chế độ theo cache thumbnail:
-        #   grid = icon = file 320px trong ~/.cache/wallpaper-thumbs
-        #         (rofi KHÔNG decode ảnh gốc vài MB nữa → mở tức thì)
-        #   list = chữ thuần, không icon (nhanh nhất, gõ để lọc)
+        # Use the grid when thumbnails are available; otherwise use a text list.
         grid=0
         case "$mode" in
           list) ;;
           grid)
             if [ "$missing" -gt 0 ]; then
-              notify-send -a wallpaper "wallpaper-menu" "Đang dựng thumbnail ($missing ảnh)…"
+              notify-send -a wallpaper "Wallpaper" "Building $missing thumbnails…"
               "$THUMBS" >/dev/null 2>&1 || true
             fi
             grid=1 ;;
@@ -87,8 +71,7 @@
             if [ "$missing" -eq 0 ]; then
               grid=1
             else
-              # Lần đầu (hoặc vừa thêm ảnh): mở DANH SÁCH CHỮ ngay — không chờ
-              # decode — dựng cache nền; lần mở sau tự thành lưới ảnh.
+              # Open the text list immediately while thumbnails build in the background.
               nohup "$THUMBS" >/dev/null 2>&1 &
             fi ;;
         esac
@@ -109,12 +92,10 @@
           -kb-page-next 'Page_Down,Alt+p'
         )
 
-        # -theme-str chỉ áp cho lần chạy này (không đụng ~/.config/rofi):
-        # lưới 3 cột × 3 hàng, ảnh trên tên dưới, tên căn giữa.
-        # cycle: vòng lại khi lưới hết ảnh thay vì kẹt ở ảnh cuối.
+        # Apply a three-column grid theme to this Rofi invocation only.
         if [ "$grid" -eq 1 ]; then
           rofi_args=(-dmenu -i -show-icons -l 3 -p '🖼️ Wallpaper'
-            -mesg 'Enter: đặt nền · ←→↑↓: duyệt · ● = đang dùng · Esc: huỷ'
+            -mesg 'Enter: set · arrows: navigate · ●: current · Esc: cancel'
             -no-custom -format i -selected-row "$sel"
             "''${kb[@]}"
             -theme-str 'listview { columns: 3; spacing: 10px; flow: horizontal; cycle: true; }'
@@ -123,13 +104,13 @@
             -theme-str 'element-text { horizontal-align: center; }')
         else
           rofi_args=(-dmenu -i -l 10 -p '🖼️ Wallpaper'
-            -mesg 'Enter: đặt nền · ↑↓: duyệt · ● = đang dùng · Esc: huỷ'
+            -mesg 'Enter: set · ↑↓: navigate · ●: current · Esc: cancel'
             -no-custom -format i -selected-row "$sel"
             "''${kb[@]}"
             -theme-str 'listview { cycle: true; }')
         fi
 
-        # Mỗi mục: "<tên>\0icon\x1f<thumbnail>" → rofi tự bóc metadata.
+        # Pass each item and its thumbnail to Rofi as entry metadata.
         choice_idx="$(
           i=0
           while [ "$i" -lt "''${#imgs[@]}" ]; do
@@ -145,13 +126,13 @@
         if ! [[ "$choice_idx" =~ ^[0-9]+$ ]] || [ "$choice_idx" -ge "''${#imgs[@]}" ]; then exit 0; fi
         choice="''${imgs[$choice_idx]}"
         if [ "''${cur:-}" = "$(readlink -f -- "$choice")" ]; then
-          notify-send -a wallpaper "wallpaper-menu" "Ảnh này đang là nền hiện tại"
+          notify-send -a wallpaper "Wallpaper" "This image is already selected."
           exit 0
         fi
         exec "$HOME/.local/bin/wallpaper-set" "$choice"
       '';
     };
 
-    # Ảnh nền: cp/rm trực tiếp trong ~/Pictures/wallpapers, không cần rebuild.
+    # Add or remove wallpapers directly in ~/Pictures/wallpapers.
   };
 }
