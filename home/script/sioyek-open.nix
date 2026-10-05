@@ -30,6 +30,19 @@
             $SWAYMSG "[con_id=$cid] focus"
             exit 0
           fi
+        else
+          # Launching Sioyek from drun has no document argument. Raise an
+          # existing window instead of asking Sioyek to reopen the last PDF.
+          cid="$($SWAYMSG -t get_tree | $JQ -r '
+            [.. | objects
+             | select((.app_id? // "") == "sioyek"
+                      or ((.window_properties.class? // "") | test("^sioyek$"; "i")))]
+             | .[0].id // empty')"
+          if [ -n "$cid" ]; then
+            $SWAYMSG "[con_id=$cid] move container to workspace current"
+            $SWAYMSG "[con_id=$cid] focus"
+            exit 0
+          fi
         fi
 
         exec ${pkgs.sioyek}/bin/sioyek "$@"
