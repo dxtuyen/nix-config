@@ -173,43 +173,79 @@ in
                   icon_dirs.append(Path(data_dir) / "icons" / "hicolor" / size / "apps")
               icon_dirs.append(Path(data_dir) / "pixmaps")
 
-      icon_files = {}
-      for directory in icon_dirs:
+      # This index is shared by all window-menu invocations. Building it means
+      # enumerating every icon and parsing every desktop file, which is wasted
+      # work on each Mod+Tab. Directory mtimes cheaply invalidate it when apps
+      # or icons are installed/removed.
+      cache_file = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "window-menu" / "index.json"
+      index_dirs = list(dict.fromkeys(icon_dirs + desktop_dirs))
+      directory_state = []
+      for directory in index_dirs:
           try:
-              for path in directory.iterdir():
-                  if path.is_file() and path.suffix.lower() in (".png", ".svg", ".xpm", ".jpg"):
-                      icon_files.setdefault(path.stem.casefold(), path)
+              stat = directory.stat()
+              directory_state.append([str(directory), stat.st_mtime_ns, stat.st_ino])
           except OSError:
-              pass
+              directory_state.append([str(directory), None, None])
 
+      icon_files = {}
       app_info = {}
-      for directory in desktop_dirs:
-          try:
-              files = directory.glob("*.desktop")
-              for desktop in files:
-                  try:
-                      values = {}
-                      in_main_section = False
-                      for line in desktop.read_text(errors="replace").splitlines():
-                          if line.startswith("["):
-                              in_main_section = line == "[Desktop Entry]"
-                          elif in_main_section and "=" in line:
-                              key, value = line.split("=", 1)
-                              if key in ("Name", "Icon", "StartupWMClass"):
-                                  values[key] = value
+      cache_loaded = False
+      try:
+          cached = json.loads(cache_file.read_text())
+          if cached.get("directories") == directory_state:
+              icon_files = {key: Path(value) for key, value in cached["icons"].items()}
+              app_info = {key: {"name": value["name"], "icon": Path(value["icon"]) if value["icon"] else None}
+                          for key, value in cached["apps"].items()}
+              cache_loaded = True
+      except (OSError, ValueError, KeyError, TypeError):
+          pass
 
-                      icon = values.get("Icon", "")
-                      if icon:
-                          icon_path = Path(icon) if Path(icon).is_file() else icon_files.get(Path(icon).stem.casefold())
-                      else:
-                          icon_path = None
-                      info = {"name": values.get("Name", ""), "icon": icon_path}
-                      app_info.setdefault(desktop.stem.casefold(), info)
-                      wm_class = values.get("StartupWMClass", "").casefold()
-                      if wm_class:
-                          app_info.setdefault(wm_class, info)
-                  except OSError:
-                      pass
+      if not cache_loaded:
+          for directory in icon_dirs:
+              try:
+                  for path in directory.iterdir():
+                      if path.is_file() and path.suffix.lower() in (".png", ".svg", ".xpm", ".jpg"):
+                          icon_files.setdefault(path.stem.casefold(), path)
+              except OSError:
+                  pass
+
+          for directory in desktop_dirs:
+              try:
+                  for desktop in directory.glob("*.desktop"):
+                      try:
+                          values = {}
+                          in_main_section = False
+                          for line in desktop.read_text(errors="replace").splitlines():
+                              if line.startswith("["):
+                                  in_main_section = line == "[Desktop Entry]"
+                              elif in_main_section and "=" in line:
+                                  key, value = line.split("=", 1)
+                                  if key in ("Name", "Icon", "StartupWMClass"):
+                                      values[key] = value
+
+                          icon = values.get("Icon", "")
+                          if icon:
+                              icon_path = Path(icon) if Path(icon).is_file() else icon_files.get(Path(icon).stem.casefold())
+                          else:
+                              icon_path = None
+                          info = {"name": values.get("Name", ""), "icon": icon_path}
+                          app_info.setdefault(desktop.stem.casefold(), info)
+                          wm_class = values.get("StartupWMClass", "").casefold()
+                          if wm_class:
+                              app_info.setdefault(wm_class, info)
+                      except OSError:
+                          pass
+              except OSError:
+                  pass
+
+          try:
+              cache_file.parent.mkdir(parents=True, exist_ok=True)
+              cache_file.write_text(json.dumps({
+                  "directories": directory_state,
+                  "icons": {key: str(value) for key, value in icon_files.items()},
+                  "apps": {key: {"name": value["name"], "icon": str(value["icon"]) if value["icon"] else None}
+                           for key, value in app_info.items()},
+              }))
           except OSError:
               pass
 
