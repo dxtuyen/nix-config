@@ -12,6 +12,14 @@
         set -u
         WALL_DIR="$HOME/Pictures/wallpapers"
         THUMB_DIR="$HOME/.cache/wallpaper-thumbs"
+        mkdir -p "$HOME/.cache"
+
+        # Grid and background builds can overlap when the menu opens repeatedly.
+        # Hold one cache-wide lock until all ImageMagick workers have finished.
+        if [ "''${WALLPAPER_THUMBS_LOCKED:-}" != 1 ]; then
+          exec env WALLPAPER_THUMBS_LOCKED=1 ${pkgs.util-linux}/bin/flock \
+            "$HOME/.cache/wallpaper-thumbs.lock" "$0" "$@"
+        fi
 
         if [ ! -d "$WALL_DIR" ]; then
           [ "''${1:-}" = "--status" ] && echo 0

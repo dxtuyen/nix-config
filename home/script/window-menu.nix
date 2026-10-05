@@ -67,6 +67,7 @@ in
       stashed_only = "--scratchpad" in sys.argv[1:]
       away_only = "--away" in sys.argv[1:]
       normal_only = "--normal" in sys.argv[1:]
+      after_kill = "--after-kill" in sys.argv[1:]
 
       tree = json.loads(subprocess.run(
           [swaymsg, "-t", "get_tree"], check=True, capture_output=True, text=True
@@ -153,13 +154,14 @@ in
       windows = [window for window, _ in found]
       window_ws = {window["id"]: ws for window, ws in found}
       if not windows:
-          subprocess.run([
-              shutil.which("notify-send") or "notify-send",
-              ("Scratchpad" if stashed_only else "Away"),
-              ("No hidden scratchpad window" if stashed_only
-               else "Nothing away from this workspace" if away_only
-               else "No open window"),
-          ], check=False)
+          if not after_kill:
+              subprocess.run([
+                  shutil.which("notify-send") or "notify-send",
+                  ("Scratchpad" if stashed_only else "Away"),
+                  ("No hidden scratchpad window" if stashed_only
+                   else "Nothing away from this workspace" if away_only
+                   else "No open window"),
+              ], check=False)
           sys.exit(0)
 
       icon_dirs = [Path(path) for path in ${builtins.toJSON iconDirs}]
@@ -210,6 +212,11 @@ in
                       pass
           except OSError:
               pass
+
+      # The scratchpad terminal uses a custom app_id, so it does not match
+      # Foot's desktop entry during normal app lookup. Reuse Foot's name/icon.
+      if "scratchpad-terminal" not in app_info:
+          app_info["scratchpad-terminal"] = app_info.get("foot", {"name": "Foot"})
 
       pwa_id = re.compile(r"^(?:chrome|chromium)-[a-z0-9_-]{16,}(?:-[a-z0-9 _-]+)?$", re.I)
 
@@ -305,7 +312,11 @@ in
       if choice.returncode == 10:
           subprocess.run([swaymsg, f"[con_id={window['id']}] kill"],
                          check=False)
-          sys.exit(0)
+          # Rebuild the same filtered list after the kill. If it is now empty,
+          # the silent after-kill path above exits and lets Rofi stay closed.
+          os.execv(sys.executable, [
+              sys.executable, __file__, *sys.argv[1:], "--after-kill",
+          ])
 
       # current_ws was resolved before the list was built (--away needs it).
       SCRATCH_WS = "__i3_scratch"

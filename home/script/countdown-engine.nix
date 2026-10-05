@@ -10,52 +10,14 @@
         # Old names: `study` -> `pomodoro` -> back to `countdown` (matches key $mod+c).
 
         STATE_DIR="''${XDG_RUNTIME_DIR:-$HOME/.local/state}"
-        # Canonical state file: countdown-state. Old-name journey: study-state ->
-        # countdown-state -> pomodoro-state -> countdown-state. If several files
-        # ever coexist (renames may leave some behind), the file with the NEWEST
-        # mtime wins: write_state always mv's, so mtime = last state write ->
-        # an old session can never be misread (a trap hit on a previous rename).
         STATE_FILE="$STATE_DIR/countdown-state"
-        newest_state=""
-        newest_mtime=-1
-        for f in "$STATE_FILE" "$STATE_DIR/pomodoro-state" "$STATE_DIR/study-state"; do
-          [ -f "$f" ] || continue
-          mt=$(stat -c %Y "$f" 2>/dev/null || echo 0)
-          [ "$mt" -gt "$newest_mtime" ] || continue
-          newest_mtime=$mt
-          newest_state=$f
-        done
-        if [ -n "$newest_state" ] && [ "$newest_state" != "$STATE_FILE" ]; then
-          mv -f "$newest_state" "$STATE_FILE"
-        fi
-        # A leftover legacy file is one that was overwritten → clean it up (only
-        # happens after a rename; a live session always sits in the newest-mtime file).
-        # Only rm once the canonical file exists — if the mv failed, keep the
-        # legacy copy so the menu can still fall back; never lose a session.
-        if [ -f "$STATE_FILE" ]; then
-          rm -f "$STATE_DIR/pomodoro-state" "$STATE_DIR/study-state"
-        fi
-        # Keep the lock under persistent state even when STATE_DIR is runtime-only.
         LOCK_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/countdown-state.lock"
         FLOCK="${pkgs.util-linux}/bin/flock"
         SLEEP_MARKER="$STATE_DIR/countdown-sleep-paused"
-        # The "auto-pause on sleep" marker is renamed too → migrate it if a sleep cycle is in progress.
-        if [ -f "$STATE_DIR/pomodoro-sleep-paused" ]; then
-          mv -f "$STATE_DIR/pomodoro-sleep-paused" "$SLEEP_MARKER"
-        fi
         MANUAL_FLAG="$STATE_DIR/inhibit-manual"
         HISTORY_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/countdown-history.log"
         LEGACY_HISTORY_FILE="''${XDG_STATE_HOME:-$HOME/.local/state}/pomodoro-history.log"
         mkdir -p "$STATE_DIR" "$(dirname "$LOCK_FILE")" "$(dirname "$HISTORY_FILE")"
-        # Migrate from the old name (pomodoro-history.log): no new file yet → mv;
-        # both exist → append old to new then delete old. Safe to run repeatedly.
-        if [ -f "$LEGACY_HISTORY_FILE" ]; then
-          if [ -f "$HISTORY_FILE" ]; then
-            cat "$LEGACY_HISTORY_FILE" >> "$HISTORY_FILE" && rm -f "$LEGACY_HISTORY_FILE"
-          else
-            mv -f "$LEGACY_HISTORY_FILE" "$HISTORY_FILE"
-          fi
-        fi
         exec 9>>"$LOCK_FILE"
 
         # Serialize state transitions shared by Waybar, the menu and the timer daemon.
@@ -72,6 +34,60 @@
             exit 1
           }
         }
+
+        # Migrate legacy files only when needed, under the state lock. This
+        # keeps concurrent Waybar/menu invocations from choosing or appending
+        # migration files at the same time, without locking routine status polls.
+        if [ -f "$STATE_DIR/pomodoro-state" ] ||
+           [ -f "$STATE_DIR/study-state" ] ||
+           [ -f "$STATE_DIR/pomodoro-sleep-paused" ] ||
+           [ -f "$LEGACY_HISTORY_FILE" ]; then
+          state_lock
+
+          if [ -f "$STATE_DIR/pomodoro-state" ] || [ -f "$STATE_DIR/study-state" ]; then
+            # GNU stat's %y includes sub-second precision. The fixed timestamp
+            # format sorts lexically; exact ties keep the canonical file first.
+            newest_state=""
+            newest_mtime=""
+            for f in "$STATE_FILE" "$STATE_DIR/pomodoro-state" "$STATE_DIR/study-state"; do
+              [ -f "$f" ] || continue
+              mt=$(stat -c %y "$f" 2>/dev/null) || continue
+              if [ -z "$newest_mtime" ] || [[ "$mt" > "$newest_mtime" ]]; then
+                newest_mtime=$mt
+                newest_state=$f
+              fi
+            done
+
+            if [ "$newest_state" = "$STATE_FILE" ]; then
+              rm -f -- "$STATE_DIR/pomodoro-state" "$STATE_DIR/study-state"
+            elif [ -n "$newest_state" ] && mv -f -- "$newest_state" "$STATE_FILE"; then
+              rm -f -- "$STATE_DIR/pomodoro-state" "$STATE_DIR/study-state"
+            else
+              echo "countdown-engine: state migration failed; keeping legacy state files" >&2
+            fi
+          fi
+
+          if [ -f "$STATE_DIR/pomodoro-sleep-paused" ]; then
+            if [ ! -e "$SLEEP_MARKER" ]; then
+              mv -f -- "$STATE_DIR/pomodoro-sleep-paused" "$SLEEP_MARKER" ||
+                echo "countdown-engine: could not migrate sleep marker" >&2
+            else
+              rm -f -- "$STATE_DIR/pomodoro-sleep-paused"
+            fi
+          fi
+
+          if [ -f "$LEGACY_HISTORY_FILE" ]; then
+            if [ -f "$HISTORY_FILE" ]; then
+              if cat "$LEGACY_HISTORY_FILE" >> "$HISTORY_FILE"; then
+                rm -f -- "$LEGACY_HISTORY_FILE"
+              fi
+            else
+              mv -f -- "$LEGACY_HISTORY_FILE" "$HISTORY_FILE"
+            fi
+          fi
+
+          state_unlock
+        fi
 
         read_state() {
           if [ -f "$STATE_FILE" ]; then

@@ -10,6 +10,7 @@
     ./mimeapps.nix
     ./nixvim.nix
     ./packages.nix
+    ./rofi.nix
     ./starship.nix
     ./sway.nix
     ./waybar.nix

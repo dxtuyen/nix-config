@@ -3,8 +3,7 @@
 # with `--sixel` + terminfo (`TERM=foot`).
 #
 # 📌 `alpha`: foot makes the background translucent itself (vanilla Sway has no
-# compositor-level blur, so this is the only such effect). 0.75 = translucent enough
-# to see the wallpaper behind while text stays crisp; 0.9+ makes it nearly opaque.
+# compositor-level blur, so this is the only such effect). 0.8 = 80% opaque.
 #
 # ⚠️ COLOR SYNTAX: single = `RRGGBB` (6 hex digits, NO `#`); pairs (cursor, jump-labels,
 # scrollback-indicator, search-box-*) = TWO hex colors separated by WHITESPACE, order is
@@ -41,8 +40,8 @@
       # Declare only the 16 ANSI colors + background/foreground/cursor; the 256-color
       # table (term-colors 16-255) keeps foot's defaults. Add more here if wanted.
       colors-dark = {
-        # 0.75 (not 0.9): translucent enough to see the wallpaper, text still crisp.
-        alpha = 0.85;
+        # Alpha 0.8 means 80% opaque / 20% transparent.
+        alpha = 0.8;
         background = "1e1e2e";
         foreground = "cdd6f4";
         cursor = "1e1e2e f5e0dc"; # text `1e1e2e` on cursor background `f5e0dc`
