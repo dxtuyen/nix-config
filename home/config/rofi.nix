@@ -19,7 +19,7 @@
 
   xdg.configFile."rofi/catppuccin-mocha.rasi".text = ''
     * {
-      bg:                 #1e1e2eb3;
+      bg:                 #1e1e2e;
       bg-soft:            #181825;
       surface:            #313244;
       surface-hover:      #45475a;
