@@ -1,8 +1,5 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
-let
-  ws = import ./workspaces.nix; # workspace names shared with Waybar
-in
 {
   wayland.windowManager.sway = {
     enable = true;
@@ -151,8 +148,6 @@ in
       # If you use a differently named profile (e.g. "Profile 1"), add the matching suffix.
       for_window [app_id="(?i)^chrome-[a-z0-9]+-Default$"] floating enable, resize set width 1000 px height 700 px, move position center
 
-      # VS Code always opens on workspace 3.code.
-
       # Inhibit idle
       for_window [app_id="(?i)^google-chrome$"] inhibit_idle fullscreen
 
@@ -207,32 +202,18 @@ in
       bindsym $mod+Shift+Up move up
       bindsym $mod+Shift+Right move right
 
-      # Names live in home/config/workspaces.nix: position N auto-generates $mod+N /
-      # $mod+Shift+N (first name -> $mod+1…). Remaining numbers up to 10 are generated too (0 = 10).
-      ${builtins.concatStringsSep "\n" (
-        pkgs.lib.imap1 (
-          i: name:
-          let
-            n = toString i;
-            key = if i == 10 then "0" else n;
-          in
-          ''
-            bindsym $mod+${key} workspace number ${name}
-            bindsym $mod+Shift+${key} move container to workspace number ${name}''
-        ) ws
-      )}
-      ${builtins.concatStringsSep "\n" (
-        map (
-          i:
-          let
-            n = toString i;
-            key = if i == 10 then "0" else n;
-          in
-          ''
-            bindsym $mod+${key} workspace number ${n}
-            bindsym $mod+Shift+${key} move container to workspace number ${n}''
-        ) (pkgs.lib.range (builtins.length ws + 1) 10)
-      )}
+      # 5 workspaces, không tên. Đây là cả bề mặt điều hướng — Waybar
+      # ghim đúng 5 số này (xem waybar.nix).
+      bindsym $mod+1 workspace number 1
+      bindsym $mod+Shift+1 move container to workspace number 1
+      bindsym $mod+2 workspace number 2
+      bindsym $mod+Shift+2 move container to workspace number 2
+      bindsym $mod+3 workspace number 3
+      bindsym $mod+Shift+3 move container to workspace number 3
+      bindsym $mod+4 workspace number 4
+      bindsym $mod+Shift+4 move container to workspace number 4
+      bindsym $mod+5 workspace number 5
+      bindsym $mod+Shift+5 move container to workspace number 5
       # Switch to the previous/next workspace: $mod+[ / $mod+].
       bindsym $mod+bracketleft workspace prev
       bindsym $mod+bracketright workspace next

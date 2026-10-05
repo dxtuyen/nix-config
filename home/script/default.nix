@@ -15,7 +15,6 @@
     ./yazi-open.nix
     ./sioyek-open.nix
     ./sioyek.nix
-    ./quick-net-reload.nix
     ./toggle-touchpad.nix
     ./bar-toggle.nix
     ./utilities.nix

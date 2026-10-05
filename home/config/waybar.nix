@@ -1,9 +1,6 @@
 { config, ... }:
 
 let
-  # Danh sách tên workspace dùng chung ở home/config/workspaces.nix
-  ws = import ./workspaces.nix;
-
   # Bọc MỌI glyph icon (codepoint PUA trong `format-icons`) vào "Font Awesome 7
   # Free": advance = ink nên icon vừa vừa ngang chữ, vừa căn giữa, đáy trùng
   # baseline, line-height không tăng. Nerd Font thì hoặc tràn ô, hoặc icon bé.
@@ -93,18 +90,16 @@ in
         "tooltip-format-enumerate-connected" = "{device_alias}";
         "on-click" = "foot --app-id=bluetui -T Bluetooth bluetui";
       };
+      # 5 workspace ghim sẵn; rỗng thì mờ đi (button.persistent.empty trong CSS).
       "sway/workspaces" = {
         "disable-scroll" = true;
-        "warp-on-scroll" = false;
-        format = "{name}";
-        # Ghim workspace từ workspaces.nix (kể cả khi trống). Key phải có
-        # gạch nối (gạch dưới bị Waybar bỏ qua).
-        "persistent-workspaces" = builtins.listToAttrs (
-          map (name: {
-            inherit name;
-            value = [ ];
-          }) ws
-        );
+        "persistent-workspaces" = {
+          "1" = [ ];
+          "2" = [ ];
+          "3" = [ ];
+          "4" = [ ];
+          "5" = [ ];
+        };
       };
       "sway/window" = {
         format = "{title}";
