@@ -5,7 +5,6 @@
     configuration {
       modi: "drun,run,window";
       show-icons: true;
-      matching: "fuzzy";
       drun-display-format: "{name}";
       font: "JetBrains Mono 11";
       location: 0;
