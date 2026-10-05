@@ -169,11 +169,11 @@
       bindsym $mod+Tab exec ~/.local/bin/window-menu --away
       bindsym $mod+q kill
 
-      # Wallpaper menu: Mod+Alt+w · windows: Mod+Tab (away) / Mod+Shift+Tab (regular) · next: Mod+Shift+w.
+      # Wallpaper: Mod+r for a random image · Mod+Shift+w to choose from the menu.
       # ~/Pictures/wallpapers (thumbnail grid, arrow keys to browse).
-      bindsym $mod+Mod1+w exec ~/.local/bin/wallpaper-menu
+      bindsym $mod+r exec ~/.local/bin/wallpaper-set
       bindsym $mod+Shift+Tab exec ~/.local/bin/window-menu --normal
-      bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-set
+      bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-menu
       # $mod+y: toggle yazi popup (same pattern as scratchpad-terminal).
       bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
@@ -214,8 +214,8 @@
       bindsym $mod+5 workspace number 5
       bindsym $mod+Shift+5 move container to workspace number 5
       # Switch to the previous/next workspace: $mod+[ / $mod+].
-      bindsym $mod+bracketleft workspace prev
-      bindsym $mod+bracketright workspace next
+      bindsym $mod+u workspace prev
+      bindsym $mod+i workspace next
 
       # Layout & Window State
       bindsym $mod+b splith
