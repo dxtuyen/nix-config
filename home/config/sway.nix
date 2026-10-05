@@ -164,11 +164,10 @@
       # $mod+Shift+Tab: REGULAR windows only (no scratchpad, no popups — those have
       #   their own keys); Enter jumps to it, Shift+Enter pulls it here.
       # $mod+p: system menu; $mod+c: Countdown (see Custom Utilities).
-      # $mod+Shift+q: kill the focused window (was $mod+q; moved so a stray
-      #   plain-Q cannot destroy a window).
+      # $mod+q: kill the focused window.
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       bindsym $mod+Tab exec ~/.local/bin/window-menu --away
-      bindsym $mod+Shift+q kill
+      bindsym $mod+q kill
 
       # Wallpaper menu: Mod+Alt+w · windows: Mod+Tab (away) / Mod+Shift+Tab (regular) · next: Mod+Shift+w.
       # ~/Pictures/wallpapers (thumbnail grid, arrow keys to browse).
@@ -248,7 +247,7 @@
       bindsym $mod+c exec ~/.local/bin/countdown
       bindsym $mod+Shift+p exec ~/.local/bin/utilities --power
       # $mod+i removed. $mod+z/$mod+u/$mod/x LEFT EMPTY. Kill:
-      # $mod+Shift+Tab then Shift+Delete, or $mod+Shift+q for the focused window.
+      # $mod+Shift+Tab then Shift+Delete, or $mod+q for the focused window.
       # quick-lang: t = clean English · Shift+t = Vietnamese · Ctrl+t = force
       # English fix. Prefix the selected text with [phi]/[sci]/[lit]/[cas] to set context.
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
