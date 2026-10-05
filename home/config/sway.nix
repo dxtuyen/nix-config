@@ -213,9 +213,11 @@
       bindsym $mod+Shift+4 move container to workspace number 4
       bindsym $mod+5 workspace number 5
       bindsym $mod+Shift+5 move container to workspace number 5
-      # Switch to the previous/next workspace: $mod+[ / $mod+].
+      # Switch workspaces with Mod+u/i; move the focused window with Shift.
       bindsym $mod+u workspace prev
       bindsym $mod+i workspace next
+      bindsym $mod+Shift+u move container to workspace prev
+      bindsym $mod+Shift+i move container to workspace next
 
       # Layout & Window State
       bindsym $mod+b splith
