@@ -19,11 +19,10 @@
 
   xdg.configFile."rofi/catppuccin-mocha.rasi".text = ''
     * {
-      bg:                 #1e1e2e99;
+      bg:                 #1e1e2eb3;
       bg-soft:            #181825;
       surface:            #313244;
       surface-hover:      #45475a;
-      selected:           #455a7a;
       fg:                 #cdd6f4;
       muted:              #a6adc8;
       blue:               #89b4fa;
@@ -113,17 +112,17 @@
     }
 
     element selected.normal {
-      background-color:   @selected;
+      background-color:   @surface-hover;
       text-color:         @fg;
     }
 
     element selected.active {
-      background-color:   @selected;
+      background-color:   @surface-hover;
       text-color:         @lavender;
     }
 
     element selected.urgent {
-      background-color:   @selected;
+      background-color:   @surface-hover;
       text-color:         @red;
     }
 
