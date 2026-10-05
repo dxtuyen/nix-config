@@ -19,7 +19,7 @@
 
   xdg.configFile."rofi/catppuccin-mocha.rasi".text = ''
     * {
-      bg:                 #1e1e2e99;
+      bg:                 #1e1e2eb3;
       bg-soft:            #181825;
       surface:            #313244;
       surface-hover:      #45475a;
@@ -95,6 +95,8 @@
 
     element {
       padding:            9px 12px;
+      border:             0px;
+      border-color:       transparent;
       border-radius:      9px;
       background-color:   transparent;
       text-color:         @fg;
@@ -113,17 +115,23 @@
     }
 
     element selected.normal {
-      background-color:   @selected;
-      text-color:         @fg;
+      border:             0px 0px 0px 3px;
+      border-color:       @blue;
+      background-color:   @surface;
+      text-color:         @blue;
     }
 
     element selected.active {
-      background-color:   @selected;
+      border:             0px 0px 0px 3px;
+      border-color:       @lavender;
+      background-color:   @surface;
       text-color:         @lavender;
     }
 
     element selected.urgent {
-      background-color:   @selected;
+      border:             0px 0px 0px 3px;
+      border-color:       @red;
+      background-color:   @surface;
       text-color:         @red;
     }
 
@@ -135,7 +143,8 @@
 
     element-text {
       vertical-align:     0.5;
-      background-color:   transparent;
+      background-color:   inherit;
+      text-color:         inherit;
     }
 
     scrollbar {
