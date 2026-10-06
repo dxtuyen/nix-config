@@ -7,9 +7,9 @@
 
   # Behavior, keybindings, and theme.
   xdg.configFile = {
-    "yazi/yazi.toml".source = ./yazi/yazi.toml;
-    "yazi/keymap.toml".source = ./yazi/keymap.toml;
-    "yazi/theme.toml".source = ./yazi/theme.toml;
+    "yazi/yazi.toml".source = ./yazi.toml;
+    "yazi/keymap.toml".source = ./keymap.toml;
+    "yazi/theme.toml".source = ./theme.toml;
   };
 
   # Use smart-enter to enter directories and open files with their default app.

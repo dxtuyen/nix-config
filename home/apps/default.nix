@@ -2,11 +2,11 @@
 
 {
   imports = [
-    ./countdown.nix
-    ./remnote.nix
-    ./sioyek.nix
+    ./countdown
+    ./remnote
+    ./sioyek
     ./thunar.nix
-    ./wallpaper.nix
-    ./yazi.nix
+    ./wallpaper
+    ./yazi
   ];
 }

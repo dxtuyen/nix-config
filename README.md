@@ -44,13 +44,20 @@ nix-config/
 │   ├── default.nix              # Imports modules + attaches home-manager
 │   └── hardware-configuration.nix  # Auto-generated at install time
 ├── home/                        # Home Manager (user-level)
-│   ├── default.nix              # User setup + imports the three groups below
+│   ├── default.nix              # User setup + imports config, apps and scripts
 │   ├── config/                  # Desktop config, user packages, default apps
-│   ├── apps/                    # Per-app integrations (Countdown, RemNote, Yazi…)
-│   └── script/                  # Every ~/.local/bin command, one file each
-│       ├── default.nix          # Script import list
-│       ├── quick-lang.nix       # Model, prompt and Gemini API
-│       └── ...                  # countdown, countdown-engine, setup-remnote, wallpaper-set…
+│   ├── apps/                    # Per-app modules; related scripts live with each app
+│   │   ├── countdown/           # Timer, engine, sleep watcher and user services
+│   │   ├── remnote/             # AppImage setup and desktop entry
+│   │   ├── sioyek/              # PDF viewer and open wrappers
+│   │   ├── wallpaper/           # Wallpaper daemon, picker and helpers
+│   │   └── yazi/                # File manager config and open helper
+│   └── scripts/                 # Shared user commands grouped by responsibility
+│       ├── desktop/             # Sway, screenshot, popup and night-light helpers
+│       ├── media/               # Volume and brightness notifications
+│       ├── session/             # Locking, idle suspend and session refresh
+│       ├── system/              # VM and power-profile helpers
+│       └── utilities/           # Language, dictionary, cleanup and daily menu
 ├── modules/nixos/               # NixOS modules (system-level)
 │   ├── core.nix                 # Foundation: Nix/flake, boot, network, user
 │   ├── desktop.nix              # Sway/greetd, PipeWire, Fcitx5, fonts

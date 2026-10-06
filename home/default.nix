@@ -25,7 +25,7 @@
     inputs.nixvim.homeModules.nixvim
     ./config
     ./apps
-    ./script
+    ./scripts
   ];
 
   programs.home-manager.enable = true;
