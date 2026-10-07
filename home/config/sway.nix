@@ -188,6 +188,8 @@
       bindsym $mod+m exec ~/.local/bin/window-menu --away
 
       # Custom Utilities & Screenshot
+      # Toggle Waybar visibility (SIGUSR1 toggles it by default).
+      bindsym $mod+Shift+b exec systemctl --user kill --signal=SIGUSR1 --kill-whom=main waybar.service
       # Mod+p opens daily utilities.
       bindsym $mod+p exec ~/.local/bin/utilities
       # Mod+Shift+p opens session and power actions.
