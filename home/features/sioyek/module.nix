@@ -2,7 +2,7 @@
 
 {
   # Each new file = a separate window (still 1 process); new windows appear on the
-  # focused workspace via the for_window rule in home/config/sway.nix.
+  # focused workspace via the for_window rule in home/desktop/sway.nix.
   xdg.configFile."sioyek/prefs_user.config".text = ''
     should_launch_new_window 1
   '';

@@ -6,7 +6,7 @@
 # This module only does its real job: set the terminal for libexo (Thunar reads
 # `TerminalEmulator` for the "Open Terminal Here" action — the default action of
 # thunar-uca so no uca.xml is needed). Default apps by file type and the
-# `nvim.desktop` entry for text live in `home/config/mimeapps.nix`.
+# `nvim.desktop` entry for text live in `home/desktop/mimeapps.nix`.
 {
   xdg.configFile."xfce4/helpers.rc".text = "TerminalEmulator=foot\n";
 }

@@ -90,7 +90,7 @@
     ];
   };
 
-  # Keep SSH keys unlocked for the login session (see docs/03).
+  # Keep SSH keys unlocked for the login session (see docs/personal/cai-laptop.md).
   programs.ssh.startAgent = true;
 
   # Shared packages for systems importing core.nix.

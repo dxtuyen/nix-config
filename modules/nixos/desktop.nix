@@ -103,23 +103,6 @@ in
 
   # WebKitGTK dictionaries are already linked in the block above.
 
-  # Run trash cleanup as a user service so GIO has the desktop environment.
-  systemd.user.services.trash-clean = {
-    description = "Clean trash older than 30 days";
-    serviceConfig.ExecStart = "%h/.local/bin/trash-clean 30";
-  };
-
-  systemd.user.timers.trash-clean = {
-    description = "Clean old trash daily at 03:00";
-    unitConfig.After = [ "graphical-session.target" ];
-    timerConfig = {
-      OnCalendar = "*-*-* 03:00:00";
-      # Run missed cleanups after login; GIO needs the graphical session.
-      Persistent = true;
-    };
-    wantedBy = [ "timers.target" ];
-  };
-
   # Optional wallpaper rotation timer; enable these units to use it.
   # systemd.user.services.wallpaper-rotate = {
   #   description = "Rotate wallpaper";

@@ -1,96 +1,68 @@
-# 🖥️ NixOS Config — Doxuan Tuyen
+# NixOS Laptop Configuration
 
-**NixOS + Home-Manager** configuration for a personal laptop, running **Sway** (Wayland) with a consistent **Catppuccin Mocha** theme (GTK uses the neutral adw-gtk3-dark).
+A personal NixOS configuration for an x86_64 laptop, managed with Nix flakes and Home Manager. It provides a Sway desktop on Wayland, a terminal-focused workflow, development tools, and laptop power management.
 
-| | |
-|---|---|
-| 🌐 System | NixOS unstable (x86_64-linux, rolling release) |
-| 🪟 Desktop | Sway + Waybar + Mako (notifications) |
-| 💻 Terminal | Foot + Starship |
-| 🖼️ Viewing photos / video | imv (images) • mpv (video) • foliate (e-books) • sioyek (PDF) |
-| ⌨️ Input method | Fcitx5 + Bamboo |
-| 💾 Hibernate | 10G swap — saves state on power-off |
+This repository is designed around one machine and one user. It can be adapted for another system, but it is not a drop-in installer: review the hardware configuration, username, disk layout, and personal settings before deploying it.
 
----
+## System overview
 
-## 🚀 Rebuild & Update
+- **Operating system:** NixOS unstable, pinned through `flake.lock`
+- **Desktop:** Sway, Waybar, Mako, and Foot
+- **Input:** Fcitx5 with Bamboo
+- **Shell:** Bash with Starship, fzf, zoxide, and direnv
+- **User configuration:** Home Manager, integrated into the NixOS flake
+- **Laptop features:** zram, hibernation, battery charge thresholds, key remapping, and firmware updates
 
-Enable the automatic check before every push (run once per clone):
+## Repository layout
+
+```text
+.
+├── flake.nix                 # Inputs, formatter, and the laptop build target
+├── hosts/laptop/             # Host entry point and generated hardware settings
+├── modules/nixos/            # System, desktop, development, and laptop modules
+├── home/                     # Home Manager user environment
+│   ├── shell/                # Bash and shell tools
+│   ├── programs/             # User program configuration
+│   ├── desktop/              # Graphical session and desktop integration
+│   ├── features/             # Multi-part user workflows and integrations
+│   ├── scripts/              # Shared user commands
+│   ├── packages.nix          # User package selection
+│   └── assets/               # Static user-level assets
+└── docs/                     # Usage and installation guides
+```
+
+NixOS modules describe the machine and system services. Home Manager describes the user environment. Within Home Manager, `programs/` configures individual programs, `desktop/` groups the graphical session, and `features/` keeps related scripts and services with the workflow they support.
+
+## Use this configuration
+
+Review and adapt the machine-specific values before building:
+
+1. `hosts/laptop/hardware-configuration.nix` must match the target machine's disks and hardware. Generate it on the target system; do not reuse another machine's file.
+2. `flake.nix` and `hosts/laptop/default.nix` define the host name, username, and build target.
+3. `modules/nixos/` and `home/` contain personal system and user preferences. Check disk labels, sleep behavior, and package choices for your hardware.
+
+To build the configured system on a machine that already runs NixOS:
 
 ```bash
-git config core.hooksPath .githooks
+sudo nixos-rebuild switch --flake .#laptop
 ```
 
-The hook checks the exact commit being pushed with the same two CI commands: `nix fmt -- --check` and `nix flake check --no-build`. If formatting fails, run `nix fmt`, review the changes, commit and push again.
+This applies both the NixOS system configuration and its integrated Home Manager configuration. The optional `nh os switch` command is also enabled and points to `/home/doxuantuyen/nix-config` in this setup.
+
+Format Nix files with:
 
 ```bash
-cd nix-config
-git pull --rebase        # fetch latest code
-nix fmt                  # format *.nix (nixfmt)
-sudo nixos-rebuild switch --flake .#laptop   # or: nh os switch
-# Once the shell alias is updated: nswitch (cds into the repo from anywhere and rebuilds by hostname)
+nix fmt
 ```
 
-> A single command updates **both NixOS and home-manager** (home-manager is attached via `home-manager.nixosModules` in `hosts/laptop/default.nix`).
+## Documentation
 
----
+- [Documentation index](docs/README.md) — choose an installation path.
+- [QEMU practice guide](docs/06-Luyen-Tap-VM.md) — install the flake in an isolated virtual machine.
+- [Personal laptop installation notes](docs/personal/cai-laptop.md) — hardware-specific notes for the author's laptop.
 
-## 🗂️ Directory Structure
+The laptop installation notes describe a particular disk layout and are intended for personal reference. Use the VM guide to learn the installation flow without changing a physical disk.
 
-```
-nix-config/
-├── flake.nix                    # Entry point: nixpkgs + home-manager, "laptop" build target
-├── hosts/laptop/                # Machine-specific configuration
-│   ├── default.nix              # Imports modules + attaches home-manager
-│   └── hardware-configuration.nix  # Auto-generated at install time
-├── home/                        # Home Manager (user-level)
-│   ├── default.nix              # User setup + imports config, apps and scripts
-│   ├── config/                  # Desktop config, user packages, default apps
-│   ├── apps/                    # Per-app modules; related scripts live with each app
-│   │   ├── countdown/           # Timer, engine, sleep watcher and user services
-│   │   ├── remnote/             # AppImage setup and desktop entry
-│   │   ├── sioyek/              # PDF viewer and open wrappers
-│   │   ├── wallpaper/           # Wallpaper daemon, picker and helpers
-│   │   └── yazi/                # File manager config and open helper
-│   └── scripts/                 # Shared user commands grouped by responsibility
-│       ├── desktop/             # Sway, screenshot, popup and night-light helpers
-│       ├── media/               # Volume and brightness notifications
-│       ├── session/             # Locking, idle suspend and session refresh
-│       ├── system/              # VM and power-profile helpers
-│       └── utilities/           # Language, dictionary, cleanup and daily menu
-├── modules/nixos/               # NixOS modules (system-level)
-│   ├── core.nix                 # Foundation: Nix/flake, boot, network, user
-│   ├── desktop.nix              # Sway/greetd, PipeWire, Fcitx5, fonts
-│   ├── development.nix          # VS Code, Python, GCC, podman…
-│   ├── laptop.nix               # Hibernate (resume=/dev/disk/by-label/swap), zram, keyd, battery threshold — swap matched by label
-│   └── system-tweaks.nix        # earlyoom, fstrim, nix-ld
-├── docs/                        # 📚 Docs (see below)
-└── lockscreen/                  # 🖼️ Lock screen (swaylock) and default wallpaper image
-```
+## Personal data
 
-> 🖼️ **Wallpapers are NOT in the repo**: `~/Pictures/wallpapers/` is your own folder — just `cp`/`rm`, no rebuild needed.
-
----
-
-## 📚 Documentation
-
-Start from the hub [`docs/README.md`](docs/README.md):
-
-| Doc | Contents |
-|---|---|
-| [Fresh install from scratch](docs/03-Cai-May-Moi.md) | USB → partitioning → install → hibernate → **Step 10: Git & SSH** |
-| [VM practice](docs/06-Luyen-Tap-VM.md) | Practice installing with a virtual machine (QEMU/KVM) |
-
----
-
-## 💡 Highlights
-
-| Feature | Description |
-|---|---|
-| **ZRAM** | zstd-compressed swap at 50% of RAM — faster than SSD, less disk wear |
-| **Hibernate** | `systemctl hibernate` — writes all of RAM into the 10G swap then powers off; powering on restores the exact state |
-| **Battery threshold** | Charging limited to 85–90% |
-| **keyd** | Caps Lock = Ctrl (hold) / Esc (tap) |
-| **Power profiles** | battery-saver / balanced / performance |
-| **earlyoom** | Kills RAM-hungry processes before the desktop freezes |
-| **fwupd** | Firmware updates |
+The repository contains system and application configuration, not personal files or credentials. Keep SSH private keys, passwords, documents, and personal wallpaper collections outside the repository and back them up separately.

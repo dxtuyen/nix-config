@@ -9,7 +9,7 @@
         # Remove trash entries older than the retention period.
         set -u
 
-        # Keep 30 days by default; configure the period in desktop.nix.
+        # Keep 30 days by default; pass a different retention period as an argument.
         KEEP_DAYS="''${1:-30}"
         TRASH_DIR="''$HOME/.local/share/Trash"
         FILES_DIR="$TRASH_DIR/files"
@@ -49,5 +49,25 @@
         fi
       '';
     };
+  };
+
+  systemd.user.services.trash-clean = {
+    Unit.Description = "Clean trash older than 30 days";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "%h/.local/bin/trash-clean 30";
+    };
+  };
+
+  systemd.user.timers.trash-clean = {
+    Unit = {
+      Description = "Clean old trash daily at 03:00";
+      After = [ "graphical-session.target" ];
+    };
+    Timer = {
+      OnCalendar = "*-*-* 03:00:00";
+      Persistent = true;
+    };
+    Install.WantedBy = [ "timers.target" ];
   };
 }

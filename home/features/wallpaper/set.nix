@@ -14,7 +14,7 @@
         AWWW=${pkgs.awww}/bin/awww
         FALLBACK_COLOR="0x1e1e2eff" # Catppuccin Mocha fallback color.
         # Reuse the lock-screen image directly from the Nix store.
-        DEFAULT_IMG=${./../../../lockscreen/nixos.jpg}
+        DEFAULT_IMG=${../../assets/lockscreen/nixos.jpg}
         AWWW_IMG_ARGS=(-t fade --transition-duration 1.5)
 
         # Resolve the current wallpaper, preferring awww's status.

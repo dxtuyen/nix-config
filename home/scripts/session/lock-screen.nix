@@ -17,7 +17,7 @@
         fi
 
         # -f so swaylock does not block swayidle; -e so an empty Enter does not count as a wrong password.
-        exec ${pkgs.swaylock}/bin/swaylock -f -e -i ${./../../../lockscreen/nixos.jpg}
+        exec ${pkgs.swaylock}/bin/swaylock -f -e -i ${../../assets/lockscreen/nixos.jpg}
       '';
     };
   };

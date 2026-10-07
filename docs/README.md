@@ -1,23 +1,21 @@
-# 📚 Nix-Config Docs
+# Tài liệu
 
-Documentation for the `nix-config` repo — **read directly on GitHub**.
+Tài liệu được chia theo mục đích: tìm hiểu cấu hình, luyện cài đặt an toàn trong máy ảo, hoặc tham khảo quy trình riêng cho laptop của tác giả.
 
-Each page answers one practical question; read by need, no particular order.
+## Chọn hướng dẫn
 
-## Where to start
-
-| Page | Contents |
+| Nhu cầu | Tài liệu |
 |---|---|
-| **[03 — Fresh install from scratch](03-Cai-May-Moi.md)** | USB → partitioning → `nixos-install` → hibernate check → **Step 10: Git & SSH** |
-| **[06 — VM practice](06-Luyen-Tap-VM.md)** | Practice installing with a virtual machine (QEMU/KVM), zero risk |
+| Tìm hiểu repo và cách bắt đầu | [README chính](../README.md) |
+| Luyện cài NixOS trong môi trường riêng | [Cài đặt bằng QEMU/KVM](06-Luyen-Tap-VM.md) |
+| Cài lại laptop của tác giả | [Ghi chú cài laptop cá nhân](personal/cai-laptop.md) |
 
-## Quick flows by situation
+## Lưu ý
 
-- **New machine** → [03](03-Cai-May-Moi.md)
-- **Practice installing first** → [06](06-Luyen-Tap-VM.md)
-- **New system checklist**: set a password ([03 Step 7.5](03-Cai-May-Moi.md)) and SSH key on GitHub ([03 Step 10](03-Cai-May-Moi.md))
+Ghi chú laptop cá nhân gắn với phần cứng, tên người dùng và bố cục đĩa cụ thể; không áp dụng nguyên xi cho máy khác. Khi luyện tập, hãy dùng hướng dẫn QEMU và bản clone tạm theo các bước trong tài liệu đó.
 
-## Most important takeaway
+Sau khi cấu hình thay đổi, áp dụng trên máy đã cài NixOS bằng:
 
-- Changes only take effect after `sudo nixos-rebuild switch --flake .#laptop` (or `nh os switch`).
-- **Config** lives in Nix → reproducible from the repo. **Data** (API keys, documents…) lives outside Nix → remember to back it up.
+```bash
+sudo nixos-rebuild switch --flake .#laptop
+```
