@@ -22,7 +22,7 @@
 | Bàn phím (TTY) | `core.nix` → `console.keyMap` | `us` |
 | Username + họ tên | `core.nix` → `users.users.doxuantuyen` | `doxuantuyen` / "Doxuan Tuyen" |
 | Quyền admin (sudo) | `core.nix` → `extraGroups` | `wheel` + `networkmanager` + `kvm` |
-| Màn hình đăng nhập | `modules/nixos/desktop.nix` → `services.greetd` | tuigreet → Sway (không auto-login, tự điền sẵn `doxuantuyen`) |
+| Màn hình đăng nhập | `modules/nixos/desktop.nix` → `services.greetd` | tuigreet — điền sẵn `doxuantuyen`, nhập mật khẩu để vào Sway |
 | Bộ gõ tiếng Việt | `desktop.nix` → `i18n.inputMethod` | fcitx5 + bamboo |
 | **Mật khẩu user** | ❌ không có trong config (cố ý) | **đặt tay ở Bước 7.5** |
 
@@ -303,7 +303,7 @@ Sau khi vào desktop (Sway), mở terminal và kiểm tra theo thứ tự:
 3. **Phân vùng đúng**: `lsblk -f`.
 4. **Clone repo về máy** để lần sau rebuild tại chỗ: `git clone https://github.com/dxtuyen/nix-config.git ~/nix-config`.
 5. **Ảnh nền (tuỳ chọn)** — ảnh nền **KHÔNG nằm trong repo** (chỉ `lockscreen/nixos.jpg` là ảnh duy nhất được commit).
-   - **Bỏ qua bước này cũng được**: khi thư mục ảnh rỗng, hệ thống tự dùng **ảnh mặc định `lockscreen/nixos.jpg`** (đã có sẵn trong repo, cùng ảnh khoá màn hình) → có nền ảnh thật ngay, không có màn đen, không lỗi.
+   - **Bỏ qua bước này cũng được**: khi thư mục ảnh rỗng, hệ thống tự dùng **ảnh mặc định `lockscreen/nixos.jpg`** (đã có sẵn trong repo, dùng cho khoá màn hình) → có nền ảnh thật ngay, không có màn đen, không lỗi.
    - Muốn có ảnh thật thì copy từ máy cũ / USB / backup:
      ```bash
      mkdir -p ~/Pictures/wallpapers
@@ -516,7 +516,7 @@ reboot        # rút USB khi thấy menu systemd-boot
 ### Chặng 6 — Sau reboot: đăng nhập + Git & SSH (Bước 9 + 10)
 
 ```bash
-# Màn hình tuigreet: user doxuantuyen + mật khẩu đã đặt ở Chặng 4 → vào Sway
+# Màn hình tuigreet: username doxuantuyen đã điền sẵn; nhập mật khẩu để vào Sway
 
 swapon --show          # ✅ có phân vùng swap
 cat /proc/cmdline      # ✅ chứa resume=/dev/disk/by-label/swap

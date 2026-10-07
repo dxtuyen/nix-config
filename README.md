@@ -65,7 +65,7 @@ nix-config/
 │   ├── laptop.nix               # Hibernate (resume=/dev/disk/by-label/swap), zram, keyd, battery threshold — swap matched by label
 │   └── system-tweaks.nix        # earlyoom, fstrim, nix-ld
 ├── docs/                        # 📚 Docs (see below)
-└── lockscreen/                  # 🖼️ Lock screen image (swaylock) — the ONLY image still in the repo
+└── lockscreen/                  # 🖼️ Lock screen (swaylock) and default wallpaper image
 ```
 
 > 🖼️ **Wallpapers are NOT in the repo**: `~/Pictures/wallpapers/` is your own folder — just `cp`/`rm`, no rebuild needed.

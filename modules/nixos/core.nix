@@ -26,7 +26,28 @@
     # Keep at most 10 boot entries.
     configurationLimit = 10;
   };
+  # Keep the recovery menu available briefly without adding a long pause.
+  boot.loader.timeout = 3;
   boot.loader.efi.canTouchEfiVariables = true;
+
+  # OEM-style boot (tham khảo fufexan/dotfiles): initrd chạy systemd nên
+  # Plymouth (plymouth.use-simpledrm giữ framebuffer từ sớm) che được cả
+  # khoảng đen giữa menu boot và logo, không còn hẫng màn hình.
+  boot.initrd.systemd.enable = true;
+  boot.consoleLogLevel = 3;
+  boot.plymouth = {
+    enable = true;
+    theme = "nixos-bgrt";
+    themePackages = [ pkgs.nixos-bgrt-plymouth ];
+  };
+  boot.kernelParams = [
+    "quiet"
+    "systemd.show_status=auto"
+    "rd.udev.log_level=3"
+    "plymouth.use-simpledrm"
+  ];
+  boot.initrd.verbose = false;
+
   networking = {
     networkmanager = {
       enable = true;

@@ -39,11 +39,16 @@ in
   services.greetd = {
     enable = true;
     settings.default_session = {
-      # Pre-fill the username but still require a password.
+      # Keep the known username prefilled while still requiring the password.
       command = "${pkgs.tuigreet}/bin/tuigreet --time --user ${userName} --cmd sway";
       user = "greeter";
     };
   };
+
+  systemd.tmpfiles.rules = [
+    # WebKitGTK expects dictionaries under /usr/share/hyphen; provide the en_US link.
+    "L+/usr/share/hyphen - - - - ${pkgs.hyphenDicts.en_US}/share/hyphen"
+  ];
 
   services.pipewire = {
     enable = true;
@@ -96,10 +101,7 @@ in
     };
   };
 
-  # WebKitGTK expects dictionaries under /usr/share/hyphen; provide the en_US link.
-  systemd.tmpfiles.rules = [
-    "L+/usr/share/hyphen - - - - ${pkgs.hyphenDicts.en_US}/share/hyphen"
-  ];
+  # WebKitGTK dictionaries are already linked in the block above.
 
   # Run trash cleanup as a user service so GIO has the desktop environment.
   systemd.user.services.trash-clean = {
