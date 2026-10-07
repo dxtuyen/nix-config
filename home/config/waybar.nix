@@ -105,7 +105,9 @@ in
       "custom/away-windows" = {
         "exec" = "~/.local/bin/window-menu --away --waybar";
         "return-type" = "json";
-        "interval" = 5;
+        "interval" = "once";
+        # The Sway event listener refreshes this module immediately.
+        "signal" = 9;
         "format" = "${faSpan ""} {text}";
         "max-length" = 42;
         "hide-empty-text" = true;

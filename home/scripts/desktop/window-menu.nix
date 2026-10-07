@@ -237,6 +237,7 @@ in
           app_info["scratchpad-terminal"] = app_info.get("foot", {"name": "Foot"})
 
       pwa_id = re.compile(r"^(?:chrome|chromium)-[a-z0-9_-]{16,}(?:-[a-z0-9 _-]+)?$", re.I)
+      waybar_apps = []
 
       def away_mark(window):
           """Prefix away-list rows by their location."""
@@ -254,6 +255,7 @@ in
           title = window.get("name") or props.get("title") or ""
           entry = app_info.get(app_id.casefold()) or app_info.get(wm_class.casefold()) or {}
           app_name = entry.get("name") or app_id or wm_class or "Window"
+          waybar_apps.append(app_name)
 
           if pwa_id.fullmatch(app_id):
               label = title or app_name
@@ -292,7 +294,7 @@ in
           count = len(windows)
           plural = "s" if count != 1 else ""
           print(json.dumps({
-              "text": str(count),
+              "text": "{} ↓ {}".format(count, waybar_apps[0]),
               "tooltip": "{} window{} in the Mod+m list\r".format(count, plural) + "\r".join(labels),
           }))
           sys.exit(0)
@@ -364,5 +366,119 @@ in
               stashed=is_stashed, pull=pull_here):
           subprocess.run([swaymsg, command], check=True)
     '';
+  };
+
+  # Listen for Sway changes that affect the away-window list and refresh the
+  # Waybar custom module by signal instead of polling it.
+  home.file.".local/bin/sway-window-events" = {
+    executable = true;
+    text = ''
+      #!${pkgs.python3}/bin/python3
+      import json
+      import os
+      import selectors
+      import subprocess
+      import time
+
+      SWAYMSG = "${pkgs.sway}/bin/swaymsg"
+      PKILL = "${pkgs.procps}/bin/pkill"
+      WAYBAR_SIGNAL = 9
+      DEBOUNCE_SECONDS = 0.15
+      SUBSCRIPTIONS = '["window", "workspace"]'
+
+      def refresh_waybar():
+          subprocess.run(
+              [PKILL, f"-RTMIN+{WAYBAR_SIGNAL}", "-x", ".waybar-wrapped"],
+              stdout=subprocess.DEVNULL,
+              stderr=subprocess.DEVNULL,
+              check=False,
+          )
+
+      def affects_away_list(message):
+          if message.get("success") is True:
+              return True
+          change = message.get("change")
+          # Workspace events carry a `current` workspace. Only switching the
+          # focused workspace changes which floating windows are considered away.
+          if "current" in message:
+              return change == "focus"
+          # Ignore focus/title/urgency events from windows; they do not change
+          # the Mod+m membership or the first app shown in Waybar.
+          return change in {"new", "close", "move", "floating"}
+
+      while True:
+          try:
+              sway = subprocess.Popen(
+                  [SWAYMSG, "--monitor", "--raw", "--type", "subscribe", SUBSCRIPTIONS],
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.DEVNULL,
+              )
+          except OSError:
+              time.sleep(2)
+              continue
+
+          selector = selectors.DefaultSelector()
+          selector.register(sway.stdout, selectors.EVENT_READ)
+          buffer = b""
+          pending_refresh = False
+          last_event = 0.0
+
+          try:
+              while sway.poll() is None:
+                  timeout = (
+                      max(0, DEBOUNCE_SECONDS - (time.monotonic() - last_event))
+                      if pending_refresh else None
+                  )
+                  ready = selector.select(timeout)
+
+                  if not ready:
+                      refresh_waybar()
+                      pending_refresh = False
+                      continue
+
+                  chunk = os.read(sway.stdout.fileno(), 4096)
+                  if not chunk:
+                      break
+                  buffer += chunk
+
+                  while b"\n" in buffer:
+                      line, buffer = buffer.split(b"\n", 1)
+                      try:
+                          message = json.loads(line)
+                      except (ValueError, UnicodeDecodeError):
+                          continue
+                      # The success response confirms the subscription is active;
+                      # refresh once, then coalesce bursts of relevant events.
+                      if affects_away_list(message):
+                          pending_refresh = True
+                          last_event = time.monotonic()
+          finally:
+              selector.close()
+              if sway.poll() is None:
+                  sway.terminate()
+                  try:
+                      sway.wait(timeout=1)
+                  except subprocess.TimeoutExpired:
+                      sway.kill()
+                      sway.wait()
+
+          if pending_refresh:
+              refresh_waybar()
+          time.sleep(1)
+    '';
+  };
+
+  systemd.user.services.sway-waybar-window-events = {
+    Unit = {
+      Description = "Refresh Waybar scratchpad indicator on Sway events";
+      After = [ "sway-session.target" ];
+      PartOf = [ "sway-session.target" ];
+    };
+    Service = {
+      ExecStart = "${config.home.homeDirectory}/.local/bin/sway-window-events";
+      Restart = "on-failure";
+      RestartSec = 2;
+    };
+    Install.WantedBy = [ "sway-session.target" ];
   };
 }
