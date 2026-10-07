@@ -6,7 +6,6 @@
     ./foot.nix
     ./git.nix
     ./gtk.nix
-    ./helix.nix
     ./mako.nix
     ./mimeapps.nix
     ./nixvim.nix

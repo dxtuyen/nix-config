@@ -288,8 +288,13 @@ in
           rows.append(row)
 
       if waybar_only:
-          labels = [row.partition(b"\0")[0].decode("utf-8") for row in rows]
-          print(json.dumps({"text": " · ".join(labels), "tooltip": "\r".join(labels)}))
+          labels = [label for label, _ in rendered]
+          count = len(windows)
+          plural = "s" if count != 1 else ""
+          print(json.dumps({
+              "text": str(count),
+              "tooltip": "{} window{} in the Mod+m list\r".format(count, plural) + "\r".join(labels),
+          }))
           sys.exit(0)
 
       # Build the list directly to preserve container IDs and row prefixes.
