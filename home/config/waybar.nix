@@ -122,7 +122,7 @@ in
           ""
           ""
         ];
-        "on-click" = "pavucontrol";
+        "on-click" = "foot --app-id=wiremix -T 'Audio' wiremix";
       };
       "power-profiles-daemon" = {
         # Show the profile name in the tooltip.

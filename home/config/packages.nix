@@ -14,7 +14,7 @@
     swayidle
     awww # Wallpaper daemon with animated transitions.
     libnotify
-    pavucontrol
+    wiremix # PipeWire mixer (terminal UI).
     brightnessctl
     translate-shell
     goldendict-ng

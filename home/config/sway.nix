@@ -63,8 +63,8 @@
       client.background        #1e1e2e
 
       # Floating rules
-      # Match both GTK's reverse-DNS app_id and the short app_id used by some builds.
-      for_window [app_id="(?i)^(org[.]pulseaudio[.])?pavucontrol$"] floating enable, resize set width 30 ppt height 40 ppt
+      # WireMix runs inside Foot; keep the audio mixer in a compact floating window.
+      for_window [app_id="wiremix"] floating enable, resize set width 50 ppt height 60 ppt
       for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
       # Center RemNote windows in both native Wayland and XWayland builds.
       for_window [app_id="(?i).*remnote.*"] floating enable, resize set width 1000 px height 700 px, move position center
