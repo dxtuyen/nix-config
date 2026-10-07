@@ -1,7 +1,7 @@
 { ... }:
 
 # utilities — one engine, two keys, split by how destructive an entry is:
-#   $mod+p       -> utilities            (the five daily tools, most-used first)
+#   $mod+p       -> utilities            (daily tools, most-used first)
 #   $mod+Shift+p -> utilities --power    (session + power, safe -> destructive)
 # Nothing needs a divider or a usage ranking: each list is pure by meaning, and
 # both orders are stable so muscle memory sticks (Enter without typing lands on
@@ -28,6 +28,7 @@
         ☀ Display
         📶 Wi-Fi
         🔵 Bluetooth
+        🔊 Audio
         ⚡ Power Profile"
           PROMPT="Utilities"
         fi
@@ -40,6 +41,7 @@
           "☀ Display"*) exec ~/.local/bin/wlsunset-menu ;;
           "📶 Wi-Fi"*) exec foot --app-id=wifitui -T "Wi-Fi" wifitui ;;
           "🔵 Bluetooth"*) exec foot --app-id=bluetui -T "Bluetooth" bluetui ;;
+          "🔊 Audio"*) exec foot --app-id=wiremix -T "Audio" wiremix ;;
           "⚡ Power Profile"*) exec ~/.local/bin/power-profile-menu ;;
           "🔒 Lock"*) exec ~/.local/bin/lock-screen ;;
           "⏾ Suspend"*) notify-send -a power -i "system-suspend" -t 2000 "Power" "Suspending..."; exec systemctl suspend ;;
