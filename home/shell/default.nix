@@ -1,5 +1,8 @@
 { ... }:
 
 {
-  imports = [ ./bash.nix ./tools.nix ];
+  imports = [
+    ./bash.nix
+    ./tools.nix
+  ];
 }
