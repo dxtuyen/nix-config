@@ -122,15 +122,12 @@
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
       # Alt+Tab switches to the urgent or most recently used window.
-      # Mod+Tab lists hidden windows and popups; Mod+Shift+Tab lists regular windows.
       # Mod+p opens utilities; Mod+c starts Countdown; Mod+q closes the focused window.
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
-      bindsym $mod+Tab exec ~/.local/bin/window-menu --away
       bindsym $mod+q kill
 
       # Mod+r selects a random wallpaper; Mod+Shift+w opens the wallpaper menu.
       bindsym $mod+r exec ~/.local/bin/wallpaper-set
-      bindsym $mod+Shift+Tab exec ~/.local/bin/window-menu --normal
       bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-menu
       # Toggle the Yazi popup.
       bindsym $mod+y exec ~/.local/bin/yazi-open
@@ -185,11 +182,9 @@
       bindsym $mod+a focus parent
       bindsym $mod+Shift+a focus child
       bindsym $mod+minus move scratchpad
-      # Mod+Shift+Minus hides floating popups. Mod+Equal restores the newest;
-      # Mod+Shift+Equal restores all. Mod+Tab also lists hidden windows.
-      bindsym $mod+Shift+minus [workspace=__focused__ floating app_id="(?i).*goldendict.*"] kill; [workspace=__focused__ floating] move container to scratchpad
-      bindsym $mod+equal exec ~/.local/bin/popup-restore --one
-      bindsym $mod+Shift+equal exec ~/.local/bin/popup-restore
+      # Mod+Shift+Minus shows the first entry from the Mod+Equal list.
+      bindsym $mod+Shift+minus exec ~/.local/bin/window-menu --away --first
+      bindsym $mod+equal exec ~/.local/bin/window-menu --away
 
       # Custom Utilities & Screenshot
       # Mod+p opens daily utilities.
@@ -225,7 +220,7 @@
     '';
   };
 
-  # swayrd remains enabled for Alt+Tab; the custom window menu handles Mod+Tab.
+  # swayrd remains enabled for Alt+Tab.
 
   # Record window focus history for the Sway session.
   systemd.user.services.swayrd = {

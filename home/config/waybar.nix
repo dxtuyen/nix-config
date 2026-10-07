@@ -18,7 +18,7 @@ in
         # Focused window title.
         "sway/window"
         "sway/mode"
-        "sway/scratchpad"
+        "custom/away-windows"
       ];
       "modules-center" = [
         "custom/study"
@@ -97,20 +97,20 @@ in
         format = "{title}";
         "max-length" = 60;
         tooltip = true;
-        # Click the title to open the window menu (same as $mod+Shift+Tab).
+        # Click the title to open the window menu.
         "on-click" = "~/.local/bin/window-menu";
       };
 
-      # Read-only scratchpad count; use Mod+Tab to restore windows.
-      "sway/scratchpad" = {
-        format = "${faSpan "{icon}"} {count}";
-        "show-empty" = false;
-        "format-icons" = [
-          ""
-          ""
-        ];
-        tooltip = true;
-        "tooltip-format" = "{app}: {title}";
+      # Reuse the Mod+= list for both the label and tooltip.
+      "custom/away-windows" = {
+        "exec" = "~/.local/bin/window-menu --away --waybar";
+        "return-type" = "json";
+        "interval" = 5;
+        "format" = "${faSpan ""} {text}";
+        "max-length" = 42;
+        "hide-empty-text" = true;
+        "escape" = true;
+        "on-click" = "~/.local/bin/window-menu --away";
       };
       pulseaudio = {
         format = "{volume}% ${faSpan "{icon}"}";
@@ -235,7 +235,7 @@ in
       /* Keep the focused empty workspace highlighted. */
       #workspaces button.persistent.empty.focused { background-color: rgba(137, 180, 250, 0.16); }
       #window { background: @pill-hover; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: @txt-strong; font-weight: bold; }
-      #custom-inhibit, #tray, #mode, #scratchpad,
+      #custom-inhibit, #tray, #mode, #custom-away-windows,
       box#devices, box#hardware, box#power {
         background: @pill;
         border: 1px solid @edge;
@@ -253,7 +253,6 @@ in
       }
       #tray { padding: 0 8px; margin: 4px 4px 4px 2px; }
       #mode { color: #89b4fa; background: @pill; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 5px; }
-      #scratchpad { color: @txt-strong; margin: 4px 5px; }
       #clock { color: @txt; font-weight: bold; background: @pill; border: 1px solid @edge; border-radius: 10px; padding: 0 10px; margin: 4px 10px 4px 5px; }
       #custom-study { background: @pill; border: 1px solid @edge; border-radius: 10px; padding: 0 10px; margin: 4px 5px; font-weight: bold; }
       #custom-study.running { color: #89b4fa; }

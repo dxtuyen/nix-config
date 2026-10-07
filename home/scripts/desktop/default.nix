@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ./popup-restore.nix
     ./scratchpad-terminal.nix
     ./screenshot.nix
     ./screenshot-menu.nix

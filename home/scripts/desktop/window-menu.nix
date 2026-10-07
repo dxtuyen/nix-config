@@ -1,6 +1,6 @@
 { config, pkgs, ... }:
 
-# Window lists for Mod+Tab, Mod+Shift+Tab, and the Waybar title.
+# Window lists for Mod+= and Waybar.
 let
   iconSizes = [
     "16x16"
@@ -49,6 +49,8 @@ in
       stashed_only = "--scratchpad" in sys.argv[1:]
       away_only = "--away" in sys.argv[1:]
       normal_only = "--normal" in sys.argv[1:]
+      first_only = "--first" in sys.argv[1:]
+      waybar_only = "--waybar" in sys.argv[1:]
       after_kill = "--after-kill" in sys.argv[1:]
 
       tree = json.loads(subprocess.run(
@@ -72,13 +74,11 @@ in
       def collect_windows(node, ws=None):
           # Track workspace ancestry; hidden windows live under __i3_scratch.
           #
-          # Stashed must match popup-restore exactly (`in scratchpad and not
-          # visible`), or the two disagree about what can be summoned. Comparing
+          # Stashed means `in scratchpad and not visible`. Comparing
           # scratchpad_state to "hidden" is too strict: Sway also parks windows in
-          # "fresh"/"changed" after showing them, and those ARE summonable via
-          # $mod+equal — a strict test made --away come up empty and the menu
-          # useless. `visible` alone is not enough either (it only reports the
-          # focused workspace), so pair it with the scratchpad membership test.
+          # "fresh"/"changed" after showing them, and those remain summonable.
+          # `visible` alone is not enough either (it only reports the focused
+          # workspace), so pair it with the scratchpad membership test.
           if node.get("type") == "workspace":
               ws = node.get("name") or ws
           node_type = node.get("type")
@@ -120,6 +120,11 @@ in
       windows = [window for window, _ in found]
       window_ws = {window["id"]: ws for window, ws in found}
       if not windows:
+          if first_only:
+              sys.exit(0)
+          if waybar_only:
+              print(json.dumps({"text": "", "tooltip": "No away windows"}))
+              sys.exit(0)
           if not after_kill:
               subprocess.run([
                   shutil.which("notify-send") or "notify-send",
@@ -128,6 +133,20 @@ in
                    else "Nothing away from this workspace" if away_only
                    else "No open window"),
               ], check=False)
+          sys.exit(0)
+
+      if first_only:
+          window = windows[0]
+          criteria = f"[con_id={window['id']}]"
+          if (stashed(window)
+                  or window_ws.get(window["id"]) == "__i3_scratch"):
+              subprocess.run([swaymsg, f"{criteria} scratchpad show"], check=True)
+          else:
+              subprocess.run(
+                  [swaymsg, f"{criteria} move container to workspace current"],
+                  check=True,
+              )
+              subprocess.run([swaymsg, f"{criteria} focus"], check=True)
           sys.exit(0)
 
       icon_dirs = [Path(path) for path in ${builtins.toJSON iconDirs}]
@@ -224,7 +243,8 @@ in
           if stashed(window):
               return "⤓ "
           if window.get("type") == "floating_con":
-              return "→ "
+              workspace = window_ws.get(window["id"]) or "other"
+              return f"→ {workspace} "
           return ""
 
       def window_row(window):
@@ -257,13 +277,20 @@ in
       for label in labels:
           counts[label] = counts.get(label, 0) + 1
 
-      # Add an index to duplicate labels.
+      # Number duplicates within each label group.
       rows = []
-      for index, (label, row) in enumerate(rendered, start=1):
+      seen = {}
+      for label, row in rendered:
+          seen[label] = seen.get(label, 0) + 1
           if counts[label] > 1:
               label_bytes, separator, icon = row.partition(b"\0")
-              row = label_bytes + f" ({index})".encode("utf-8") + (separator + icon if separator else b"")
+              row = label_bytes + f" ({seen[label]})".encode("utf-8") + (separator + icon if separator else b"")
           rows.append(row)
+
+      if waybar_only:
+          labels = [row.partition(b"\0")[0].decode("utf-8") for row in rows]
+          print(json.dumps({"text": " · ".join(labels), "tooltip": "\r".join(labels)}))
+          sys.exit(0)
 
       # Build the list directly to preserve container IDs and row prefixes.
       choice = subprocess.run(
