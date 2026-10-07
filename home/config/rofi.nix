@@ -88,7 +88,7 @@
       lines:              8;
       fixed-height:       true;
       cycle:              true;
-      scrollbar:          false;
+      scrollbar:          true;
       spacing:            5px;
       background-color:   transparent;
     }
@@ -143,7 +143,7 @@
       border:             0;
       border-color:       @bg;
       background-color:   @bg;
-      handle-color:       @surface-hover;
+      handle-color:       @selected;
     }
   '';
 }
