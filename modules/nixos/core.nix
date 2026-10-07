@@ -34,6 +34,8 @@
   # Plymouth (plymouth.use-simpledrm giữ framebuffer từ sớm) che được cả
   # khoảng đen giữa menu boot và logo, không còn hẫng màn hình.
   boot.initrd.systemd.enable = true;
+  # Load Intel KMS before greetd so the console does not resize/repaint under tuigreet.
+  boot.initrd.kernelModules = [ "i915" ];
   boot.consoleLogLevel = 3;
   boot.plymouth = {
     enable = true;
@@ -45,6 +47,8 @@
     "systemd.show_status=auto"
     "rd.udev.log_level=3"
     "plymouth.use-simpledrm"
+    # Avoid fbcon taking over the console after tuigreet has already drawn.
+    "fbcon=nodefer"
   ];
   boot.initrd.verbose = false;
 
