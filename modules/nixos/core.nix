@@ -50,6 +50,10 @@
   i18n.defaultLocale = "en_US.UTF-8";
   console.keyMap = "us";
 
+  # Manage QEMU/KVM virtual machines with the virt-manager GUI.
+  virtualisation.libvirtd.enable = true;
+  programs.virt-manager.enable = true;
+
   users.users.${userName} = {
     isNormalUser = true;
     description = "Doxuan Tuyen";
@@ -57,6 +61,7 @@
       "wheel"
       "networkmanager"
       "kvm"
+      "libvirtd"
     ];
   };
 
