@@ -298,20 +298,20 @@ in
               "${pkgs.rofi}/bin/rofi", "-dmenu", "-i", "-matching", "normal",
               "-no-sort", "-no-custom", "-show-icons", "-format", "i",
               "-p", ("Scratchpad" if stashed_only else "Away" if away_only else "Windows"),
-              # Shift+Delete closes the selected window.
+              # Ctrl+Q closes the selected window.
               "-kb-delete-entry", "",
-              "-kb-custom-1", "Shift+Delete",
+              "-kb-custom-1", "Control+q",
               # Shift+Enter moves the selected window here.
               "-kb-accept-alt", "",
               "-kb-custom-2", "Shift+Return",
               "-mesg",
               # Show key hints for the selected list mode.
-              ("Enter: show on this workspace · Shift+Delete: close this window"
+              ("Enter: show on this workspace · Ctrl+Q: close this window"
                if stashed_only else
                "⤓ = scratchpad · → = other workspace · "
-               "Enter: bring here · Shift+Delete: close"
+               "Enter: bring here · Ctrl+Q: close"
                if away_only else
-               "Enter: jump to window · Shift+Enter: pull here · Shift+Delete: close"),
+               "Enter: jump to window · Shift+Enter: pull here · Ctrl+Q: close"),
           ],
           input=b"\n".join(rows) + (b"\n" if rows else b""),
           capture_output=True,
