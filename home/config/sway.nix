@@ -182,9 +182,10 @@
       bindsym $mod+a focus parent
       bindsym $mod+Shift+a focus child
       bindsym $mod+minus move scratchpad
-      # Mod+Shift+Minus shows the first entry from the Mod+Equal list.
-      bindsym $mod+Shift+minus exec ~/.local/bin/window-menu --away --first
-      bindsym $mod+equal exec ~/.local/bin/window-menu --away
+      # Minus stashes windows; Shift+Minus stashes floating windows on this workspace.
+      bindsym $mod+Shift+minus [workspace=__focused__ floating app_id="(?i).*goldendict.*"] kill; [workspace=__focused__ floating] move container to scratchpad
+      bindsym $mod+equal exec ~/.local/bin/window-menu --away --first
+      bindsym $mod+m exec ~/.local/bin/window-menu --away
 
       # Custom Utilities & Screenshot
       # Mod+p opens daily utilities.
