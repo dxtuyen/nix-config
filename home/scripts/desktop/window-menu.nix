@@ -255,15 +255,6 @@ in
       pwa_id = re.compile(r"^(?:chrome|chromium)-[a-z0-9_-]{16,}(?:-[a-z0-9 _-]+)?$", re.I)
       waybar_apps = []
 
-      def away_mark(window):
-          """Prefix away-list rows by their location."""
-          if stashed(window):
-              return "SP · "
-          if window.get("type") == "floating_con":
-              workspace = window_ws.get(window["id"]) or "other"
-              return f"{workspace} · "
-          return ""
-
       def window_row(window):
           props = window.get("window_properties") or {}
           app_id = window.get("app_id") or ""
@@ -283,8 +274,7 @@ in
           icon_path = entry.get("icon")
           if not icon_path:
               icon_path = icon_files.get(app_id.casefold()) or icon_files.get(wm_class.casefold())
-          # Keep location marks out of labels so duplicate windows still group.
-          row = ((away_mark(window) if away_only else "") + label).encode("utf-8")
+          row = label.encode("utf-8")
           if icon_path and Path(icon_path).is_file():
               row += b"\0icon\x1f" + str(icon_path).encode("utf-8")
           return label, row
@@ -331,7 +321,6 @@ in
               # Show key hints for the selected list mode.
               ("Enter: show on this workspace · Ctrl+Q: close this window"
                if stashed_only else
-               "SP = scratchpad · workspace number = other workspace · "
                "Enter: bring here · Ctrl+Q: close"
                if away_only else
                "Enter: jump to window · Shift+Enter: pull here · Ctrl+Q: close"),
