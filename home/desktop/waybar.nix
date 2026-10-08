@@ -61,8 +61,8 @@ in
         format-ethernet = "${faSpan ""} LAN";
         format-disconnected = faSpan "";
         format-disabled = faSpan "";
-        tooltip-format-wifi = "SSID: {essid}\nSignal: {signalStrength}%\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}";
-        tooltip-format-ethernet = "Interface: {ifname}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}";
+        tooltip-format-wifi = "SSID: {essid}\nSignal: {signalStrength}%\n↓ {bandwidthDownBits}  ↑ {bandwidthUpBits}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}";
+        tooltip-format-ethernet = "Interface: {ifname}\n↓ {bandwidthDownBits}  ↑ {bandwidthUpBits}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}";
         tooltip-format-disconnected = "Network disconnected";
         tooltip-format-disabled = "Wi-Fi disabled";
       };
