@@ -1,8 +1,45 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 
 let
   # Use Font Awesome for consistent icon sizing and alignment.
   faSpan = s: "<span font_family='Font Awesome 7 Free'>${s}</span>";
+
+  # hwmonN and thermal_zoneN numbers can change across boots. Resolve the
+  # CPU package sensor by its kernel-provided name/label on every poll.
+  cpuTemperature = pkgs.writeShellScript "waybar-cpu-temperature" ''
+    shopt -s nullglob
+
+    read_temperature() {
+      local hwmon="$1" label="$2" sensor value class
+      for sensor in "$hwmon"/temp*_label; do
+        [[ -r "$sensor" && "$(<"$sensor")" == "$label" ]] || continue
+        sensor="''${sensor%_label}_input"
+        [[ -r "$sensor" ]] || continue
+        value="$(<"$sensor")"
+        [[ "$value" =~ ^[0-9]+$ ]] || continue
+        value=$((value / 1000))
+        class=normal
+        (( value >= 80 )) && class=critical
+        (( value >= 65 && value < 80 )) && class=warning
+        printf '{"text":"%s°C","tooltip":"CPU temperature: %s°C","class":"%s"}\n' "$value" "$value" "$class"
+        return 0
+      done
+      return 1
+    }
+
+    for hwmon in /sys/class/hwmon/hwmon*; do
+      [[ -r "$hwmon/name" && "$(<"$hwmon/name")" == coretemp ]] || continue
+      read_temperature "$hwmon" 'Package id 0' && exit 0
+    done
+
+    # Fallback for machines whose CPU sensor is exported by thinkpad_acpi.
+    for hwmon in /sys/class/hwmon/hwmon*; do
+      [[ -r "$hwmon/name" && "$(<"$hwmon/name")" == thinkpad ]] || continue
+      read_temperature "$hwmon" CPU && exit 0
+    done
+
+    printf '{"text":"N/A","tooltip":"CPU temperature sensor unavailable","class":"unavailable"}\n'
+  '';
 in
 
 {
@@ -45,7 +82,7 @@ in
         modules = [
           "cpu"
           "memory"
-          "temperature"
+          "custom/cpu-temperature"
         ];
       };
       "group/power" = {
@@ -150,10 +187,11 @@ in
           critical = 95;
         };
       };
-      temperature = {
-        "warning-threshold" = 65;
-        "critical-threshold" = 80;
-        format = "${faSpan ""} {temperatureC}°C";
+      "custom/cpu-temperature" = {
+        exec = "${cpuTemperature}";
+        "return-type" = "json";
+        interval = 5;
+        format = "${faSpan ""} {text}";
       };
       backlight = {
         format = "${faSpan "{icon}"} {percent}%";
@@ -269,9 +307,9 @@ in
       #custom-inhibit.manual { color: #fab387; }
       #custom-inhibit.idle { color: @muted; }
       #network.disconnected, #network.disabled { color: #f38ba8; }
-      #battery.warning, #temperature.warning, #cpu.warning, #memory.warning { color: #fab387; }
+      #battery.warning, #temperature.warning, #custom-cpu-temperature.warning, #cpu.warning, #memory.warning { color: #fab387; }
       #battery.critical { color: #f38ba8; }
-      #temperature.critical, #cpu.critical, #memory.critical { color: #f38ba8; animation: blink 1s linear infinite; }
+      #temperature.critical, #custom-cpu-temperature.critical, #cpu.critical, #memory.critical { color: #f38ba8; animation: blink 1s linear infinite; }
       #battery.charging { color: #a6e3a1; font-weight: bold; }
       #battery.plugged { color: #a6e3a1; }
       #pulseaudio.muted { color: @muted; }
