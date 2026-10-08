@@ -1,75 +1,8 @@
-{ config, pkgs, ... }:
+{ config, ... }:
 
 let
   # Use Font Awesome for consistent icon sizing and alignment.
   faSpan = s: "<span font_family='Font Awesome 7 Free'>${s}</span>";
-
-  # hwmonN and thermal_zoneN numbers can change across boots. Resolve known
-  # CPU sensors by driver/type and label instead of pinning an enumerated path.
-  cpuTemperature = pkgs.writeShellScript "waybar-cpu-temperature" ''
-    shopt -s nullglob
-
-    emit_temperature() {
-      local input="$1" sensor_name="$2" raw value class
-      [[ -r "$input" ]] || return 1
-      raw="$(<"$input")"
-      [[ "$raw" =~ ^-?[0-9]+$ ]] || return 1
-      value=$(( (raw + (raw >= 0 ? 500 : -500)) / 1000 ))
-      class=normal
-      (( value >= 80 )) && class=critical
-      (( value >= 65 && value < 80 )) && class=warning
-      printf '{"text":"%s°C","tooltip":"%s: %s°C","class":"%s"}\n' "$value" "$sensor_name" "$value" "$class"
-      return 0
-    }
-
-    for hwmon in /sys/class/hwmon/hwmon*; do
-      [[ -r "$hwmon/name" ]] || continue
-      driver="$(<"$hwmon/name")"
-      case "$driver" in
-        coretemp)
-          for label_file in "$hwmon"/temp*_label; do
-            [[ -r "$label_file" && "$(<"$label_file")" == 'Package id 0' ]] || continue
-            input="''${label_file%_label}_input"
-            emit_temperature "$input" 'CPU package' && exit 0
-          done
-          ;;
-        k10temp|zenpower)
-          # Tdie is the die temperature; use Tctl where Tdie is unavailable.
-          for label in Tdie Tctl; do
-            for label_file in "$hwmon"/temp*_label; do
-              [[ -r "$label_file" && "$(<"$label_file")" == "$label" ]] || continue
-              input="''${label_file%_label}_input"
-              emit_temperature "$input" "CPU $label" && exit 0
-            done
-          done
-          ;;
-        thinkpad)
-          for label_file in "$hwmon"/temp*_label; do
-            [[ -r "$label_file" && "$(<"$label_file")" == CPU ]] || continue
-            input="''${label_file%_label}_input"
-            emit_temperature "$input" 'ThinkPad CPU' && exit 0
-          done
-          ;;
-        cpu_thermal)
-          # Some ARM SoCs expose a dedicated CPU thermal hwmon without labels.
-          emit_temperature "$hwmon/temp1_input" "$driver CPU" && exit 0
-          ;;
-      esac
-    done
-
-    # Some Intel systems expose the package sensor as a thermal-zone type.
-    for zone in /sys/class/thermal/thermal_zone*; do
-      [[ -r "$zone/type" ]] || continue
-      zone_type="$(<"$zone/type")"
-      case "''${zone_type,,}" in
-        x86_pkg_temp|cpu|cpu-thermal|cpu_thermal|cpu-therm)
-          emit_temperature "$zone/temp" "CPU ($zone_type)" && exit 0
-          ;;
-      esac
-    done
-
-    printf '{"text":"N/A","tooltip":"CPU temperature sensor unavailable","class":"unavailable"}\n'
-  '';
 in
 
 {
@@ -112,7 +45,6 @@ in
         modules = [
           "cpu"
           "memory"
-          "custom/cpu-temperature"
         ];
       };
       "group/power" = {
@@ -205,7 +137,6 @@ in
       };
       cpu = {
         format = "${faSpan ""} {usage}%";
-        interval = 10;
         states = {
           warning = 70;
           critical = 90;
@@ -217,12 +148,6 @@ in
           warning = 80;
           critical = 95;
         };
-      };
-      "custom/cpu-temperature" = {
-        exec = "${cpuTemperature}";
-        "return-type" = "json";
-        interval = 10;
-        format = "${faSpan ""} {text}";
       };
       backlight = {
         format = "${faSpan "{icon}"} {percent}%";
@@ -338,9 +263,9 @@ in
       #custom-inhibit.manual { color: #fab387; }
       #custom-inhibit.idle { color: @muted; }
       #network.disconnected, #network.disabled { color: #f38ba8; }
-      #battery.warning, #temperature.warning, #custom-cpu-temperature.warning, #cpu.warning, #memory.warning { color: #fab387; }
+      #battery.warning, #cpu.warning, #memory.warning { color: #fab387; }
       #battery.critical { color: #f38ba8; }
-      #temperature.critical, #custom-cpu-temperature.critical, #cpu.critical, #memory.critical { color: #f38ba8; animation: blink 1s linear infinite; }
+      #cpu.critical, #memory.critical { color: #f38ba8; animation: blink 1s linear infinite; }
       #battery.charging { color: #a6e3a1; font-weight: bold; }
       #battery.plugged { color: #a6e3a1; }
       #pulseaudio.muted { color: @muted; }
