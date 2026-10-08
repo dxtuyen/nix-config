@@ -109,8 +109,24 @@ in
 
       found = list(collect_windows(tree))
 
-      # Show the most recently stashed window first.
-      if away_only or stashed_only:
+      if away_only:
+          # The event listener records most recently focused containers first.
+          # Windows without a focus record retain their Sway tree order.
+          focus_state = Path(os.environ.get(
+              "XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"
+          )) / "sway-window-focus-mru.json"
+          try:
+              focus_order = json.loads(focus_state.read_text()).get("order", [])
+          except (OSError, ValueError, AttributeError):
+              focus_order = []
+          focus_rank = {con_id: index for index, con_id in enumerate(focus_order)}
+          found = sorted(
+              enumerate(found),
+              key=lambda item: (focus_rank.get(item[1][0].get("id"), len(focus_rank)), item[0]),
+          )
+          found = [pair for _, pair in found]
+      elif stashed_only:
+          # Keep the scratchpad-only list ordered with the most recently stashed first.
           found = sorted(
               enumerate(found),
               key=lambda item: (0, -item[0]) if stashed(item[1][0]) else (1, item[0]),
@@ -242,10 +258,10 @@ in
       def away_mark(window):
           """Prefix away-list rows by their location."""
           if stashed(window):
-              return "⤓ "
+              return "SP · "
           if window.get("type") == "floating_con":
               workspace = window_ws.get(window["id"]) or "other"
-              return f"→ {workspace} "
+              return f"{workspace} · "
           return ""
 
       def window_row(window):
@@ -315,7 +331,7 @@ in
               # Show key hints for the selected list mode.
               ("Enter: show on this workspace · Ctrl+Q: close this window"
                if stashed_only else
-               "⤓ = scratchpad · → = other workspace · "
+               "SP = scratchpad · workspace number = other workspace · "
                "Enter: bring here · Ctrl+Q: close"
                if away_only else
                "Enter: jump to window · Shift+Enter: pull here · Ctrl+Q: close"),
@@ -379,12 +395,81 @@ in
       import selectors
       import subprocess
       import time
+      from pathlib import Path
 
       SWAYMSG = "${pkgs.sway}/bin/swaymsg"
       PKILL = "${pkgs.procps}/bin/pkill"
       WAYBAR_SIGNAL = 9
       DEBOUNCE_SECONDS = 0.15
       SUBSCRIPTIONS = '["window", "workspace"]'
+      FOCUS_STATE = Path(os.environ.get(
+          "XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"
+      )) / "sway-window-focus-mru.json"
+      SWAY_SOCKET = os.environ.get("SWAYSOCK")
+      focus_order = []
+
+      def save_focus_order():
+          try:
+              FOCUS_STATE.parent.mkdir(parents=True, exist_ok=True)
+              temporary = FOCUS_STATE.with_suffix(f".tmp.{os.getpid()}")
+              temporary.write_text(json.dumps({
+                  "socket": SWAY_SOCKET,
+                  "order": focus_order,
+              }))
+              temporary.replace(FOCUS_STATE)
+          except OSError:
+              pass
+
+      def remember_focus(message):
+          if message.get("change") != "focus":
+              return False
+          container = message.get("container") or {}
+          con_id = container.get("id")
+          if con_id is None:
+              return False
+          if con_id in focus_order:
+              focus_order.remove(con_id)
+          focus_order.insert(0, con_id)
+          save_focus_order()
+          return True
+
+      def initialize_focus_order():
+          try:
+              tree = json.loads(subprocess.run(
+                  [SWAYMSG, "-t", "get_tree"], check=True,
+                  capture_output=True, text=True,
+              ).stdout)
+          except (OSError, subprocess.CalledProcessError, ValueError):
+              return
+
+          valid_ids = set()
+          focused_ids = []
+          def visit(node):
+              if node.get("type") in ("con", "floating_con") and node.get("id") is not None:
+                  valid_ids.add(node["id"])
+                  if node.get("focused"):
+                      focused_ids.append(node["id"])
+              for key in ("nodes", "floating_nodes"):
+                  for child in node.get(key, []):
+                      visit(child)
+          visit(tree)
+
+          try:
+              previous = json.loads(FOCUS_STATE.read_text())
+              if previous.get("socket") == SWAY_SOCKET:
+                  focus_order.extend(
+                      con_id for con_id in previous.get("order", [])
+                      if con_id in valid_ids
+                  )
+          except (OSError, ValueError, AttributeError):
+              pass
+          for con_id in focused_ids:
+              if con_id in focus_order:
+                  focus_order.remove(con_id)
+              focus_order.insert(0, con_id)
+          save_focus_order()
+
+      initialize_focus_order()
 
       def refresh_waybar():
           subprocess.run(
@@ -402,9 +487,8 @@ in
           # focused workspace changes which floating windows are considered away.
           if "current" in message:
               return change == "focus"
-          # Ignore focus/title/urgency events from windows; they do not change
-          # the Mod+m membership or the first app shown in Waybar.
-          return change in {"new", "close", "move", "floating"}
+          # Focus changes update the MRU order and the first app shown in Waybar.
+          return change in {"new", "close", "move", "floating", "focus"}
 
       while True:
           try:
@@ -447,6 +531,8 @@ in
                           message = json.loads(line)
                       except (ValueError, UnicodeDecodeError):
                           continue
+                      if message.get("change") == "focus":
+                          remember_focus(message)
                       # The success response confirms the subscription is active;
                       # refresh once, then coalesce bursts of relevant events.
                       if affects_away_list(message):
