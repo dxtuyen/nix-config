@@ -39,7 +39,7 @@
         drag enabled
         dwt enabled
       }
-      seat * hide_cursor 7000
+      seat * hide_cursor 10000
       seat * xcursor_theme Bibata-Modern-Classic 24
 
       # Catppuccin Mocha styling
