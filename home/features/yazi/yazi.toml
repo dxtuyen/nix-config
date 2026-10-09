@@ -14,13 +14,17 @@ reveal = [
 { run = "xdg-open %d1", desc = "Reveal", for = "linux", orphan = true },
 ]
 
+# Google Chrome
+chrome = [
+{ run = 'google-chrome-stable %s', desc = "Chrome", for = "linux", orphan = true },
+]
+
 [open]
-# Prefer the default application for common file types while keeping Neovim available.
 # prepend_rules preserves Yazi's default rules.
 prepend_rules = [
 { url = "*.{html,htm,xhtml}", use = [ "open", "edit" ] }, # → Chrome
 { url = "*.csv", use = [ "open", "edit" ] },               # → Calc
-{ url = "*.pdf", use = [ "open", "edit" ] },               # Open PDFs in Sioyek.
+{ url = "*.pdf", use = [ "open", "chrome", "edit" ] },     # PDF: Sioyek mặc định, Chrome chọn bằng O
 ]
 
 [mgr]
