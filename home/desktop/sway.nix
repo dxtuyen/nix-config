@@ -124,6 +124,8 @@
       # Alt+Tab switches to the urgent or most recently used window.
       # Mod+p opens utilities; Mod+c starts Countdown; Mod+q closes the focused window.
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
+      # Toggle Sway's workspace overview and switcher.
+      bindsym $mod+Tab exec pkill -x swayview || ${pkgs.swayview}/bin/swayview
       bindsym $mod+q kill
 
       # Mod+r selects a random wallpaper; Mod+Shift+w opens the wallpaper menu.
