@@ -66,10 +66,6 @@
       # WireMix runs inside Foot; keep the audio mixer in a compact floating window.
       for_window [app_id="wiremix"] floating enable, resize set width 50 ppt height 60 ppt
       for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
-      # Center RemNote windows in both native Wayland and XWayland builds.
-      for_window [app_id="(?i).*remnote.*"] floating enable, resize set width 1000 px height 700 px, move position center
-      for_window [class="(?i).*remnote.*"] floating enable, resize set width 1000 px height 700 px, move position center
-
       # Match common Obsidian app_id variants across package formats.
       for_window [app_id="(?i)^(md([.]obsidian)?[.]obsidian|obsidian)$"] floating enable, resize set width 1000 px height 700 px, move position center
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
