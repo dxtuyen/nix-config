@@ -191,9 +191,8 @@ in
         "on-click" = "~/.local/bin/countdown-engine inhibit-toggle";
       };
       clock = {
-        format = "{:%a %d %b | %I:%M %p}";
-        "format-alt" = "{:%A %d %B %Y}";
-        tooltip-format = "<tt><small>{calendar}</small></tt>";
+        format = "{:%I:%M %p}";
+        tooltip-format = "{:%d %B %Y}";
         locale = "en_US.UTF-8";
       };
       tray = {
